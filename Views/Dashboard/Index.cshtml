@@ -1,0 +1,136 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="./css/site.css" />
+    <script src="~/js/site.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="app-grid">
+            <div class="app-card" onclick="openApp('Discuss')">
+                <img src="./Images/download.png" alt="Discuss">
+                <p>Discuss</p>
+            </div>
+            <div class="app-card" onclick="openApp('Dashboards')">
+                <img src="./Images/dashboard.png" alt="Dashboards">
+                <p>Dashboards</p>
+            </div>
+           @*  <div class="app-card" onclick="openApp('Inventory')">
+                <img src="./images/inventory.png" alt="Inventory">
+                <p>Inventory</p>
+            </div> *@
+            <div class="app-card" onclick="window.location.href='@Url.Action("Index", "Inventory")'">
+                <img src="~/images/inventory.png" alt="Inventory">
+                <p>Inventory</p>
+            </div>
+
+            <div class="app-card" onclick="openApp('Barcode')">
+                <img src="./Images/barcode.png" alt="Barcode">
+                <p>Barcode</p>
+            </div>
+            <div class="app-card" onclick="openApp('Apps')">
+                <img src="./Images/apps.png" alt="Apps">
+                <p>Apps</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<style>body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    text-align: center;
+}
+
+.container {
+    margin-top: 50px;
+}
+
+.app-grid {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.app-card {
+    width: 120px;
+    height: 140px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.app-card:hover {
+    transform: scale(1.1);
+}
+
+.app-card img {
+    width: 60px;
+    height: 60px;
+}
+
+.app-card p {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        text-align: center;
+    }
+
+    .container {
+        margin-top: 50px;
+    }
+
+    .app-grid {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .app-card {
+        width: 120px;
+        height: 140px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+        .app-card:hover {
+            transform: scale(1.1);
+        }
+
+        .app-card img {
+            width: 60px;
+            height: 60px; 
+        }
+
+        .app-card p {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+</style>
+<script>
+    function openApp(appName) {
+        if (appName === "Dashboards") {
+            window.location.href = "/Inventory/index.cshtml"; // Change this URL based on your routing setup
+        }
+    }
+</script>

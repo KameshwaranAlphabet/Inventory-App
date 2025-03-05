@@ -1,0 +1,219 @@
+﻿ @model List<Inventree_App.Models.InventoryItem>
+ 
+@{
+    ViewData["Title"] = "Inventory Overview";
+}
+
+@* <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Overview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container {
+            width: 60%;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        .progress-bar {
+            width: 50%;
+            height: 14px;
+            background: #eee;
+            border-radius: 7px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .low {
+            background: #ff4d4d;
+        }
+        /* Red */
+        .medium {
+            background: #ffb84d;
+        }
+        /* Orange */
+        .high {
+            background: #4caf50;
+        }
+        /* Green */
+        .icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .details {
+            display: flex;
+            align-items: center;
+            width: 20%;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📦 Inventory Overview</h2>
+        @foreach (var item in Model)
+        {
+            var percentage = (item.Quantity / (float)item.MaxQuantity) * 100;
+            var colorClass = percentage < 30 ? "low" : (percentage < 70 ? "medium" : "high");
+            <div class="inventory-item">
+                <span class="icon">📌</span>
+                <span>@item.Name</span>
+                <div class="progress-bar">
+                    <div class="progress-fill @colorClass" style="width: @percentage%;"></div>
+                </div>
+                <div class="details">
+                    <span>@item.Quantity</span>
+                    <span>/</span>
+                    <span>@item.MaxQuantity</span>
+                </div>
+            </div>
+        }
+    </div>
+</body>
+</html>
+ *@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Overview</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container {
+            width: 60%;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        .progress-bar {
+            width: 50%;
+            height: 14px;
+            background: #eee;
+            border-radius: 7px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%; /* Start from 0% */
+            transition: width 1.5s ease-in-out;
+        }
+
+        .low {
+            background: #ff4d4d;
+        }
+        /* Red */
+        .medium {
+            background: #ffb84d;
+        }
+        /* Orange */
+        .high {
+            background: #4caf50;
+        }
+        /* Green */
+        .icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .details {
+            display: flex;
+            align-items: center;
+            width: 20%;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📦 Inventory Overview</h2>
+        @foreach (var item in Model)
+        {
+            var percentage = (item.Quantity / (float)item.MaxQuantity) * 100;
+            var colorClass = percentage < 30 ? "low" : (percentage < 70 ? "medium" : "high");
+            <div class="inventory-item">
+                <span class="icon">📌</span>
+                <span>@item.Name</span>
+                <div class="progress-bar">
+                    <div class="progress-fill @colorClass" data-percentage="@percentage"></div>
+                </div>
+                <div class="details">
+                    <span>@item.Quantity</span>
+                    <span>/</span>
+                    <span>@item.MaxQuantity</span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let progressBars = document.querySelectorAll(".progress-fill");
+
+            progressBars.forEach(bar => {
+                let finalWidth = bar.getAttribute("data-percentage");
+                setTimeout(() => {
+                    bar.style.width = finalWidth + "%";
+                }, 300); // Delay for better effect
+            });
+        });
+    </script>
+</body>
+</html>
