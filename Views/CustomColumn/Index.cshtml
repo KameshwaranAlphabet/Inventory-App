@@ -1,0 +1,150 @@
+﻿@await Html.PartialAsync("_Sidebar") <!-- Sidebar -->
+
+<div class="container">
+    <h2>Manage Custom Columns</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <form method="post" action="@Url.Action("AddColumn", "CustomColumn")">
+        <label>Column Name:</label>
+        <input type="text" name="ColumnName" required />
+
+        <label>Data Type:</label>
+        <select name="DataType">
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="date">Date</option>
+        </select>
+
+        <button type="submit">Add Column</button>
+    </form>
+
+    <h3>Existing Columns</h3>
+    <table>
+        <tr>
+            <th>Column Name</th>
+            <th>Data Type</th>
+        </tr>
+        @foreach (var column in Model)
+        {
+            <tr>
+                <td>@column</td>
+                <td>@column.GetType()</td>
+            </tr>
+        }
+    </table>
+
+    <a href="@Url.Action("Form", "Inventory")">Go to Inventory Form</a>
+</div>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+    }
+
+    .container {
+        margin-left: 39%;
+        position: absolute;
+        padding: 99px;
+    }
+
+    h2, h3 {
+        color: #333;
+    }
+
+    form {
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        margin-bottom: 20px;
+    }
+
+        form label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        form input, form select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+    button {
+        margin-top: 10px;
+        padding: 10px 15px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+    .alert {
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+
+    .alert-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .alert-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+    }
+
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+
+    th, td {
+        padding: 10px;
+        text-align: left;
+    }
+
+    th {
+        background: #007bff;
+        color: white;
+    }
+
+    a {
+        display: inline-block;
+        margin-top: 15px;
+        text-decoration: none;
+        color: #007bff;
+    }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+  
+
+</style>
