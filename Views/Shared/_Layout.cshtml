@@ -9,41 +9,64 @@
     <link rel="stylesheet" href="~/Inventree_App.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">aLphabet_App</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Dashboard" asp-action="Index">Home</a>
-                        </li>
-                        @* <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li> *@
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - Designed By aLphabet IT Team <a asp-area="" asp-controller="Home" asp-action="Privacy"></a>
+        <div class="sidebar">
+            @*         <button class="menu-toggle" onclick="toggleSidebar()">☰ Menu</button>
+ *@
+            <a href="index.html">
+                <img src="./Images/alphabet-logo.png" alt="Logo" class="logo">
+            </a>        <a href="#" onclick="loadPage('Discuss')">
+                <img src="./Images/download.png" alt="Discuss">
+                Discuss
+            </a>
+            <a href="#" onclick="loadPage('Dashboards')">
+                <img src="./Images/dashboard.png" alt="Dashboards">
+                Dashboards
+            </a>
+            <a href="#" onclick="loadPage('Inventory')">
+                <img src="./images/inventory.png" alt="Inventory">
+                Inventory
+            </a>
+            <a href="#" onclick="loadPage('Barcode')">
+                <img src="./Images/barcode.png" alt="Barcode">
+                Barcode
+            </a>
+            <a href="#" onclick="loadPage('Apps')">
+                <img src="./Images/apps.png" alt="Apps">
+                Apps
+            </a>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+        <div class="main-content" id="content">
+         
+        </div>
 </body>
+<script>
+    function toggleSidebar() {
+        document.querySelector('.sidebar').classList.toggle('show');
+    }
+
+    function loadPage(pageName) {
+        let content = document.getElementById('content');
+
+        if (pageName === 'Inventory') {
+            // Display a centered spinner
+            content.innerHTML = `
+                <div class="loading-container">
+                    <div class="spinner"></div>
+                </div>`;
+
+            fetch('@Url.Action("Index", "Inventory")')
+                .then(response => response.text())
+                .then(html => {
+                    content.innerHTML = html;
+                })
+                .catch(error => {
+                    content.innerHTML = '<p>Error loading page.</p>';
+                    console.error('Error:', error);
+                });
+        } else {
+            content.innerHTML = `<h2>${pageName} Page</h2><p>Content for ${pageName} will be loaded here.</p>`;
+        }
+    }
+
+</script>
 </html>
