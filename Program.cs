@@ -1,7 +1,9 @@
 using Inventree_App.Context;
 using Inventree_App.Service;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using System;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Inventree_App
 {
@@ -18,7 +20,24 @@ namespace Inventree_App
             builder.Services.AddDbContext<ApplicationContext>(options =>
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
             ;
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
             builder.Services.AddScoped<DatabaseHelper>();
+            // Configure JWT Authentication
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(key)
+                    };
+                });
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();

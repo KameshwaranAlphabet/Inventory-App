@@ -15,9 +15,8 @@
         }
 
         .header {
-            width: 100%;
+            width: 98%;
             background: white;
-            color: white;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -27,11 +26,32 @@
             left: 0;
             height: 60px;
             z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
             .header .logo {
                 height: 40px;
             }
+
+            .header .user-info {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+                .header .user-info img {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    border: 2px solid #007bff;
+                }
+
+                .header .user-info span {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #333;
+                }
 
             .header .buttons {
                 display: flex;
@@ -42,7 +62,6 @@
                 background: #007bff;
                 color: white;
                 border: none;
-                position:absolute;
                 padding: 10px 15px;
                 cursor: pointer;
                 border-radius: 5px;
@@ -95,42 +114,35 @@
             flex: 1;
         }
 
-        button {
-            left: 90%;
-            bottom: 27%;
-        }
         /* Mobile Responsive Sidebar */
         @@media screen and (max-width: 768px) {
-            .sidebar
+            .sidebar {
+                width: 200px;
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 1000;
+            }
 
-        {
-            width: 200px;
-            transform: translateX(-100%);
-            position: fixed;
-            z-index: 1000;
-        }
+                .sidebar.show {
+                    transform: translateX(0);
+                }
 
-        .sidebar.show {
-            transform: translateX(0);
-        }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
 
-        .main-content {
-            margin-left: 0;
-            width: 100%;
-        }
-
-        .menu-toggle {
-            display: block;
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: #333;
-            color: white;
-            padding: 10px;
-            cursor: pointer;
-            z-index: 1100;
-        }
-
+            .menu-toggle {
+                display: block;
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                background: #333;
+                color: white;
+                padding: 10px;
+                cursor: pointer;
+                z-index: 1100;
+            }
         }
     </style>
 </head>
@@ -138,6 +150,12 @@
     <!-- Header -->
     <div class="header">
         <img src="@Url.Content("~/Images/alphabet-logo.png")" alt="Logo" class="logo">
+
+        <div class="user-info">
+            <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image">
+            <span> @ViewBag.UserName</span>
+        </div>
+
         <div class="buttons">
             <button onclick="window.location.href='@Url.Action("Register", "Home")'">Create User</button>
         </div>
@@ -145,7 +163,6 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-   
         <a href="#" onclick="loadPage('Discuss')">
             <img src="@Url.Content("~/Images/download.png")" alt="Discuss">
             Discuss
@@ -154,11 +171,11 @@
             <img src="@Url.Content("~/Images/dashboard.png")" alt="Dashboards">
             Dashboards
         </a>
-        <a href="#" onclick="loadPage('Inventory')">
+        <a href="@Url.Action("Index", "Inventory")" onclick="loadPage('Inventory')">
             <img src="@Url.Content("~/Images/Inventory.png")" alt="Inventory">
             Inventory
         </a>
-        <a href="#" onclick="loadPage('Barcode')">
+        <a href="@Url.Action("Index", "Scanner")" onclick="loadPage('Barcode')">
             <img src="@Url.Content("~/Images/barcode.png")" alt="Barcode">
             Barcode
         </a>
@@ -166,18 +183,12 @@
             <img src="@Url.Content("~/Images/Apps.png")" alt="Apps">
             Apps
         </a>
-        <a href="index.html" onclick="loadPage('logout')">
-            <img src="@Url.Content("~/Images/alphabet-logo.png")" alt="Discuss">
+        <a href="@Url.Action("Logout", "Home")" onclick="loadPage('logout')">
+            <img src="@Url.Content("~/Images/alphabet-logo.png")" alt="Logout">
             LogOut
         </a>
     </div>
-@* 
-    <!-- Main Content -->
-    <div class="main-content" id="content">
-        <h2>Welcome</h2>
-        <p>Select an option from the sidebar.</p>
-    </div>
- *@
+
     <script>
         function toggleSidebar() {
             document.querySelector('.sidebar').classList.toggle('show');
@@ -185,7 +196,8 @@
 
         function loadPage(pageName) {
             let content = document.getElementById('content');
-              if (pageName === 'Inventory') {
+
+            if (pageName === 'Inventory') {
                 content.innerHTML = `
                     <div class="loading-container">
                         <div class="spinner"></div>
@@ -201,22 +213,24 @@
                         console.error('Error:', error);
                     });
             }
-            if (pageName === 'logout') {
+            else if (pageName === 'logout') {
                 content.innerHTML = `
                     <div class="loading-container">
                         <div class="spinner"></div>
                     </div>`;
-
-                fetch('@Url.Action("Index", "Home")')
-                    .then(response => response.text())
-                    .then(html => {
-                        content.innerHTML = html;
-                    })
-                    .catch(error => {
-                        content.innerHTML = '<p>Error loading page.</p>';
-                        console.error('Error:', error);
-                    });
-            } else {
+                    alert()
+                fetch('@Url.Action("Logout", "Home")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+                }).then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url; // Redirect to login page
+                    }
+                });
+            }
+            else {
                 content.innerHTML = `<h2>${pageName} Page</h2><p>Content for ${pageName} will be loaded here.</p>`;
             }
         }

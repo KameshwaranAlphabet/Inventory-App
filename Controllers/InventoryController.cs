@@ -4,9 +4,15 @@ using Inventree_App.Models;
 using Inventree_App.Service;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats.Png;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IdentityModel.Tokens.Jwt;
+using ZXing;
+using ZXing.Common;
 
 namespace Inventree_App.Controllers
 {
@@ -22,51 +28,51 @@ namespace Inventree_App.Controllers
             _dbHelper = helper;
             _context = context;
             _connectionString = connectionString.GetConnectionString("DefaultConnection"); // Get connection string from appsettings.json
+            }
+        private string GetCurrentUserName()
+        {
+            var token = Request.Cookies["jwt"]; // Get JWT token from cookies
+
+            if (string.IsNullOrEmpty(token))
+                return "Guest"; // No token means user is not logged in
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var userName = jwtToken.Claims.First(c => c.Type == "Name")?.Value;
+
+            return userName ?? "Unknown User"; // Return username from token
         }
-        //public IActionResult Index()
-        //{
-        //    var inventory = _context.Stocks.ToList();
-        //    return View(inventory);
-        //}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>return the list of sctocks to inventory overview</returns>
         public IActionResult Index()
         {
-            var stocks = _context.Stocks.ToList();
-            return View("Index", stocks);
-        }
-        //public IActionResult Index()
-        //{
-        //    //if (string.IsNullOrEmpty(HttpContext.Session.GetString("UserEmail")))
-        //    //{
-        //    //    TempData["SessionExpired"] = "Your session has expired. Please log in again.";
-        //    //    return RedirectToAction("Index", "Auth");
-        //    //}
-
-        //    return View();
-        //}
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create(Stocks stock)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        _context.Stocks.Add(stock);
-        //        await _context.SaveChangesAsync();
-        //        return RedirectToAction("Index"); // Redirect to listing page after adding stock
-        //    }
-        //    return View(stock);
-        //}
-        public IActionResult form()
-        {
+            var userName = GetCurrentUserName();
+            if(userName== "Guest")
+                return RedirectToAction("Index", "Home");
+        
+            ViewBag.UserName = userName;
             var stocks = _context.Stocks.ToList();
             return View("Index", stocks);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public IActionResult ManageColumns()
         {
             List<Stocks> columns = _dbHelper.GetCustomColumns();
             return View(columns);
         }
 
+        /// <summary>
+        /// Add the column to the stock table
+        /// </summary>
+        /// <param name="ColumnName"></param>
+        /// <param name="DataType"></param>
+        /// <returns></returns>
         [HttpPost]
         public IActionResult AddColumn(string ColumnName, string DataType)
         {
@@ -87,6 +93,12 @@ namespace Inventree_App.Controllers
             List<Stocks> columns = _dbHelper.GetCustomColumns();
             return View("Index", columns);
         }
+
+        /// <summary>
+        /// Get all the columns from stock table
+        /// </summary>
+        /// <returns></returns>
+        // Get All the columns from stock table
         public IActionResult Create()
         {
             using (var connection = new MySqlConnection(_connectionString))
@@ -95,11 +107,37 @@ namespace Inventree_App.Controllers
                 var columns = connection.Query<string>(query).ToList();
                 ViewBag.ColumnNames = columns; // Pass columns separately
                                                // Get stock data
-                var stocks = _context.Stocks.ToList();
-                return View("AddStock", stocks); // Matches @model List<Stocks>
+                return View("AddStock"); // Matches @model List<Stocks>
             }
         }
 
+        /// <summary>
+        /// Create the stock Dynamically
+        /// </summary>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        // The Create method dynamically inserts all form fields except the hidden __RequestVerificationToken.
+
+        //[HttpPost]
+        //public IActionResult Create(IFormCollection form)
+        //{
+        //    using (var connection = new MySqlConnection(_connectionString))
+        //    {
+        //        var columnNames = form.Keys.Where(k => k != "__RequestVerificationToken").ToList();
+        //        var values = columnNames.Select(k => form[k].ToString()).ToList();
+
+        //        string columns = string.Join(", ", columnNames.Select(c => $"`{c}`"));
+        //        string parameters = string.Join(", ", columnNames.Select(c => $"@{c}"));
+
+        //        string query = $"INSERT INTO stocks ({columns}) VALUES ({parameters})";
+
+        //        var parametersDict = columnNames.ToDictionary(c => $"@{c}", c => (object)form[c]);
+
+        //        connection.Execute(query, parametersDict);
+        //    }
+
+        //    return RedirectToAction("Index");
+        //}
         [HttpPost]
         public IActionResult Create(IFormCollection form)
         {
@@ -111,15 +149,153 @@ namespace Inventree_App.Controllers
                 string columns = string.Join(", ", columnNames.Select(c => $"`{c}`"));
                 string parameters = string.Join(", ", columnNames.Select(c => $"@{c}"));
 
-                string query = $"INSERT INTO stocks ({columns}) VALUES ({parameters})";
+                string insertQuery = $"INSERT INTO stocks ({columns}) VALUES ({parameters}); SELECT LAST_INSERT_ID();";
+
+                var parametersDict = columnNames.ToDictionary(c => $"@{c}", c => (object)values[columnNames.IndexOf(c)]);
+
+                int stockId = connection.ExecuteScalar<int>(insertQuery, parametersDict);
+
+                if (stockId > 0 && columnNames.Contains("barcode")) // Check if "barcode" column exists
+                {
+                    // Generate barcode based on Stock ID
+                    string barcodeValue = $"STK{stockId:D6}"; // Example: STK000123
+                    string barcodeImagePath = GenerateBarcodeImage(barcodeValue);
+
+                    // Update stock with barcode and image path
+                    string updateQuery = "UPDATE stocks SET SerialNumber = @barcode, barcode = @barcodeImage WHERE id = @id";
+                    connection.Execute(updateQuery, new { barcode = barcodeValue, barcodeImage = barcodeImagePath, id = stockId });
+                }
+            }
+
+            return RedirectToAction("Index");
+        }
+
+
+        private string GenerateBarcodeImage(string barcodeValue)
+        {
+            var writer = new BarcodeWriter<Image<Rgba32>>
+            {
+                Format = BarcodeFormat.CODE_128,
+                Options = new EncodingOptions
+                {
+                    Height = 100,
+                    Width = 300,
+                    Margin = 10
+                },
+                Renderer = new ZXing.ImageSharp.Rendering.ImageSharpRenderer<Rgba32>() // Fix for the error
+            };
+
+            // Generate barcode image
+            using (Image<Rgba32> image = writer.Write(barcodeValue))
+            {
+                string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "barcodes");
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+
+                string barcodePath = Path.Combine(folderPath, $"{barcodeValue}.png");
+
+                // Save barcode as PNG
+                image.Save(barcodePath, new PngEncoder()); //  Cross-platform saving
+                return $"/barcodes/{barcodeValue}.png"; // Path to store in DB
+            }
+        }
+        /// <summary>
+        /// Scan the barcode
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult ScanBarcode([FromBody] string request)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                string query = "UPDATE stocks SET quantity = quantity - 1 WHERE barcode = @barcode AND quantity > 0";
+
+                int affectedRows = connection.Execute(query, new { barcode = request });
+
+                if (affectedRows > 0)
+                {
+                    return Json(new { success = true, message = "Stock updated successfully." });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Stock not available or barcode not found." });
+                }
+            }
+        }
+        /// <summary>
+        /// Edit the stock by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="form"></param>
+        /// <returns></returns>
+        // The Edit method dynamically updates all form fields except the hidden __RequestVerificationToken.
+        // this function will edit the stocks 
+        [HttpPost]
+        public IActionResult Edit(int id, IFormCollection form)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                var columnNames = form.Keys.Where(k => k != "__RequestVerificationToken").ToList();
+                var updateSet = string.Join(", ", columnNames.Select(c => $"`{c}` = @{c}"));
+
+                string query = $"UPDATE stocks SET {updateSet} WHERE id = @id";
 
                 var parametersDict = columnNames.ToDictionary(c => $"@{c}", c => (object)form[c]);
+                parametersDict["@id"] = id;
 
                 connection.Execute(query, parametersDict);
             }
 
             return RedirectToAction("Index");
         }
+        // Delete method
+        //The Delete method removes a record based on the provided id.
+        // the method used to delete the stock permanetly from the stock table 
+        [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                string query = "DELETE FROM stocks WHERE id = @id";
+                connection.Execute(query, new { id });
+            }
 
+            return RedirectToAction("Index");
+        }
+
+        /// <summary>
+        /// Get the stock by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        // Get the stock by id  
+        [HttpGet]
+        public IActionResult GetStockById(int? id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                List<string> columnNames = connection.Query<string>("SHOW COLUMNS FROM stocks").ToList();
+                ViewBag.ColumnNames = columnNames;
+
+                if (id.HasValue)
+                {
+                    string query = "SELECT * FROM stocks WHERE Id = @id";
+                    //var stock = connection.QueryFirstOrDefault(query, new { id });
+                    var stock = _context.Stocks.FirstOrDefault(x => x.Id == id);
+
+                    if (stock == null)
+                    {
+                        return NotFound();
+                    }
+
+                    return View("AddStock", stock);
+                }
+
+                return View("Index");
+            }
+        }
     }
 }
