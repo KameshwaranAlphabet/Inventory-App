@@ -1,0 +1,373 @@
+﻿@{
+    ViewData["Title"] = "Barcode Scanner";
+}
+
+@await Html.PartialAsync("_Sidebar") <!-- Include Sidebar Here -->
+<!-- Include the CSS -->
+<link rel="stylesheet" href="~/css/scanner.css" asp-append-version="true">
+
+<!-- Scanner Container -->
+<div class="scanner-container">
+    <div class="scanner-box">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Scan Product Barcode</h2>
+
+        <!-- Scanner Video Container -->
+        <div class="video-wrapper">
+            <video id="video" class="w-full"></video>
+            <div id="loadingIndicator" class="hidden">Scanning...</div>
+        </div>
+
+        <!-- Scan Button -->
+        <button id="scanButton" class="scan-btn">Start Scanning</button>
+
+        <!-- Barcode Result -->
+        <input type="text" id="barcodeResult" class="barcode-input" placeholder="Scanned Barcode" readonly>
+
+        <!-- Status Message -->
+        <p id="statusMessage"></p>
+    </div>
+</div>
+
+<!-- ZXing Barcode Scanner -->
+<script src="https://unpkg.com/@@zxing/library@latest"></script>
+
+<script>
+    document.getElementById("scanButton").addEventListener("click", function () {
+        startScanner();
+    });
+
+    function startScanner() {
+        const codeReader = new ZXing.BrowserBarcodeReader();
+        const videoElement = document.getElementById("video");
+        const loadingIndicator = document.getElementById("loadingIndicator");
+
+        loadingIndicator.classList.remove("hidden"); // Show loading animation
+
+        codeReader.decodeFromVideoDevice(undefined, videoElement, (result, err) => {
+            if (result) {
+                let barcode = result.text;
+                document.getElementById("barcodeResult").value = barcode;
+
+                // Play beep sound on successful scan
+                let beep = new Audio("https://www.soundjay.com/button/beep-07.wav");
+                beep.play();
+
+                // Stop the scanner after successful scan
+                codeReader.reset();
+                loadingIndicator.classList.add("hidden"); // Hide loading animation
+
+                // Send barcode to backend API
+                fetch('/Scanner/ScanAndReduceStock', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ barcode: barcode })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("✅ Stock updated! Remaining stock: " + data.remainingStock);
+                    } else {
+                        alert("❌ Error: " + data.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        });
+    }
+</script>
+<style>
+    /* General Styles */
+    body {
+        background-color: #f3f4f6;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh; /* Full viewport height */
+        padding: 1rem;
+    }
+
+    /* Centering Scanner Container */
+    .scanner-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    /* Scanner Box */
+    .scanner-box {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 100%;
+        max-width: 400px;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /* Video Container */
+    .video-wrapper {
+        position: relative;
+        width: 100%;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    /* Loading Animation */
+    #loadingIndicator {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        font-size: 1.2rem;
+        font-weight: bold;
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    /* Scan Button */
+    .scan-btn {
+        margin-top: 1rem;
+        background: #2563eb;
+        color: white;
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
+    }
+
+        .scan-btn:hover {
+            background: #1e40af;
+            transform: scale(1.05);
+        }
+
+    /* Input Box */
+    .barcode-input {
+        margin-top: 1rem;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border: 2px solid #ccc;
+        padding: 0.5rem;
+        border-radius: 8px;
+        width: 100%;
+    }
+
+    /* Success Message */
+    #statusMessage {
+        margin-top: 0.5rem;
+        font-size: 1rem;
+        font-weight: bold;
+        color: #16a34a;
+    }
+
+    /* Animation */
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .scanner-box
+
+    {
+        max-width: 90%;
+        padding: 1rem;
+    }
+
+    .scan-btn {
+        width: 100%;
+    }
+
+    .barcode-input {
+        font-size: 1rem;
+        padding: 0.4rem;
+    }
+
+    }
+
+    @@media (max-width: 480px) {
+        .scanner-box
+
+    {
+        max-width: 95%;
+        padding: 0.8rem;
+    }
+
+    .scan-btn {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+    }
+
+    .barcode-input {
+        font-size: 0.9rem;
+        padding: 0.3rem;
+    }
+
+    #statusMessage {
+        font-size: 0.9rem;
+    }
+
+    }/* General Styles */
+body {
+    background-color: #f3f4f6;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; /* Full viewport height */
+    padding: 1rem;
+}
+
+/* Centering Scanner Container */
+.scanner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Scanner Box */
+.scanner-box {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Video Container */
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Loading Animation */
+#loadingIndicator {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Scan Button */
+.scan-btn {
+    margin-top: 1rem;
+    background: #2563eb;
+    color: white;
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.scan-btn:hover {
+    background: #1e40af;
+    transform: scale(1.05);
+}
+
+/* Input Box */
+.barcode-input {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: 2px solid #ccc;
+    padding: 0.5rem;
+    border-radius: 8px;
+    width: 100%;
+}
+
+/* Success Message */
+#statusMessage {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #16a34a;
+}
+
+/* Animation */
+@@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@@media (max-width: 768px) {
+    .scanner-box {
+        max-width: 90%;
+        padding: 1rem;
+    }
+    
+    .scan-btn {
+        width: 100%;
+    }
+
+    .barcode-input {
+        font-size: 1rem;
+        padding: 0.4rem;
+    }
+}
+
+@@media (max-width: 480px) {
+    .scanner-box {
+        max-width: 95%;
+        padding: 0.8rem;
+    }
+
+    .scan-btn {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+    }
+
+    .barcode-input {
+        font-size: 0.9rem;
+        padding: 0.3rem;
+    }
+
+    #statusMessage {
+        font-size: 0.9rem;
+    }
+}
+
+</style>

@@ -1,38 +1,45 @@
 using Inventree_App.Context;
 using Inventree_App.Models;
+using Inventree_App.Service;
 using Microsoft.AspNetCore.Mvc;
 using System.Data.Entity;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+
 
 namespace Inventree_App.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ApplicationContext _context;
-        public HomeController(ApplicationContext context)
+        private readonly ICustomerService _customerService;
+        public HomeController(ApplicationContext context, ICustomerService customerService)
         {
             _context = context;
+            _customerService = customerService;
         }
         public IActionResult Index()
         {
             return View();
         }
 
-        [HttpPost]
-        public IActionResult Authenticate(string email, string password)
-        {
-            if (email == "admin@example.com" && password == "password123")
-            {
-                return RedirectToAction("Index", "Inventory");
-            }
-            else
-            {
-                ViewBag.Error = "Invalid email or password.";
-                return View("Index");
-            }
-        }
+        //[HttpPost]
+        //public IActionResult Authenticate(string email, string password)
+        //{
+        //    if (email == "admin@example.com" && password == "password123")
+        //    {
+        //        return RedirectToAction("Index", "Inventory");
+        //    }
+        //    else
+        //    {
+        //        ViewBag.Error = "Invalid email or password.";
+        //        return View("Index");
+        //    }
+        //}
         //[HttpPost]
         //public async Task<IActionResult> Authenticate(string email, string password)
         //{
@@ -102,10 +109,32 @@ namespace Inventree_App.Controllers
 
             return RedirectToAction("Index", "Customer");
         }
+       
+        [HttpPost]
+        public async Task<IActionResult> Authenticate(string email, string password)
+        {
+            var user = _context.Customer.FirstOrDefault(u => u.Email == email);
+            if (user == null || user.Password != HashPassword(password))
+            {
+                ViewBag.Error = "Invalid login credentials!";
+                return View("Index");
+            }
+
+            var token = _customerService.GenerateJwtToken(user);
+            Response.Cookies.Append("jwt", token);
+
+            return RedirectToAction("Index", "Inventory");
+        }
+
         public IActionResult Register()
         {
             return View("SignUp");
         }
+        /// <summary>
+        /// HashPassword
+        /// </summary>
+        /// <param name="password"></param>
+        /// <returns>encrypted password</returns>
         private string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())
@@ -116,10 +145,14 @@ namespace Inventree_App.Controllers
             }
         }
         // Logout method to clear session
+        [HttpGet]
         public IActionResult Logout()
         {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Index");
+            // Remove JWT cookie
+            Response.Cookies.Delete("jwt");
+
+            // Redirect to login page
+            return RedirectToAction("Index", "Home");
         }
     }
 }
