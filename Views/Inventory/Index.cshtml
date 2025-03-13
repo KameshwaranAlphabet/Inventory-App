@@ -2,9 +2,13 @@
 
 @{
     ViewData["Title"] = "Inventory Overview";
+    int currentPage = ViewBag.CurrentPage;
+    int totalPages = ViewBag.TotalPages;
+    int totalItem = ViewBag.TotalItems;
 }
-@await Html.PartialAsync("_Sidebar") <!-- Include Sidebar Here -->
 
+@* @await Html.PartialAsync("_Sidebar") <!-- Include Sidebar Here -->
+ *@
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +22,7 @@
             padding: 20px;
             text-align: center;
         }
-
+/* 
         .container {
             max-width: 90%;
             width: 60%;
@@ -27,7 +31,7 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.1);
-        }
+        } */
 
         .head {
             display: flex;
@@ -143,7 +147,73 @@
             .head {
                 flex-direction: column;
                 text-align: center;
+            }              
+            
+            .filter-section
+            {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
             }
+
+        #searchInput {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 250px;
+            outline: none;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+        #searchInput:focus {
+            border-color: #007bff;
+        }
+
+        #filterDropdown {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: white;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+            #filterDropdown:hover,
+            #filterDropdown:focus {
+                background-color: #f8f9fa;
+            }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease-in-out;
+        }
+
+            .btn:hover {
+                background: #0056b3;
+            }
+
+        @@media (max-width: 768px) {
+            .filter-section
+
+        {
+            flex-direction: column;
+        }
+
+        #searchInput, #filterDropdown {
+            width: 100%;
+        }
         }
     </style>
 </head>
@@ -152,8 +222,18 @@
         <div class="head">
             <h2>📦 Inventory Overview</h2>
             <div>
+               <input type="text" id="searchInput" placeholder="Search stocks..." value="@ViewBag.CurrentSearch">
+    
+                <select id="filterDropdown">
+                    <option value="all" @@(ViewBag.CurrentFilter == "all" ? "selected" : "")>All</option>
+                    <option value="red" @@(ViewBag.CurrentFilter == "red" ? "selected" : "")>🔴 Low Stock</option>
+                    <option value="orange" @@(ViewBag.CurrentFilter == "orange" ? "selected" : "")>🟠 Medium Stock</option>
+                    <option value="green" @@(ViewBag.CurrentFilter == "green" ? "selected" : "")>🟢 High Stock</option>
+                </select>
+                <button class="btn" onclick="applyFilters()">Apply</button>
+
                 <button class="btn" onclick="window.location.href='@Url.Action("Form", "CustomColumn")'">Add Column</button>
-                <button class="btn" onclick="window.location.href='@Url.Action("Create", "Inventory")'">Add New</button>
+                <button class="btn" onclick="window.location.href='@Url.Action("Create", "Inventory")'">Add New</button>  
                 <button class="btn" onclick="importCSV()">Import CSV</button>
             </div>
         </div>
@@ -164,6 +244,7 @@
             var colorClass = percentage < 30 ? "low" : (percentage < 70 ? "medium" : "high");
             <div class="inventory-item">
                 <span class="name">📌 @item.Name</span>
+                <div class="serialNumber"> @item.SerialNumber</div>
                 <div class="progress-bar">
                     <div class="progress-fill @colorClass" data-percentage="@percentage"></div>
                 </div>
@@ -178,6 +259,22 @@
                 </div>
             </div>
         }
+
+
+       @*  !-- Pagination --> *@
+        <div class="pagination">
+            @if (currentPage > 1)
+            {
+                <a href="@Url.Action("Index", new { page = currentPage - 1, pageSize = ViewBag.PageSize, filter = ViewBag.CurrentFilter, search = ViewBag.CurrentSearch })" class="btn">Previous</a>
+            }
+
+            <span>Page @currentPage of @totalItem</span>
+
+            @if (currentPage < totalPages)
+            {
+                <a href="@Url.Action("Index", new { page = currentPage + 1, pageSize = ViewBag.PageSize, filter = ViewBag.CurrentFilter, search = ViewBag.CurrentSearch })" class="btn">Next</a>
+            }
+        </div>
     </div>
 
     <script>
@@ -213,6 +310,12 @@
                 }).catch(error => console.error("Error:", error));
             }
         }
+         function applyFilters() {
+            let searchValue = document.getElementById("searchInput").value;
+            let filterValue = document.getElementById("filterDropdown").value;
+            window.location.href = `@Url.Action("Index")?page=1&pageSize=@ViewBag.PageSize&filter=${filterValue}&search=${searchValue}`;
+        }
+      
     </script>
 </body>
 </html>

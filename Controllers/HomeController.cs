@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 
 namespace Inventree_App.Controllers
@@ -113,6 +115,19 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public async Task<IActionResult> Authenticate(string email, string password)
         {
+            if (email!=null)
+            {
+                // Authenticate user and sign in
+                var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Email, email)
+            };
+
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+                HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            }
+
             var user = _context.Customer.FirstOrDefault(u => u.Email == email);
             if (user == null || user.Password != HashPassword(password))
             {
@@ -123,7 +138,7 @@ namespace Inventree_App.Controllers
             var token = _customerService.GenerateJwtToken(user);
             Response.Cookies.Append("jwt", token);
 
-            return RedirectToAction("Index", "Inventory");
+            return RedirectToAction("Index", "Dashboard");
         }
 
         public IActionResult Register()

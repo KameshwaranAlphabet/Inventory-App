@@ -1,1 +1,234 @@
-﻿@await Html.PartialAsync("_Sidebar") <!-- Sidebar -->
+﻿
+@{
+
+    int totalStocks = ViewBag.StocksCount;
+    int lowStocks = ViewBag.LowStocksCount;
+    int availableStocks = ViewBag.AvailableStocks;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2%;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        .notification-container {
+            position: fixed;
+            top: 7%;
+            left: 89%;
+            display: inline-block;
+            z-index: 1000;
+        }
+        /* Notification Icon */
+        .notification-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
+        }
+        .notification-dropdown {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            z-index: 100;
+        }
+
+            .notification-dropdown ul {
+                list-style: none;
+                padding: 10px;
+                margin: 0;
+            }
+
+                .notification-dropdown ul li {
+                    padding: 10px;
+                    border-bottom: 1px solid #ddd;
+                    cursor: pointer;
+                }
+
+                    .notification-dropdown ul li:hover {
+                        background: #f5f5f5;
+                    }
+
+        .badge {
+            background: red;
+            color: white;
+            font-size: 12px;
+            border-radius: 50%;
+            padding: 5px 8px;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        @@keyframes fadeIn {
+            from
+
+        {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        }
+
+        .search-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+            .search-bar input {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            padding: 56px;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+            transition: transform 0.3s ease-in-out;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+            }
+
+        .purple {
+            background-color: #6b46c1;
+        }
+
+        .green {
+            background-color: #38a169;
+        }
+
+        .red {
+            background-color: red;
+        }
+
+        .blue {
+            background-color: #3182ce;
+        }
+
+        .bonus-section {
+            background-color: #6b46c1;
+            color: white;
+            padding: 24px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+            .bonus-section button {
+                background-color: white;
+                color: #6b46c1;
+                padding: 10px 20px;
+                border-radius: 8px;
+                border: none;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+
+                .bonus-section button:hover {
+                    background-color: #ddd;
+                }
+    </style>
+</head>
+<body class="dashboard">
+    <div class="container">
+      @*   <div class="search-bar">
+            <input type="text" placeholder="Search project, folder or file">
+        </div> *@
+        <!-- Notification Icon -->
+        <div class="notification-container">
+            <div class="notification-icon" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="badge" id="notification-count">3</span>
+            </div>
+            <div class="notification-dropdown" id="notification-dropdown">
+                <ul id="notification-list">
+                    <li>No new notifications</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="cards">
+            <div class="card purple">Total Stocks<br><strong>@totalStocks</strong></div>
+            <div class="card green">Available Stocks<br><strong>@availableStocks</strong></div>
+            <div class="card red">Low Stocks<br><strong>@lowStocks</strong></div>
+            <div class="card blue">Agent<br><strong>v1.0.0.8</strong></div>
+        </div>
+        <div class="bonus-section">
+            <div>-
+                <h2>Bonus of the month</h2>
+                <p>You have Bonus $100 & 10 Free Spins</p>
+                <button>Claim Bonus</button>
+            </div>
+            <div>🎁💰</div>
+        </div>
+    </div>
+</body>
+</html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+
+<script>
+     // Connect to SignalR Hub
+    var connection = new signalR.HubConnectionBuilder()
+        .withUrl("/notificationHub")
+        .build();
+
+    function toggleNotifications() {
+           var dropdown = document.getElementById("notification-dropdown");
+           dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+       }
+
+       // Close dropdown when clicking outside
+       document.addEventListener("click", function(event) {
+           var container = document.querySelector(".notification-container");
+           if (!container.contains(event.target)) {
+               document.getElementById("notification-dropdown").style.display = "none";
+           }
+       });
+</script>

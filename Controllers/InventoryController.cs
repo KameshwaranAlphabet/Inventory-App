@@ -13,6 +13,7 @@ using System.Drawing.Imaging;
 using System.IdentityModel.Tokens.Jwt;
 using ZXing;
 using ZXing.Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace Inventree_App.Controllers
 {
@@ -46,16 +47,59 @@ namespace Inventree_App.Controllers
         /// 
         /// </summary>
         /// <returns>return the list of sctocks to inventory overview</returns>
-        public IActionResult Index()
+        //public IActionResult Index()
+        //{
+        //    var userName = GetCurrentUserName();
+        //    if(userName== "Guest")
+        //        return RedirectToAction("Index", "Home");
+
+        //    ViewBag.UserName = userName;
+        //    var stocks = _context.Stocks.ToList();
+        //    return View("Index", stocks);
+        //}
+        
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 7, string filter = "all", string search = "")
         {
             var userName = GetCurrentUserName();
-            if(userName== "Guest")
+            if (userName == "Guest")
                 return RedirectToAction("Index", "Home");
-        
+
             ViewBag.UserName = userName;
-            var stocks = _context.Stocks.ToList();
-            return View("Index", stocks);
+            ViewBag.CurrentFilter = filter;
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentPage = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.UserName = userName;
+
+            var stocks = _context.Stocks.AsQueryable();
+
+            // Apply stock level filtering
+            if (filter == "red")
+                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
+            else if (filter == "orange")
+                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 30 && (s.Quantity / (float)s.MaxQuantity) * 100 < 70);
+            else if (filter == "green")
+                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 70);
+
+            // Apply search filter
+            if (!string.IsNullOrEmpty(search))
+                stocks = stocks.Where(s => s.Name.Contains(search));
+
+            int totalItems = await stocks.CountAsync();
+
+            var paginatedStocks = await stocks
+                .OrderBy(s => s.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            ViewBag.TotalItems = totalItems;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            return View(paginatedStocks);
         }
+
+
 
         /// <summary>
         /// 
@@ -209,7 +253,7 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult ScanBarcode([FromBody] string request)
         {
-            using (var connection = new MySqlConnection(_connectionString))
+            using (var connection = new MySqlConnection(_connectionString)) 
             {
                 string query = "UPDATE stocks SET quantity = quantity - 1 WHERE barcode = @barcode AND quantity > 0";
 

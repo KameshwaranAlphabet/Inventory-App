@@ -3,70 +3,211 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Inventree_App</title>
+    <title>@ViewData["Title"] - WebApplication1</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Inventree_App.styles.css" asp-append-version="true" />
-</head>
-<body>
-        <div class="sidebar">
-            @*         <button class="menu-toggle" onclick="toggleSidebar()">☰ Menu</button>
- *@
-            <a href="index.html">
-                <img src="./Images/alphabet-logo.png" alt="Logo" class="logo">
-            </a>        <a href="#" onclick="loadPage('Discuss')">
-                <img src="./Images/download.png" alt="Discuss">
-                Discuss
-            </a>
-            <a href="#" onclick="loadPage('Dashboards')">
-                <img src="./Images/dashboard.png" alt="Dashboards">
-                Dashboards
-            </a>
-            <a href="#" onclick="loadPage('Inventory')">
-                <img src="./images/inventory.png" alt="Inventory">
-                Inventory
-            </a>
-            <a href="#" onclick="loadPage('Barcode')">
-                <img src="./Images/barcode.png" alt="Barcode">
-                Barcode
-            </a>
-            <a href="#" onclick="loadPage('Apps')">
-                <img src="./Images/apps.png" alt="Apps">
-                Apps
-            </a>
-        </div>
-        <div class="main-content" id="content">
-         
-        </div>
-</body>
-<script>
-    function toggleSidebar() {
-        document.querySelector('.sidebar').classList.toggle('show');
-    }
-
-    function loadPage(pageName) {
-        let content = document.getElementById('content');
-
-        if (pageName === 'Inventory') {
-            // Display a centered spinner
-            content.innerHTML = `
-                <div class="loading-container">
-                    <div class="spinner"></div>
-                </div>`;
-
-            fetch('@Url.Action("Index", "Inventory")')
-                .then(response => response.text())
-                .then(html => {
-                    content.innerHTML = html;
-                })
-                .catch(error => {
-                    content.innerHTML = '<p>Error loading page.</p>';
-                    console.error('Error:', error);
-                });
-        } else {
-            content.innerHTML = `<h2>${pageName} Page</h2><p>Content for ${pageName} will be loaded here.</p>`;
+    <link rel="stylesheet" href="~/WebApplication1.styles.css" asp-append-version="true" />
+    <style>
+        body.layoutbody {
+            display: flex;
+            margin :-1%;
         }
-    }
 
-</script>
+        #sidebar {
+            width: 250px;
+            transition: all 0.3s ease-in-out;
+            background: #343a40;
+            color: white;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-x: hidden;
+            z-index: 1000;
+            padding-top: 37px;
+        }
+
+            #sidebar.collapsed {
+                width:70px;
+            }
+
+            #sidebar a {
+                display: flex;
+                align-items: center;
+                color: white;
+                padding: 10px 20px;
+                text-decoration: none;
+                transition: background 0.3s;
+            }
+
+                #sidebar a:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+
+        .sidebar-icon {
+            width: 30px;
+            margin-right: 10px;
+        }
+
+        #sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+
+        #main-content {
+            margin-left: 250px;
+            width: 100%;
+            transition: margin-left 0.3s ease-in-out;
+        }
+
+        #sidebar.collapsed ~ #main-content {
+            margin-left: 60px;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 10px;
+            left: 1%;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            transition: left 0.3s;
+            z-index: 1050;
+        }
+      
+        #sidebar.collapsed ~ .toggle-btn {
+            left: 70px;
+        }
+
+        .logo {
+            height: 40px;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        button {
+            margin-top: 0px;
+            padding: 10px 19px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+            button:hover {
+                background: #0056b3;
+            }
+        @@media (max-width: 768px) {
+            #sidebar
+
+        {
+            left: -250px;
+            position: absolute;
+        }
+
+        #sidebar.show {
+            left: 0;
+        }
+
+        #main-content {
+            margin-left: 0;
+        }
+
+        .toggle-btn {
+            left: 10px;
+        }
+    
+        }
+    </style>
+</head>
+<body class="layoutbody">
+    <button class="toggle-btn" onclick="toggleSidebar()">&#9776;</button>
+    <div id="sidebar" class="collapsed">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+               @*  <a href="#" onclick="loadPage('Discuss')">
+                    <img src="@Url.Content("~/Images/download.png")" class="sidebar-icon" alt="Discuss">
+                    <span class="sidebar-text">Discuss</span>
+                </a> *@
+                <div class="navbar-toggler sidebar-icon" data-bs-toggle="collapse" >
+                    <span class="navbar-toggler-icon"></span>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a href="#" onclick="loadPage('Discuss')">
+                    <img src="@Url.Content("~/Images/download.png")" class="sidebar-icon" alt="Discuss">
+                    <span class="sidebar-text">Discuss</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Dashboard")">
+                    <img src="@Url.Content("~/Images/dashboard.png")" class="sidebar-icon" alt="Dashboards">
+                    <span class="sidebar-text">Dashboards</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Inventory")">
+                    <img src="@Url.Content("~/Images/Inventory.png")" class="sidebar-icon" alt="Inventory">
+                    <span class="sidebar-text">Inventory</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Scanner")">
+                    <img src="@Url.Content("~/Images/barcode.png")" class="sidebar-icon" alt="Barcode">
+                    <span class="sidebar-text">Barcode</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div id="main-content">
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom box-shadow mb-3">
+                <div class="container-fluid d-flex align-items-center">
+                    <img src="@Url.Content("~/Images/alphabet-logo.png")" alt="Logo" class="logo">
+                   
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image" class="logo">
+                                <span>@ViewBag.UserName</span>
+                            </li>
+                            <li class="nav-item">
+                                <button onclick="window.location.href='@Url.Action("Register", "Home")'">Create User</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="container">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="border-top footer text-muted">
+            <div class="container">
+                &copy; 2025 - WebApplication1 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            let sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("collapsed");
+            if (window.innerWidth < 768) {
+                sidebar.classList.toggle("show");
+            }
+        }
+    </script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
 </html>

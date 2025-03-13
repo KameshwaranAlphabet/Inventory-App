@@ -13,11 +13,13 @@ namespace Inventree_App.Controllers
     {
         private readonly DatabaseHelper _dbHelper;
         private readonly string _connectionString;
+        private readonly ApplicationContext _context;
 
-        public ScannerController(DatabaseHelper dbHelper,IConfiguration configuration)
+        public ScannerController(DatabaseHelper dbHelper,IConfiguration configuration, ApplicationContext context)
         {
             _dbHelper = dbHelper;
             _connectionString = configuration.GetConnectionString("DefaultConnection"); // Get connection string from appsettings.json
+            _context = context;
         }
 
         /// <summary>
@@ -51,12 +53,20 @@ namespace Inventree_App.Controllers
                 {
                     string updateQuery = "UPDATE stocks SET Quantity = Quantity - 1 WHERE SerialNumber = @barcode";
                     connection.Execute(updateQuery, new { barcode = request.Barcode });
-
-                    return Ok(new { success = true, remainingStock = currentStock - 1 });
+                    var stocks = _context.Stocks.FirstOrDefault(x=>x.SerialNumber == request.Barcode);
+                    return Json(new
+                    {
+                        success = true,
+                        product = new
+                        {
+                            Name = stocks.Name,
+                            StockQuantity = stocks.Quantity,
+                        }
+                    });
                 }
                 else
                 {
-                    return BadRequest(new { success = false, error = "Stock not available or already empty." });
+                    return Json(new { success = false, message = "Stock is empty." });
                 }
             }
         }

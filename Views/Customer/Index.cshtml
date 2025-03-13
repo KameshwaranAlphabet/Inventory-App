@@ -3,8 +3,16 @@
 @{
     ViewData["Title"] = "Customer List";
 }
-@await Html.PartialAsync("_Sidebar") <!-- Sidebar -->
-
+@* @await Html.PartialAsync("_Sidebar") <!-- Sidebar -->
+ *@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer List</title>
+ </head>
+ <body>
 <h2>Customer List</h2>
 
 <table id="customerTable">
@@ -24,7 +32,7 @@
         {
             <tr data-id="@customer.Id">
                 <td class="editable">@customer.UserName</td>
-                <td class="editable">@customer.Email</td>
+                <td >@customer.Email</td>
                 <td class="editable">@customer.UserName</td>
                 <td class="editable">@customer.FirstName</td>
                 <td class="editable">@customer.LastName</td>
@@ -38,16 +46,17 @@
         }
     </tbody>
 </table>
+</body>
+</html>
 
 <!-- CSS Styling -->
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f9;
-        text-align: center;
-        margin-left: 12%;
-        margin-top: 5%;
-    }
+   body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+  }
 
     h2 {
         color: #333;
@@ -55,7 +64,7 @@
     }
 
     table {
-        width: 80%;
+        width: 100%;
         margin: 20px auto;
         border-collapse: collapse;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
