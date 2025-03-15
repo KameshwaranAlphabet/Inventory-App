@@ -1,0 +1,200 @@
+﻿@model List<OrderItem>
+@{
+    Layout = "_FacultyLayout"; // This prevents the layout from being applied to the login page
+}
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .container-orderDetail {
+        width: 90%;
+        max-width: 900px;
+        margin: 20px auto;
+/*         background: white;
+ */        padding: 20px;
+        border-radius: 10px;
+/*         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ *//*         animation: fadeIn 1s ease-in-out;
+ */    }
+
+    h2 {
+        text-align: center;
+        color: #333;
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    .order-summary {
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+        .order-summary p {
+            margin: 8px 0;
+            font-size: 16px;
+        }
+
+    .status {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 14px;
+        color: white;
+    }
+
+    .status-pending {
+        background: orange;
+    }
+
+    .status-approved {
+        background: green;
+    }
+
+    .status-rejected {
+        background: red;
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto; /* Enables horizontal scrolling */
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        min-width: 600px; /* Prevents table shrinking */
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background: #007bff;
+        color: white;
+    }
+
+    td {
+        text-align: center;
+    }
+
+    tr:hover {
+        background: #f1f1f1;
+    }
+
+    .back-btn {
+        display: block;
+        margin-top: 20px;
+        padding: 10px;
+        background: #007bff;
+        color: white;
+        text-align: center;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+        .back-btn:hover {
+            background: #0056b3;
+        }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .container
+
+    {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .order-summary p {
+        font-size: 14px;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    th, td {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .back-btn {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>
+
+<div class="container-orderDetail">
+    <h2>Order Details</h2>
+@* 
+    <!-- Order Summary -->
+    <div class="order-summary">
+        <p><strong>Order ID:</strong> #@Model.OrderId</p>
+        <p><strong>Total Amount:</strong> $@Model.TotalAmount</p>
+        <p>
+            <strong>Status:</strong>
+            <span class="status @(Model.Status == "Pending" ? "status-pending" : Model.Status == "Approved" ? "status-approved" : "status-rejected")">
+                @Model.Status
+            </span>
+        </p>
+    </div> *@
+
+    <!-- Order Items Table -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>OrderId</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.StockName</td>
+                        <td>@item.Quantity</td>
+                        <td>$@item.OrderId</td>
+                        <td>@item.Status</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <a href="@Url.Action("OrderList", "Order")" class="back-btn">Back to Orders</a>
+</div>

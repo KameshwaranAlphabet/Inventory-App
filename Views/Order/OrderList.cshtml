@@ -1,0 +1,325 @@
+﻿@model List<OrderDetailsModel>
+@{
+    Layout = "_FacultyLayout"; // This prevents the layout from being applied to the login page
+}
+@{
+    ViewData["Title"] = "My Orders";
+    var statusFilter = ViewBag.StatusFilter as string;
+    var startDate = ViewBag.StartDate as string;
+    var endDate = ViewBag.EndDate as string;
+    int page = ViewBag.Page;
+    int totalPages = ViewBag.TotalPages;
+}
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+    }
+
+    /* .container {
+        width: 90%;
+        max-width: 900px;
+        margin: 20px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 1s ease-in-out;
+    } */
+
+    .container-order {
+        /* width: 90%; */
+        /* max-width: 900px; */
+        /* margin: 20px auto; */
+/*         background: white;
+ */        padding: 20px;
+        border-radius: 10px;
+        /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
+/*         animation: fadeIn 1s ease-in-out;
+ */    }
+    h2 {
+        text-align: center;
+        color: #333;
+        font-size: 24px;
+    }
+
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+
+        .filters select, .filters input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+            font-size: 14px;
+        }
+
+            .filters select:hover, .filters input:hover {
+                border-color: #007bff;
+            }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background: #007bff;
+        text-align: center;
+    }
+
+    td {
+        text-align: center;
+    }
+
+    tr:hover {
+        background: #f1f1f1;
+    }
+
+    .status {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-size: 14px;
+        color: white;
+    }
+
+    .purchase-btn {
+        padding: 10px 15px;
+        border: none;
+        background: #28a745;
+        color: white;
+        font-size: 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+    }
+
+        .purchase-btn:hover {
+            background: #218838;
+        }
+    .status-pending {
+        background: orange;
+    }
+
+    .status-successed {
+        background: green;
+    }
+
+    .status-rejected {
+        background: red;
+    }
+
+    .pagination {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+        .pagination a {
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            text-decoration: none;
+            background: #007bff;
+            color: white;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+            .pagination a:hover {
+                background: #0056b3;
+            }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .filters
+
+    {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .filters select, .filters input {
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+    }
+
+    table, th, td {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+        .purchase-btn {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+            margin-top: 10px;
+        }
+    .pagination a {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>
+
+<div class="container-order">
+    <h2>My Orders</h2>
+
+    <!-- Filters -->
+    <div class="filters">
+        <select id="statusFilter" onchange="applyFilters()">
+            <option value="">All Status</option>
+            <option value="Pending" selected="@(statusFilter == "Pending")">Pending</option>
+            <option value="Approved" selected="@(statusFilter == "Approved")">Approved</option>
+            <option value="Rejected" selected="@(statusFilter == "Rejected")">Rejected</option>
+        </select>
+
+        <input type="date" id="startDate" value="@startDate" onchange="applyFilters()" />
+        <input type="date" id="endDate" value="@endDate" onchange="applyFilters()" />
+        <button class="purchase-btn" onclick="purchaseStock()">Purchase Stock</button>
+
+    </div>
+
+    <!-- Orders Table -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th></th> <!-- Expand/Collapse -->
+                <th></th> <!-- Checkbox -->
+                <th>Order #</th>
+                <th>CustomerName</th>
+                <th>OrderedDate</th>
+                <th>ItemsCount</th>
+               @*  <th>
+                    <button class="btn btn-outline-success" id="approveOrdersBtn">Approve</button>
+                    <button class="btn btn-outline-danger" id="denyOrdersBtn">Rejected</button>
+                </th> *@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr class="order-row">
+                    <td>
+                        <button class="btn btn-sm btn-toggle" data-orderids="@order.OrderId">▼</button>
+                    </td>
+@*                     <td><input type="checkbox" class="order-checkbox" data-orderids="@order.OrderId" /></td>
+ *@                    <td>@order.OrderId</td>
+                    <td>@order.CustomerName</td>
+                    <td>@order.OrderedDate.ToShortDateString()</td>
+                    <td>@order.ItemsCount</td>
+                    <td>
+                        <span class="badge bg-warning">@order.Status</span>
+                    </td>
+                </tr>
+
+                <!-- Hidden Order Details Row -->
+                <tr class="order-details order-@order.OrderId d-none">
+                    <td colspan="7">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th></th> <!-- Checkbox -->
+                                    <th>StockName</th>
+                                    <th>OrderId</th>
+                                    <th>Quantity</th>
+                                    <th>Status</th>
+                                    <th>State</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in order.Items)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" class="item-checkbox" data-itemid="@item.Id" /></td>
+                                        <td>@item.StockName</td>
+                                        <td>@item.OrderId</td>
+                                        <td>@item.Quantity</td>
+                                        <td><span class="badge bg-info">Pending approval</span></td>
+                                        <td><span class="badge bg-secondary">@item.Status</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+    <!-- Pagination -->
+    <div class="pagination">
+        @if (page > 1)
+        {
+            <a href="@Url.Action("OrderList", "Order",  new { page = page - 1, status = statusFilter, startDate = startDate, endDate = endDate })">Prev</a>
+        }
+
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            <a href="@Url.Action("OrderList", "Order",  new { page = i, status = statusFilter, startDate = startDate, endDate = endDate })" class="@(i == page ? "active" : "")">@i</a>
+        }
+
+        @if (page < totalPages)
+        {
+            <a href="@Url.Action("OrderList", "Order",  new { page = page + 1, status = statusFilter, startDate = startDate, endDate = endDate })">Next</a>
+        }
+    </div>
+</div>
+@section Scripts {
+<script>
+    function applyFilters() {
+        let status = document.getElementById("statusFilter").value;
+        let startDate = document.getElementById("startDate").value;
+        let endDate = document.getElementById("endDate").value;
+        window.location.href = `@Url.Action("OrderList", "Order")?status=${status}&startDate=${startDate}&endDate=${endDate}`;
+    }
+      function purchaseStock() {
+        alert("Redirecting to purchase stock page...");
+       window.location.href = `@Url.Action("Index", "Order")`;
+    }
+      // Expand/Collapse Order Details
+    $(".btn-toggle").click(function () {
+        var orderId = $(this).data("orderids");
+        $(".order-" + orderId).toggleClass("d-none");
+    });
+</script>
+}

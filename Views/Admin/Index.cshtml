@@ -1,0 +1,174 @@
+﻿@model List<OrderDetailsModel>
+
+<div class="container mt-3">
+    <h2>My Orders</h2>
+
+    <!-- Filters -->
+    <div class="d-flex justify-content-between mb-3">
+        <div class="d-flex">
+            <input type="text" id="searchBox" class="form-control me-2" placeholder="Filter by name" value="@ViewBag.Search">
+            <select id="orderDateFilter" class="form-select">
+                <option value="">Order Date</option>
+                <option value="asc" selected="@(ViewBag.OrderDate == "asc" ? "selected" : null)">Oldest First</option>
+                <option value="desc" selected="@(ViewBag.OrderDate == "desc" ? "selected" : null)">Newest First</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
+    </div>
+
+    <!-- Orders Table -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th></th> <!-- Expand/Collapse -->
+                <th></th> <!-- Checkbox -->
+                <th>Order #</th>
+                <th>CustomerName</th>
+                <th>OrderedDate</th>
+                <th>ItemsCount</th>
+                <th>
+                    <button class="btn btn-outline-success" id="approveOrdersBtn">Approve</button>
+                    <button class="btn btn-outline-danger" id="denyOrdersBtn">Rejected</button>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr class="order-row">
+                    <td>
+                        <button class="btn btn-sm btn-toggle" data-orderid="@order.OrderId">▼</button>
+                    </td>
+                    <td><input type="checkbox" class="order-checkbox" data-orderid="@order.OrderId" /></td>
+                    <td>@order.OrderId</td>
+                    <td>@order.CustomerName</td>
+                    <td>@order.OrderedDate.ToShortDateString()</td>
+                    <td>@order.ItemsCount</td>
+                    <td>
+                        <span class="badge bg-warning">@order.Status</span>
+                    </td>
+                </tr>
+
+                <!-- Hidden Order Details Row -->
+                <tr class="order-details order-@order.OrderId d-none">
+                    <td colspan="7">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th></th> <!-- Checkbox -->
+                                    <th>StockName</th>
+                                    <th>OrderId</th>
+                                    <th>Quantity</th>
+                                    <th>Status</th>
+                                    <th>State</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in order.Items)
+                                {
+                                    <tr>
+                                        <td><input type="checkbox" class="item-checkbox" data-itemid="@item.Id" /></td>
+                                        <td>@item.StockName</td>
+                                        <td>@item.OrderId</td>
+                                        <td>@item.Quantity</td>
+                                        <td><span class="badge bg-info">Pending approval</span></td>
+                                        <td><span class="badge bg-secondary">@item.Status</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="?page=@i&pageSize=@ViewBag.PageSize&search=@ViewBag.Search&orderDate=@ViewBag.OrderDate">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
+
+@section Scripts {
+<script>
+    function applyFilters() {
+        var search = $("#searchBox").val();
+        var orderDate = $("#orderDateFilter").val();
+        window.location.href = `?page=1&pageSize=@ViewBag.PageSize&search=${search}&orderDate=${orderDate}`;
+    }
+
+    // Expand/Collapse Order Details
+    $(".btn-toggle").click(function () {
+        var orderId = $(this).data("orderid");
+        $(".order-" + orderId).toggleClass("d-none");
+    });
+        $(document).ready(function () 
+        {
+
+             // Function to update both orders and order items
+            function updateOrderAndItems(status) {
+                var selectedOrders = [];
+                var selectedOrderItems = [];
+
+                // Get checked orders
+                $(".order-checkbox:checked").each(function () {
+                    selectedOrders.push($(this).data("orderid"));
+                });
+
+                // Get checked order items
+                $(".item-checkbox:checked").each(function () {
+                    selectedOrderItems.push($(this).data("itemid"));
+                });
+
+                if (selectedOrders.length === 0 && selectedOrderItems.length === 0) {
+                    alert("Please select at least one order or order item.");
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("UpdateOrderAndItems", "Order")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        orderIds: selectedOrders,
+                        orderItemIds: selectedOrderItems,
+                        status: status
+                    }),
+                    success: function (response) {
+                        alert(response.message);
+                        location.reload(); // Refresh the page to reflect changes
+                    },
+                    error: function () {
+                        alert("Error updating orders and order items.");
+                    }
+                });
+            }
+
+            // Approve button event
+            $("#approveOrdersBtn").click(function () {
+                updateOrderAndItems("Approved");
+            });
+
+            // Deny button event
+            $("#denyOrdersBtn").click(function () {
+                updateOrderAndItems("Rejected");
+            });
+        });
+
+</script>
+}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        padding: 19px;
+        text-align: center;
+    }
+</style>

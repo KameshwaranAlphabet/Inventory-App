@@ -1,0 +1,34 @@
+﻿@model List<Inventree_App.Models.Stocks>
+<h2>Stock List</h2>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Quantity</th>
+        <th>Action</th>
+    </tr>
+    @foreach (var stock in Model)
+    {
+        <tr>
+            <td>@stock.Name</td>
+            <td>@stock.Quantity</td>
+            <td>
+                <input type="number" id="qty-@stock.Id" value="1" min="1" />
+                <button onclick="addToCart(@stock.Id)">Add to Cart</button>
+            </td>
+        </tr>
+    }
+</table>
+<a href="/Cart/Index">View Cart</a>
+
+<script>
+    function addToCart(stockId) {
+        var quantity = document.getElementById('qty-' + stockId).value;
+        fetch('/Cart/AddToCart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stockId: stockId, quantity: quantity })
+        }).then(response => response.json()).then(data => {
+            alert(data.message || 'Added to cart');
+        });
+    }
+</script>

@@ -30,18 +30,18 @@ namespace Inventree_App.Controllers
             _context = context;
             _connectionString = connectionString.GetConnectionString("DefaultConnection"); // Get connection string from appsettings.json
             }
-        private string GetCurrentUserName()
+        private Customer GetCurrentUser()
         {
             var token = Request.Cookies["jwt"]; // Get JWT token from cookies
 
             if (string.IsNullOrEmpty(token))
-                return "Guest"; // No token means user is not logged in
+                return null; // No token means user is not logged in
 
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
-            var userName = jwtToken.Claims.First(c => c.Type == "Name")?.Value;
-
-            return userName ?? "Unknown User"; // Return username from token
+            var userName = jwtToken.Claims.First(c => c.Type == "sub")?.Value;
+            var user = _context.Customer.FirstOrDefault(x => x.Email == userName);
+            return user; // Return username from token
         }
         /// <summary>
         /// 
@@ -57,19 +57,18 @@ namespace Inventree_App.Controllers
         //    var stocks = _context.Stocks.ToList();
         //    return View("Index", stocks);
         //}
-        
+
         public async Task<IActionResult> Index(int page = 1, int pageSize = 7, string filter = "all", string search = "")
         {
-            var userName = GetCurrentUserName();
-            if (userName == "Guest")
+            var userName = GetCurrentUser();
+            if (userName == null)
                 return RedirectToAction("Index", "Home");
 
-            ViewBag.UserName = userName;
+            ViewBag.UserName = userName.UserName;
             ViewBag.CurrentFilter = filter;
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentPage = page;
             ViewBag.PageSize = pageSize;
-            ViewBag.UserName = userName;
 
             var stocks = _context.Stocks.AsQueryable();
 

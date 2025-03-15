@@ -70,7 +70,20 @@
                 Emailing credentials can only be done on user creation.
                 Passwords are stored in a one-way hash and cannot be retrieved once saved.
             </p>
- *@
+ *@  <!-- User Role Dropdown -->
+            <div class="form-group">
+                <label>User Role:</label>
+                <select name="UserRole" asp-for="UserRoles" required>
+                    <option value="">Select Role</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Lab Supervisor">Lab Supervisor</option>
+                    <option value="Purchase Team">Purchase Team</option>
+                    <option value="Faculty">Faculty</option>
+                    <option value="Storekeeper">Storekeeper</option>
+                    <option value="Lab Faculty">Lab Faculty</option>
+                </select>
+            </div>
+            <span class="error-message" asp-validation-for="UserRoles"></span>
             <div class="form-group">
                 <label>Upload Image:</label>
                 <input type="file" name="ProfileImage" accept="image/*" />

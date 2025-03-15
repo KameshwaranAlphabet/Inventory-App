@@ -16,5 +16,6 @@
         public string ? Image { get; set; }
 
         public DateTime? CreatedOn { get; set; }
+        public string? UserRoles { get; set; }
     }
 }

@@ -7,16 +7,15 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebApplication1.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body.layoutbody {
             display: flex;
             margin :-1%;
         }
-        header
-        {
-            background-color : #3c8dbc;
+        header{
+            background-color: #3c8dbc;
         }
+
         #sidebar {
             width: 250px;
             transition: all 0.3s ease-in-out;
@@ -127,6 +126,7 @@
     </style>
 </head>
 <body class="layoutbody">
+    <button class="toggle-btn" onclick="toggleSidebar()">&#9776;</button>
     <div id="sidebar" class="collapsed">
         <ul class="nav flex-column">
             <li class="nav-item">
@@ -134,25 +134,29 @@
                     <img src="@Url.Content("~/Images/download.png")" class="sidebar-icon" alt="Discuss">
                     <span class="sidebar-text">Discuss</span>
                 </a> *@
-                <div class="toggle-btn" onclick="toggleSidebar()">&#9776;</div>
-
                 <div class="navbar-toggler sidebar-icon" data-bs-toggle="collapse" >
                     <span class="navbar-toggler-icon"></span>
                 </div>
             </li>
-            <li class="nav-item">
+           @*  <li class="nav-item">
                 <a href="#" onclick="loadPage('Discuss')">
                     <img src="@Url.Content("~/Images/download.png")" class="sidebar-icon" alt="Discuss">
                     <span class="sidebar-text">Discuss</span>
                 </a>
-            </li>
+            </li> *@
             <li class="nav-item">
-                <a href="@Url.Action("Index", "Dashboard")">
+                <a href="@Url.Action("OrderList", "Order")">
                     <img src="@Url.Content("~/Images/dashboard.png")" class="sidebar-icon" alt="Dashboards">
                     <span class="sidebar-text">Dashboards</span>
                 </a>
             </li>
             <li class="nav-item">
+                <a href="@Url.Action("CartItem", "Order")">
+                    <img src="@Url.Content("~/Images/cart image.png")" class="sidebar-icon" alt="Cart">
+                    <span class="sidebar-text">Cart</span>
+                </a>
+            </li>
+        @*     <li class="nav-item">
                 <a href="@Url.Action("Index", "Inventory")">
                     <img src="@Url.Content("~/Images/Inventory.png")" class="sidebar-icon" alt="Inventory">
                     <span class="sidebar-text">Inventory</span>
@@ -162,21 +166,13 @@
                 <a href="@Url.Action("Index", "Scanner")">
                     <img src="@Url.Content("~/Images/barcode.png")" class="sidebar-icon" alt="Barcode">
                     <span class="sidebar-text">Barcode</span>
-                </a>
+                </a> *@
             <li class="nav-item">
                 <a href="@Url.Action("Logout", "Home")">
-                    <i class="fas fa-sign-out-alt sidebar-icon"></i>
+                    <img src="@Url.Content("~/Images/barcode.png")" class="sidebar-icon" alt="LogOut">
                     <span class="sidebar-text">LogOut</span>
                 </a>
             </li>
-
-            <li class="nav-item">
-                <a href="@Url.Action("Index", "Admin")">
-                    <i class="fas fa-clipboard-check sidebar-icon"></i>
-                    <span class="sidebar-text">ApproveList</span>
-                </a>
-            </li>
-
         </ul>
     </div>
 
@@ -192,9 +188,9 @@
                                 <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image" class="logo">
                                 <span>@ViewBag.UserName</span>
                             </li>
-                            <li class="nav-item">
+                         @*    <li class="nav-item">
                                 <button onclick="window.location.href='@Url.Action("Register", "Home")'">Create User</button>
-                            </li>
+                            </li> *@
                         </ul>
                     </div>
                 </div>

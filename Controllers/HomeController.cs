@@ -80,7 +80,7 @@ namespace Inventree_App.Controllers
         //    return RedirectToAction("Index");
         //}
         [HttpPost]
-        public IActionResult Register(string firstName, string lastName, string username, string email, string password, string confirmPassword)
+        public IActionResult Register(string firstName, string lastName, string username, string email, string password, string confirmPassword,string roles)
         {
             if (password != confirmPassword)
             {
@@ -103,7 +103,8 @@ namespace Inventree_App.Controllers
                 UserName = username,
                 Email = email,
                 Password = hashedPassword,
-                CreatedOn = DateTime.Now
+                CreatedOn = DateTime.Now,
+                UserRoles = roles
             };
 
             _context.Customer.Add(user);
@@ -127,16 +128,19 @@ namespace Inventree_App.Controllers
                 var principal = new ClaimsPrincipal(identity);
                 HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
             }
-
             var user = _context.Customer.FirstOrDefault(u => u.Email == email);
+
+            var token = _customerService.GenerateJwtToken(user);
+            Response.Cookies.Append("jwt", token);
+
+            if(user!=null && user.UserRoles == "Faculty")
+                return RedirectToAction("OrderList", "Order");
+
             if (user == null || user.Password != HashPassword(password))
             {
                 ViewBag.Error = "Invalid login credentials!";
                 return View("Index");
             }
-
-            var token = _customerService.GenerateJwtToken(user);
-            Response.Cookies.Append("jwt", token);
 
             return RedirectToAction("Index", "Dashboard");
         }

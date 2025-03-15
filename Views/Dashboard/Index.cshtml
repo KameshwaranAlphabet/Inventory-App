@@ -182,7 +182,7 @@
             <input type="text" placeholder="Search project, folder or file">
         </div> *@
         <!-- Notification Icon -->
-        <div class="notification-container">
+       @*  <div class="notification-container">
             <div class="notification-icon" onclick="toggleNotifications()">
                 <i class="fas fa-bell"></i>
                 <span class="badge" id="notification-count">3</span>
@@ -192,7 +192,7 @@
                     <li>No new notifications</li>
                 </ul>
             </div>
-        </div>
+        </div> *@
 
         <div class="cards">
             <div class="card purple">Total Stocks<br><strong>@totalStocks</strong></div>
@@ -200,24 +200,14 @@
             <div class="card red">Low Stocks<br><strong>@lowStocks</strong></div>
             <div class="card blue">Agent<br><strong>v1.0.0.8</strong></div>
         </div>
-        <div class="bonus-section">
-            <div>-
-                <h2>Bonus of the month</h2>
-                <p>You have Bonus $100 & 10 Free Spins</p>
-                <button>Claim Bonus</button>
-            </div>
-            <div>🎁💰</div>
-        </div>
+      <div>
+      </div>
     </div>
 </body>
 </html>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
 
 <script>
-     // Connect to SignalR Hub
-    var connection = new signalR.HubConnectionBuilder()
-        .withUrl("/notificationHub")
-        .build();
 
     function toggleNotifications() {
            var dropdown = document.getElementById("notification-dropdown");

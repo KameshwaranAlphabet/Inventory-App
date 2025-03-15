@@ -127,6 +127,7 @@
     </style>
 </head>
 <body class="layoutbody">
+    <button class="toggle-btn" onclick="toggleSidebar()">&#9776;</button>
     <div id="sidebar" class="collapsed">
         <ul class="nav flex-column">
             <li class="nav-item">
@@ -134,8 +135,6 @@
                     <img src="@Url.Content("~/Images/download.png")" class="sidebar-icon" alt="Discuss">
                     <span class="sidebar-text">Discuss</span>
                 </a> *@
-                <div class="toggle-btn" onclick="toggleSidebar()">&#9776;</div>
-
                 <div class="navbar-toggler sidebar-icon" data-bs-toggle="collapse" >
                     <span class="navbar-toggler-icon"></span>
                 </div>

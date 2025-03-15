@@ -1,5 +1,6 @@
 using Inventree_App.Context;
 using Inventree_App.Service;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -38,7 +39,16 @@ namespace Inventree_App
                         IssuerSigningKey = new SymmetricSecurityKey(key)
                     };
                 });
+            // Add authentication
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Home/Login"; // Set login page
+                    options.AccessDeniedPath = "/Home/Index"; // Redirect unauthorized users
+                });
 
+            // Add authorization
+            builder.Services.AddAuthorization();
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
@@ -61,6 +71,7 @@ namespace Inventree_App
 
             app.UseRouting();
 
+            app.UseAuthentication(); // ?? Must come before UseAuthorization
             app.UseAuthorization();
 
             app.MapControllerRoute(

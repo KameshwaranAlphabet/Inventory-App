@@ -3,6 +3,7 @@ using System;
 using Inventree_App.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Inventree_App.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20250314025824_Order")]
+    partial class Order
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -112,9 +115,6 @@ namespace Inventree_App.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("longtext");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
@@ -135,14 +135,8 @@ namespace Inventree_App.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("longtext");
-
                     b.Property<int>("StockId")
                         .HasColumnType("int");
-
-                    b.Property<string>("StockName")
-                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -156,9 +150,6 @@ namespace Inventree_App.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("longtext");
 
                     b.Property<int>("MaxQuantity")
                         .HasColumnType("int");

@@ -7,5 +7,6 @@
         public string? SerialNumber { get; set; }
         public int Quantity { get; set; }
         public int MaxQuantity { get; set; } // Define max stock level for progress bar
+        public string? Location { get; set; }
     }
 }

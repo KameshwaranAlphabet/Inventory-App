@@ -12,5 +12,9 @@ namespace Inventree_App.Context
 
         public DbSet<Stocks> Stocks { get; set; } // Replace 'Stocks' with your model
         public DbSet<Customer> Customer { get; set; } 
+        public DbSet<Indents> Indents { get; set; } 
+        public DbSet<CartItem> CartItem { get; set; } 
+        public DbSet<Order> Order { get; set; } 
+        public DbSet<OrderItem> OrderItem { get; set; } 
     }
 }
