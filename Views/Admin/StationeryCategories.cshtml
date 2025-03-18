@@ -1,0 +1,131 @@
+﻿@model List<CategoryViewModel>
+
+@{
+    ViewBag.Title = "Course Categories";
+}
+
+<div class="container mt-4">
+    <h2>Course Categories</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <h5 id="formTitle">Add New Category</h5>
+            <form method="post" enctype="multipart/form-data" asp-action="CreateOrUpdate" asp-controller="Admin">
+                <input type="hidden" name="Id" id="categoryId" />
+
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" name="CategoryName" id="categoryName" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Parent Category</label>
+                    <select class="form-select" name="ParentId" id="parentId">
+                        <option value="">None</option>
+                        @foreach (var category in Model)
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Thumbnail</label>
+                    <input type="file" class="form-control" name="ImageFile" id="imageFile" />
+                    <img id="categoryImagePreview" src="" width="50" height="50" class="img-thumbnail mt-2" style="display:none;" />
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitButton">Add New Category</button>
+            </form>
+        </div>
+
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <select class="form-select w-auto d-inline-block">
+                        <option>Bulk actions</option>
+                        <option>Delete</option>
+                    </select>
+                    <button class="btn btn-secondary">Apply</button>
+                </div>
+                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search Categories" onkeyup="searchCategories()" />
+            </div>
+            <table class="table table-bordered" id="categoryTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" /></th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>ParentCategoryId</th>
+                        <th>Count</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var category in Model)
+                    {
+                        <tr>
+                            <td><input type="checkbox" /></td>
+                            <td><img src="@category.ImageUrl" width="50" height="50" class="img-thumbnail" /></td>
+                            <td>@category.Name</td>
+                            <td>@category.Description</td>
+                            <td>@category.ParentId</td>
+                            <td>@category.Count</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.Name', '@category.ParentId', '@category.ImageUrl')">Edit</button>
+                                <a href="/Admin/Delete/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editCategory(id, name, parentId, imageUrl) {
+        document.getElementById("categoryId").value = id;
+        document.getElementById("categoryName").value = name;
+        document.getElementById("parentId").value = parentId;
+
+        if (imageUrl) {
+            document.getElementById("categoryImagePreview").src = imageUrl;
+            document.getElementById("categoryImagePreview").style.display = "block";
+        } else {
+            document.getElementById("categoryImagePreview").style.display = "none";
+        }
+
+        document.getElementById("formTitle").textContent = "Edit Category";
+        document.getElementById("submitButton").textContent = "Update Category";
+    }
+
+    function searchCategories() {
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("categoryTable");
+        tr = table.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[2];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        padding: 19px;
+        text-align: center;
+    }
+</style>
+

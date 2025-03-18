@@ -1,134 +1,181 @@
 ﻿@{
     Layout = "_FacultyLayout";
 }
-@model List<Inventree_App.Models.Stocks>
+@model List<Inventree_App.Models.StockViewModel>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock List</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            padding: 20px;
-        }
+@{
+    ViewData["Title"] = "Inventory";
+}
 
+<div class="container mt-4">
+    <h2 class="mb-3">Inventory Management</h2>
 
-        .container {
-            max-width: 600px;
-            margin-top: 50px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .autocomplete-items {
-            position: absolute;
-            border: 1px solid #d4d4d4;
-            background: white;
-            z-index: 99;
-            width: 100%;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-            .autocomplete-items div {
-                padding: 10px;
-                cursor: pointer;
-                border-bottom: 1px solid #d4d4d4;
-            }
-
-                .autocomplete-items div:hover {
-                    background-color: #f1f1f1;
+    <!-- Search and Filter -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <input type="text" id="searchBox" class="form-control" placeholder="Search Product...">
+        </div>
+        <div class="col-md-4">
+            <select class="form-control" id="locationFilter">
+                <option value="">Select a Categories</option>
+                @foreach (var location in @ViewData["Locations"] as SelectList)
+                {
+                    <option value="@location.Value">@location.Text</option>
                 }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2 class="text-center mb-4">Stock List</h2>
-        <label for="stockSearch" class="form-label">Select or Search Stock:</label>
-        <div class="position-relative">
-            <input type="text" id="stockSearch" class="form-control" placeholder="Search or enter stock..." oninput="filterStocks()" autocomplete="off">
-            <div id="autocomplete-list" class="autocomplete-items"></div>
+            </select>
         </div>
-
-        <div class="mt-3">
-            <input type="number" id="stockQuantity" class="form-control" value="1" min="1">
-        </div>
-
-        <div class="d-grid gap-2 mt-3">
-            <button class="btn btn-primary" onclick="addToCart()">Add to Cart</button>
-            <a href="/Order/CartItem" class="btn btn-secondary">View Full Cart</a>
+        <div class="col-md-4">
+            <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
         </div>
     </div>
 
-    <script>
-        let stocks = [
-        @foreach (var stock in Model)
-        {
-            @: { id: "@stock.Id", name: "@stock.Name" },
-        }
-        ];
+    <!-- Product Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Stock Name</th>
+                    <th>Stock Quantity</th>
+                    <th>Stock Location</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody">
+                @foreach (var product in Model)
+                {
+                    <tr>
+                        <td>@product.ID</td>
+                        <td>@product.Name</td>
+                        <td>
+                            @if (product.StockQuantity == 0)
+                            {
+                                <span class="badge bg-danger">Out of Stock</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">@product.StockQuantity</span>
+                            }
+                        </td>
+                        <td><span class="badge bg-primary">@product.StockLocation</span></td>
+                        <td style="width: 120px;">
+                            <div class="input-group input-group-sm" style="max-width: 100px;">
+                                <button class="btn btn-outline-secondary decrement" style="width: 25px; padding: 2px 5px;">-</button>
+                                <input type="text" class="form-control text-center quantity" value="1" min="1" max="@product.StockQuantity" readonly style="width: 40px; padding: 2px 5px;" data-id="@product.ID">
+                                <button class="btn btn-outline-secondary increment" style="width: 25px; padding: 2px 5px;">+</button>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary add-to-cart"
+                                    data-id="@product.ID"
+                            @(product.StockQuantity == 0 ? "disabled" : "")>
+                                Add to Cart
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
-        function filterStocks() {
-            let input = document.getElementById("stockSearch");
-            let listDiv = document.getElementById("autocomplete-list");
-            let searchText = input.value.toLowerCase().trim();
-            listDiv.innerHTML = "";
-            if (!searchText) return;
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center">
+        <nav>
+            <ul class="pagination">
+                @for (int i = 1; i <= 3; i++)
+                {
+                    <li class="page-item"><a class="page-link" href="?page=@i&search=@Context.Request.Query["search"]&locationId=@Context.Request.Query["locationId"]">@i</a></li>
+                }
+            </ul>
+        </nav>
+    </div>
+</div>
 
-            let filteredStocks = stocks.filter(stock => stock.name.toLowerCase().includes(searchText));
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let storedQuantities = JSON.parse(localStorage.getItem("cartQuantities")) || {};
 
-            if (filteredStocks.length === 0) {
-                let customOption = document.createElement("div");
-                customOption.textContent = `Use as custom: "${input.value}"`;
-                customOption.style.fontStyle = "italic";
-                customOption.onclick = function () {
-                    input.dataset.stockId = input.value;
-                    listDiv.innerHTML = "";
-                };
-                listDiv.appendChild(customOption);
-            } else {
-                filteredStocks.forEach(stock => {
-                    let item = document.createElement("div");
-                    item.textContent = stock.name;
-                    item.onclick = function () {
-                        input.value = stock.name;
-                        input.dataset.stockId = stock.id;
-                        listDiv.innerHTML = "";
-                    };
-                    listDiv.appendChild(item);
+        // Restore stored quantities
+        document.querySelectorAll(".quantity").forEach(input => {
+            let stockId = input.getAttribute("data-id");
+            if (storedQuantities[stockId]) {
+                input.value = storedQuantities[stockId];
+            }
+        });
+        // clearCart();
+        // Handle increment button click
+        document.querySelectorAll(".increment").forEach(button => {
+            button.addEventListener("click", function () {
+                let input = this.previousElementSibling;
+                let max = parseInt(input.getAttribute("max"));
+                let value = parseInt(input.value);
+                let stockId = input.getAttribute("data-id");
+
+                if (value < max) {
+                    input.value = value + 1;
+                    storedQuantities[stockId] = input.value;
+                    localStorage.setItem("cartQuantities", JSON.stringify(storedQuantities));
+                }
+            });
+        });
+
+        // Handle decrement button click
+        document.querySelectorAll(".decrement").forEach(button => {
+            button.addEventListener("click", function () {
+                let input = this.nextElementSibling;
+                let value = parseInt(input.value);
+                let stockId = input.getAttribute("data-id");
+
+                if (value > 1) {
+                    input.value = value - 1;
+                    storedQuantities[stockId] = input.value;
+                    localStorage.setItem("cartQuantities", JSON.stringify(storedQuantities));
+                }
+            });
+        });
+
+        // Handle add-to-cart button click
+        document.querySelectorAll(".add-to-cart").forEach(button => {
+            button.addEventListener("click", function () {
+                let stockId = this.getAttribute("data-id");
+                let quantity = this.closest("tr").querySelector(".quantity").value;
+
+                fetch("/Order/AddToCart", {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ stockId: stockId, quantity: quantity })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Item added to cart!");
+                        storedQuantities[stockId] = quantity;
+                        localStorage.setItem("cartQuantities", JSON.stringify(storedQuantities));
+                    } else {
+                        alert("Failed to add item.");
+                    }
                 });
-            }
-        }
+            });
+        });
+    });
 
-        function addToCart() {
-            let input = document.getElementById("stockSearch");
-            let stockId = input.dataset.stockId || input.value;
-            let quantity = document.getElementById("stockQuantity").value;
+    function applyFilters() {
+        let search = document.getElementById("searchBox").value;
+        let location = document.getElementById("locationFilter").value;
+        window.location.href = `?search=${search}&locationId=${location}`;
+    }
 
-            if (!stockId || quantity <= 0) {
-                alert("Please select a stock and enter a valid quantity.");
-                return;
-            }
+    function clearCart() {
+        localStorage.removeItem("cartQuantities");
+        window.location.reload();
+    }
+</script>
 
-            fetch("/Order/AddToCart", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ stockId: stockId, quantity: parseInt(quantity) })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message || "Added to cart");
-            })
-            .catch(error => console.error("Error:", error));
-        }
-    </script>
-</body>
-</html>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        padding: 19px;
+    }
+</style>

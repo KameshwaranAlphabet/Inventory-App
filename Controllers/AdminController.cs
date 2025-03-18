@@ -38,6 +38,9 @@ namespace Inventree_App.Controllers
         //}
         public IActionResult Index(int page = 1, int pageSize = 10, string search = "", string orderDate = "")
         {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
             var query = _context.Order.AsQueryable();
 
             // Search Filter (By Customer Name or Order ID)
@@ -85,6 +88,78 @@ namespace Inventree_App.Controllers
             ViewBag.OrderDate = orderDate;
 
             return View(orderList);
+        }
+        public IActionResult StationeryCategories()
+        {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+            var categories = _context.Categories.ToList();
+
+            var model = new List<CategoryViewModel>();
+            foreach (var category in categories)
+            {
+                var count = _context.Stocks.Count(x => x.CategoryId == category.Id);
+                 
+                model.Add(new CategoryViewModel
+                {
+                    Id = category.Id,
+                    Name = category.CategoryName,
+                    CreatedOn = category.CreatedOn,
+                    ParentId = category.ParentCategoryId,
+                    Count = count
+                });
+            }
+            return View("StationeryCategories", model);
+        }
+        [HttpPost]
+        public IActionResult CreateOrUpdate(Categories model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (model.Id == 0) // Create new category
+                {
+                    model.CreatedOn = DateTime.Now;
+                    _context.Categories.Add(model);
+                }
+                else // Update existing category
+                {
+                    var existingCategory = _context.Categories.Find(model.Id);
+                    if (existingCategory != null)
+                    {
+                        existingCategory.CategoryName = model.CategoryName;
+                        _context.Categories.Update(existingCategory);
+                    }
+                }
+                _context.SaveChanges();
+                return RedirectToAction("StationeryCategories");
+            }
+
+            return RedirectToAction("StationeryCategories");
+        }
+
+
+        [HttpPost]
+        public IActionResult Edit(Categories model)
+        {
+            var category = _context.Categories.FirstOrDefault(c => c.Id == model.Id);
+            if (category == null) return NotFound();
+            category.CategoryName = model.CategoryName;
+
+            _context.Update(category);
+            _context.SaveChanges();
+            return RedirectToAction("StationeryCategories");
+        }
+
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            var category = _context.Categories.FirstOrDefault(c => c.Id == id);
+            if (category != null)
+            {
+                _context.Remove(category);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("StationeryCategories");
         }
     }
 }

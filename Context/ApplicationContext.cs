@@ -16,5 +16,8 @@ namespace Inventree_App.Context
         public DbSet<CartItem> CartItem { get; set; } 
         public DbSet<Order> Order { get; set; } 
         public DbSet<OrderItem> OrderItem { get; set; } 
+        public DbSet<Categories> Categories { get; set; } 
+        public DbSet<Location> Location { get; set; } 
+        public DbSet<Logs> Logs { get; set; } 
     }
 }

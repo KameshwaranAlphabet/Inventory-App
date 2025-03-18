@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WebApplication1</title>
+    <title>@ViewData["Title"] - alPhabet-Connect</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebApplication1.styles.css" asp-append-version="true" />
@@ -146,19 +146,19 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="@Url.Action("Index", "Dashboard")">
+                <a href="@Url.Action("Index", "StoreKeeper")">
                     <img src="@Url.Content("~/Images/dashboard.png")" class="sidebar-icon" alt="Dashboards">
                     <span class="sidebar-text">Dashboards</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="@Url.Action("Index", "Inventory")">
+                <a href="@Url.Action("Inventory", "StoreKeeper")">
                     <img src="@Url.Content("~/Images/Inventory.png")" class="sidebar-icon" alt="Inventory">
                     <span class="sidebar-text">Inventory</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="@Url.Action("Index", "Scanner")">
+                <a href="@Url.Action("ScannerIndex", "StoreKeeper")">
                     <img src="@Url.Content("~/Images/barcode.png")" class="sidebar-icon" alt="Barcode">
                     <span class="sidebar-text">Barcode</span>
                 </a>
@@ -170,7 +170,7 @@
             </li>
 
             <li class="nav-item">
-                <a href="@Url.Action("Index", "Admin")">
+                <a href="@Url.Action("ApproveList", "StoreKeeper")">
                     <i class="fas fa-clipboard-check sidebar-icon"></i>
                     <span class="sidebar-text">ApproveList</span>
                 </a>
@@ -191,9 +191,7 @@
                                 <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image" class="logo">
                                 <span>@ViewBag.UserName</span>
                             </li>
-                            <li class="nav-item">
-                                <button onclick="window.location.href='@Url.Action("Register", "Home")'">Create User</button>
-                            </li>
+                           
                         </ul>
                     </div>
                 </div>

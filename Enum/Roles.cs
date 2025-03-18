@@ -4,5 +4,7 @@
     {
         Admin = 1,
         LabSupervisor = 2,
+        Faculty = 3,
+        Storekeeper = 4
     }
 }

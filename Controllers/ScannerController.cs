@@ -5,6 +5,7 @@ using Inventree_App.Service;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 
 namespace Inventree_App.Controllers
@@ -21,7 +22,19 @@ namespace Inventree_App.Controllers
             _connectionString = configuration.GetConnectionString("DefaultConnection"); // Get connection string from appsettings.json
             _context = context;
         }
+        private Customer GetCurrentUser()
+        {
+            var token = Request.Cookies["jwt"]; // Get JWT token from cookies
 
+            if (string.IsNullOrEmpty(token))
+                return null; // No token means user is not logged in
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var userName = jwtToken.Claims.First(c => c.Type == "sub")?.Value;
+            var user = _context.Customer.FirstOrDefault(x => x.Email == userName);
+            return user; // Return username from token
+        }
         /// <summary>
         /// Index page for Scanner
         /// </summary>
@@ -39,6 +52,9 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult ScanAndReduceStock([FromBody] BarcodeScanRequest request)
         {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
             if (string.IsNullOrEmpty(request.Barcode))
             {
                 return BadRequest(new { success = false, error = "Invalid barcode." });

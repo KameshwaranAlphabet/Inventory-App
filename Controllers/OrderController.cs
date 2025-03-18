@@ -3,7 +3,9 @@ using Inventree_App.Enum;
 using Inventree_App.Models;
 using Inventree_App.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Utilities;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.IdentityModel.Tokens.Jwt;
@@ -25,16 +27,50 @@ namespace Inventree_App.Controllers
             _context = context;
             _customerService = customerService;
         }
+
+        public List<StockViewModel> GetFilteredProducts(string search, int? locationId, int page, int pageSize)
+        {
+            var query = _context.Stocks
+                .Join(_context.Location, p => p.LocationId, l => l.Id,
+                      (p, l) => new StockViewModel
+                      {
+                          ID = p.Id,
+                          Name = p.Name,
+                          StockQuantity = p.Quantity,
+                          LocationId = p.LocationId,
+                          StockLocation = l.LocationName
+                      }).AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(p => p.Name.Contains(search));
+            }
+
+            if (locationId.HasValue)
+            {
+                query = query.Where(p => p.LocationId == locationId.Value);
+            }
+
+            return query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        }
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public ActionResult Index()
+        //public ActionResult Index()
+        //{
+        //    var user = GetCurrentUser();
+        //    ViewBag.UserName = user.UserName;
+        //    var stocks = _context.Stocks.ToList();
+        //    return View(stocks);
+        //}
+        public IActionResult Index(string search, int? locationId, int page = 1, int pageSize = 10)
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
-            var stocks = _context.Stocks.ToList();
-            return View(stocks);
+            ViewData["Locations"] = new SelectList(_context.Categories, "Id", "CategoryName");
+            var products = GetFilteredProducts(search, locationId, page, pageSize);
+            return View(products);
         }
         /// <summary>
         /// get the current user cart item 
@@ -284,6 +320,13 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult UpdateOrderAndItems([FromBody] OrderAndItemsUpdateRequest request)
         {
+            var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            ViewBag.UserName = user.UserName;
+
             if ((request.OrderIds == null || request.OrderIds.Count == 0) &&
                 (request.OrderItemIds == null || request.OrderItemIds.Count == 0))
             {
@@ -300,6 +343,7 @@ namespace Inventree_App.Controllers
                 }
                 _context.Order.UpdateRange(ordersToUpdate);
             }
+            var logs = new List<Logs>(); // List to store log entries
 
             // Update Order Items
             if (request.OrderItemIds != null && request.OrderItemIds.Count > 0)
@@ -308,15 +352,84 @@ namespace Inventree_App.Controllers
                 foreach (var item in itemsToUpdate)
                 {
                     item.Status = request.Status;
+                    var order = _context.Order.FirstOrDefault(x => x.Id == item.OrderId);
+                    var userName = _context.Customer.FirstOrDefault(x => x.Id == order.UserId);
+                    // If status is "Completed", log it
+                    if (request.Status == OrderStatus.Approved.ToString())
+                    {
+                        logs.Add(new Logs
+                        {
+                            UserID = user.Id,
+                            UserName = user.UserName,
+                            Description = $"{item.StockName} qty {item.Quantity} was Approved by {user.UserName} for {userName.FirstName} ",
+                            CreatedDate = DateTime.UtcNow
+                        });
+                    }
                 }
                 _context.OrderItem.UpdateRange(itemsToUpdate);
             }
-
+            _context.AddRange(logs);
             _context.SaveChanges();
 
             return Json(new { success = true, message = $"Selected orders and items marked as {request.Status}." });
         }
 
+        [HttpPost]
+        public IActionResult UpdateOrderAndItemsStorekeeper([FromBody] OrderAndItemsUpdateRequest request)
+        {
+            var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            ViewBag.UserName = user.UserName;
+            if ((request.OrderIds == null || request.OrderIds.Count == 0) &&
+                (request.OrderItemIds == null || request.OrderItemIds.Count == 0))
+            {
+                return Json(new { success = false, message = "No orders or items selected." });
+            }
+
+            //// Update Orders
+            //if (request.OrderIds != null && request.OrderIds.Count > 0)
+            //{
+            //    var ordersToUpdate = _context.Order.Where(o => request.OrderIds.Contains(o.Id)).ToList();
+            //    foreach (var order in ordersToUpdate)
+            //    {
+            //        order.Status = request.Status;
+            //    }
+            //    _context.Order.UpdateRange(ordersToUpdate);
+            //}
+            var logs = new List<Logs>(); // List to store log entries
+
+            // Update Order Items
+            if (request.OrderItemIds != null && request.OrderItemIds.Count > 0)
+            {
+                var itemsToUpdate = _context.OrderItem.Where(i => request.OrderItemIds.Contains(i.Id)).ToList();
+                foreach (var item in itemsToUpdate)
+                {
+                    item.State = request.Status;
+
+                  var order = _context.Order.FirstOrDefault(x => x.Id == item.OrderId);
+                    var userName = _context.Customer.FirstOrDefault(x => x.Id == order.UserId); 
+                    // If status is "Completed", log it
+                    if (request.Status == "Completed")
+                    {
+                        logs.Add(new Logs
+                        {
+                            UserID = user.Id,
+                            UserName = user.UserName,
+                            Description = $"{item.StockName} qty {item.Quantity} as Pickuped by {userName.UserName} Given by {user.UserName} ",
+                            CreatedDate = DateTime.UtcNow
+                        });
+                    }
+                }
+                _context.OrderItem.UpdateRange(itemsToUpdate);
+            }
+            _context.AddRange(logs);
+            _context.SaveChanges();
+
+            return Json(new { success = true, message = $"Selected orders and items marked as {request.Status}." });
+        }
 
         private Customer GetCurrentUser()
         {

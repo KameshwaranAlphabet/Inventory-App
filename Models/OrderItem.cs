@@ -10,6 +10,7 @@ namespace Inventree_App.Models
         public int Quantity { get; set; }
         public string? StockName { get; set; }
         public string? Status { get; set; }
+        public string? State { get; set; }
         // Navigation Property to Order
         [ForeignKey("OrderId")]
         public Order Order { get; set; }

@@ -73,7 +73,7 @@
  *@  <!-- User Role Dropdown -->
             <div class="form-group">
                 <label>User Role:</label>
-                <select name="UserRole" asp-for="UserRoles" required>
+                <select name="UserRoles" asp-for="UserRoles" required>
                     <option value="">Select Role</option>
                     <option value="Admin">Admin</option>
                     <option value="Lab Supervisor">Lab Supervisor</option>
@@ -84,10 +84,10 @@
                 </select>
             </div>
             <span class="error-message" asp-validation-for="UserRoles"></span>
-            <div class="form-group">
+            @* <div class="form-group">
                 <label>Upload Image:</label>
                 <input type="file" name="ProfileImage" accept="image/*" />
-            </div>
+            </div> *@
             <p style="font-size: 12px; color: gray; text-align: right;">Accepted file types: jpg, webp, png, gif, svg, avif. Max size: 2MB.</p>
 
             <button class="register-button" type="submit">Register</button>
