@@ -361,14 +361,15 @@ namespace Inventree_App.Controllers
                         {
                             UserID = user.Id,
                             UserName = user.UserName,
-                            Description = $"{item.StockName} qty {item.Quantity} was Approved by {user.UserName} for {userName.FirstName} ",
-                            CreatedDate = DateTime.UtcNow
+                            Description = $"{item.StockName} (Qty: {item.Quantity}) was approved by {user.UserName} for {userName.FirstName}.",
+                            CreatedDate = DateTime.UtcNow,
+                            Type = OrderStatus.Approved.ToString()
                         });
                     }
                 }
                 _context.OrderItem.UpdateRange(itemsToUpdate);
             }
-            _context.AddRange(logs);
+            _context.Logs.AddRange(logs);
             _context.SaveChanges();
 
             return Json(new { success = true, message = $"Selected orders and items marked as {request.Status}." });
@@ -389,16 +390,6 @@ namespace Inventree_App.Controllers
                 return Json(new { success = false, message = "No orders or items selected." });
             }
 
-            //// Update Orders
-            //if (request.OrderIds != null && request.OrderIds.Count > 0)
-            //{
-            //    var ordersToUpdate = _context.Order.Where(o => request.OrderIds.Contains(o.Id)).ToList();
-            //    foreach (var order in ordersToUpdate)
-            //    {
-            //        order.Status = request.Status;
-            //    }
-            //    _context.Order.UpdateRange(ordersToUpdate);
-            //}
             var logs = new List<Logs>(); // List to store log entries
 
             // Update Order Items
@@ -414,18 +405,28 @@ namespace Inventree_App.Controllers
                     // If status is "Completed", log it
                     if (request.Status == "Completed")
                     {
+                        // Find the stock entry for the item
+                        var stock = _context.Stocks.FirstOrDefault(s => s.Id == item.StockId);
+                        if (stock != null)
+                        {
+                            stock.Quantity -= item.Quantity; // Reduce stock quantity
+                            if (stock.Quantity < 0)
+                                stock.Quantity = 0; // Ensure quantity does not go negative
+                        }
+
                         logs.Add(new Logs
                         {
                             UserID = user.Id,
                             UserName = user.UserName,
                             Description = $"{item.StockName} qty {item.Quantity} as Pickuped by {userName.UserName} Given by {user.UserName} ",
-                            CreatedDate = DateTime.UtcNow
+                            CreatedDate = DateTime.UtcNow,
+                            Type = "Completed"
                         });
                     }
                 }
                 _context.OrderItem.UpdateRange(itemsToUpdate);
             }
-            _context.AddRange(logs);
+            _context.Logs.AddRange(logs);
             _context.SaveChanges();
 
             return Json(new { success = true, message = $"Selected orders and items marked as {request.Status}." });

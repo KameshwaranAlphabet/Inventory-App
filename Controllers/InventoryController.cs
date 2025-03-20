@@ -1,20 +1,24 @@
-using Dapper;
+﻿using Dapper;
 using Inventree_App.Context;
 using Inventree_App.Models;
 using Inventree_App.Service;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Formats.Png;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IdentityModel.Tokens.Jwt;
 using ZXing;
 using ZXing.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Drawing.Printing;
+using System.Reflection.Metadata;
+using System.Xml.Linq;
+using iTextSharp.text.pdf;
+using iTextSharp.text;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Formats.Png;
+using Image = iTextSharp.text.Image;
+using Document = iTextSharp.text.Document;
 
 namespace Inventree_App.Controllers
 {
@@ -30,7 +34,7 @@ namespace Inventree_App.Controllers
             _dbHelper = helper;
             _context = context;
             _connectionString = connectionString.GetConnectionString("DefaultConnection"); // Get connection string from appsettings.json
-            }
+        }
         private Customer GetCurrentUser()
         {
             var token = Request.Cookies["jwt"]; // Get JWT token from cookies
@@ -85,7 +89,7 @@ namespace Inventree_App.Controllers
             if (!string.IsNullOrEmpty(search))
                 stocks = stocks.Where(s => s.Name.Contains(search));
 
-            int totalItems =  stocks.Count();
+            int totalItems = stocks.Count();
 
             var paginatedStocks = stocks
                 .OrderBy(s => s.Name)
@@ -120,7 +124,7 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult AddColumn(string ColumnName, string DataType)
         {
-            var message =   _dbHelper.AddColumn(ColumnName, DataType);
+            var message = _dbHelper.AddColumn(ColumnName, DataType);
             if (message.Contains("successfully"))
             {
                 TempData["SuccessMessage"] = message;
@@ -209,7 +213,6 @@ namespace Inventree_App.Controllers
 
         //    return RedirectToAction("Index");
         //}
-
         [HttpPost]
         public IActionResult Create(Stocks stock)
         {
@@ -219,6 +222,7 @@ namespace Inventree_App.Controllers
             {
                 stock.CreatedOn = DateTime.Now;
                 stock.Email = userName.Email;
+
                 // Add stock to database
                 _context.Stocks.Add(stock);
                 _context.SaveChanges();
@@ -231,11 +235,25 @@ namespace Inventree_App.Controllers
                 _context.Stocks.Update(stock);
                 _context.SaveChanges();
 
+                // Log Stock Creation
+                var log = new Logs
+                {
+                    UserID = userName.Id,
+                    Type = "CreateStock",
+                    Description = $"Stock {stock.SerialNumber} created by {userName.Email}",
+                    CreatedDate = DateTime.Now,
+                    UserName = userName.Email,
+                };
+
+                _context.Logs.Add(log);
+                _context.SaveChanges();
+
                 return RedirectToAction("Index");
             }
 
             return View(stock);
         }
+
         private string GenerateBarcodeImage(string barcodeValue)
         {
             var writer = new BarcodeWriter<Image<Rgba32>>
@@ -274,7 +292,7 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult ScanBarcode([FromBody] string request)
         {
-            using (var connection = new MySqlConnection(_connectionString)) 
+            using (var connection = new MySqlConnection(_connectionString))
             {
                 string query = "UPDATE stocks SET quantity = quantity - 1 WHERE barcode = @barcode AND quantity > 0";
 
@@ -332,26 +350,55 @@ namespace Inventree_App.Controllers
                 {
                     return NotFound();
                 }
-                var location = _context.Location.First(x => x.Id == stock.LocationId);
-                ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
-                ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");
 
+                var user = GetCurrentUser(); // Get current user details
+
+                // Capture old values before updating
+                var oldStockData = new
+                {
+                    stock.Name,
+                    stock.LocationId,
+                    stock.CategoryId,
+                    stock.Quantity,
+                    stock.MaxQuantity
+                };
+          
                 // Update stock properties dynamically
                 stock.Name = updatedStock.Name;
                 stock.LocationId = updatedStock.LocationId;
                 stock.CategoryId = updatedStock.CategoryId;
                 stock.Quantity = updatedStock.Quantity;
                 stock.MaxQuantity = updatedStock.MaxQuantity;
-                stock.LocationId = updatedStock.LocationId;
-                stock.CategoryId = updatedStock.CategoryId;
 
                 _context.Stocks.Update(stock);
+                _context.SaveChanges();
+
+                // Log changes
+                var logDetails = $"Stock {stock.SerialNumber} updated by {user.Email}. Changes: ";
+
+                if (oldStockData.Name != stock.Name) logDetails += $"Name: {oldStockData.Name} → {stock.Name}, ";
+                if (oldStockData.LocationId != stock.LocationId) logDetails += $"LocationId: {oldStockData.LocationId} → {stock.LocationId}, ";
+                if (oldStockData.CategoryId != stock.CategoryId) logDetails += $"CategoryId: {oldStockData.CategoryId} → {stock.CategoryId}, ";
+                if (oldStockData.Quantity != stock.Quantity) logDetails += $"Quantity: {oldStockData.Quantity} → {stock.Quantity}, ";
+                if (oldStockData.MaxQuantity != stock.MaxQuantity) logDetails += $"MaxQuantity: {oldStockData.MaxQuantity} → {stock.MaxQuantity}, ";
+
+                logDetails = logDetails.TrimEnd(',', ' '); // Remove trailing comma
+
+                var log = new Logs
+                {
+                    UserID = user.Id,
+                    Type = "Updated",
+                    Description = logDetails,
+                    UserName = user.UserName,
+                    CreatedDate = DateTime.Now
+                };
+
+                _context.Logs.Add(log);
                 _context.SaveChanges();
 
                 return RedirectToAction("Index");
             }
 
-         
             return View(updatedStock);
         }
 
@@ -383,7 +430,9 @@ namespace Inventree_App.Controllers
             {
                 List<string> columnNames = connection.Query<string>("SHOW COLUMNS FROM stocks").ToList();
                 ViewBag.ColumnNames = columnNames;
+                ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
 
+                ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");
                 if (id.HasValue)
                 {
                     string query = "SELECT * FROM stocks WHERE Id = @id";
@@ -400,6 +449,103 @@ namespace Inventree_App.Controllers
 
                 return View("Index");
             }
+            }
+        public IActionResult DownloadPdf(string filter)
+        {
+            var stocks = _context.Stocks.ToList();
+
+            if (filter == "low")
+            {
+                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30).ToList();
+            }
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                Document document = new Document(PageSize.A4, 20f, 20f, 20f, 20f);
+                PdfWriter writer = PdfWriter.GetInstance(document, ms);
+                document.Open();
+
+                PdfPTable headerTable = new PdfPTable(2);
+                headerTable.WidthPercentage = 100;
+                float[] columnWidths = { 1f, 3f };
+                headerTable.SetWidths(columnWidths);
+
+                // Add Logo on the Left
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "alphabet-logo.png");
+                if (System.IO.File.Exists(imagePath))
+                {
+                    Image logo = Image.GetInstance(imagePath);
+                    logo.ScaleToFit(100f, 50f);
+                    PdfPCell logoCell = new PdfPCell(logo) { Border = PdfPCell.NO_BORDER, HorizontalAlignment = Element.ALIGN_LEFT };
+                    headerTable.AddCell(logoCell);
+                }
+                else
+                {
+                    headerTable.AddCell("");
+                }
+
+                // Add Inventory List Title at Center
+                PdfPCell titleCell = new PdfPCell(new Phrase("Inventory List", new Font(Font.FontFamily.HELVETICA, 18f, Font.BOLD)));
+                titleCell.Border = PdfPCell.NO_BORDER;
+                titleCell.HorizontalAlignment = Element.ALIGN_CENTER;
+                titleCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+                titleCell.Colspan = 2; // Span across both columns
+                headerTable.AddCell(titleCell);
+
+
+                document.Add(headerTable);
+                document.Add(new Paragraph("\n"));
+
+                PdfPTable table = new PdfPTable(5);
+                Font boldFont = new Font(Font.FontFamily.HELVETICA, 12f, Font.BOLD);
+                table.AddCell(new PdfPCell(new Phrase("Name", boldFont)));
+                table.AddCell(new PdfPCell(new Phrase("Quantity", boldFont)));
+                table.AddCell(new PdfPCell(new Phrase("Max Quantity", boldFont)));
+                table.AddCell(new PdfPCell(new Phrase("Serial Number", boldFont)));
+                table.AddCell(new PdfPCell(new Phrase("Barcode", boldFont)));
+
+                foreach (var stock in stocks)
+                {
+                    table.AddCell(stock.Name);
+                    table.AddCell(stock.Quantity.ToString());
+                    table.AddCell(stock.MaxQuantity.ToString());
+                    table.AddCell(stock.SerialNumber.ToString());
+
+                    if (!string.IsNullOrEmpty(stock.Barcode))
+                    {
+                        string baseUrl = $"{Request.Scheme}://{Request.Host}";
+                        string barcodeUrl = baseUrl+stock.Barcode;
+                        if (barcodeUrl!="")
+                        {
+                            Image barcodeImage = Image.GetInstance(barcodeUrl);
+                            barcodeImage.ScaleAbsolute(150f, 60f); // Increase width and height
+                            PdfPCell barcodeCell = new PdfPCell(barcodeImage, true)
+                            {
+                                Border = PdfPCell.BOX,
+                                HorizontalAlignment = Element.ALIGN_CENTER,
+                                VerticalAlignment = Element.ALIGN_MIDDLE,
+                                Padding = 5f
+                            };
+
+                            table.AddCell(barcodeCell);
+                        }
+                        else
+                        {
+                            table.AddCell("No Barcode");
+                        }
+                    }
+                    else
+                    {
+                        table.AddCell("No Barcode");
+                    }
+                }
+
+                document.Add(table);
+                document.Close();
+
+                return File(ms.ToArray(), "application/pdf", "Inventory_List.pdf");
+            }
         }
     }
+
 }

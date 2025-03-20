@@ -19,5 +19,9 @@ namespace Inventree_App.Context
         public DbSet<Categories> Categories { get; set; } 
         public DbSet<Location> Location { get; set; } 
         public DbSet<Logs> Logs { get; set; } 
+        public DbSet<LabEquipment> LabEquipment { get; set; } 
+        public DbSet<Chemicals> Chemicals { get; set; } 
+        public DbSet<BrokenReports> BrokenReports { get; set; } 
+        public DbSet<AccidentReports> AccidentReports { get; set; } 
     }
 }

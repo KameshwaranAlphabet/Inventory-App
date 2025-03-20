@@ -46,7 +46,7 @@ namespace Inventree_App.Controllers
         //    var stocks = _context.Stocks.ToList();
         //    return View(stocks);
         //}
-        public IActionResult Index(string filterType, int page = 1, int pageSize = 5)
+        public IActionResult Index(string filterType, int page = 1, int pageSize = 10)
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
@@ -60,7 +60,7 @@ namespace Inventree_App.Controllers
             DateTime lastWeek = today.AddDays(-7);
             DateTime lastMonth = today.AddMonths(-1);
 
-            IQueryable<Logs> logsQuery = _context.Logs;
+            IQueryable<Logs> logsQuery = _context.Logs.OrderByDescending(x=>x.CreatedDate);
 
             switch (filterType)
             {

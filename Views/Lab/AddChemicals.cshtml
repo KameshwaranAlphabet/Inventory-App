@@ -1,0 +1,65 @@
+﻿@model Inventree_App.Models.Chemicals
+@{
+    Layout = "_LabSupervisor";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(Model?.Id > 0 ? "Edit Chemials" : "Add Chemicals")</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card p-4 shadow-sm">
+            <h2 class="text-center">@(Model?.Id > 0 ? "Edit Chemicals " : "Add Chemicals")</h2>
+
+            <form method="post" asp-action="@(Model?.Id > 0 ? "EditChemicals" : "CreateChemicals")" asp-controller="Lab">
+                @if (Model?.Id > 0)
+                {
+                    <input type="hidden" asp-for="Id" />
+                }
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">Chemical Name</label>
+                    <input type="text" class="form-control" asp-for="Name" placeholder="Enter chemicals name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Quantity" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" asp-for="Quantity" placeholder="Enter quantity" required>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="GradeUsage" class="form-label">GradeUsage</label>
+                    <input type="text" class="form-control" asp-for="GradeUsage" placeholder="Enter Grade Usage" required>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ExpiryDate" class="form-label">ExpiryDate</label>
+                    <input type="date" class="form-control" asp-for="ExpiryDate" required>
+                </div>
+               
+
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">@(Model?.Id > 0 ? "Update" : "Save")</button>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a asp-action="Chemicals" class="btn btn-link">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        padding: 19px;
+    }
+</style>

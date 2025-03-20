@@ -1,0 +1,78 @@
+﻿@model Inventree_App.Models.LabEquipment
+@{
+    Layout = "_LabSupervisor";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(Model?.Id > 0 ? "Edit Lab Equipment" : "Add New Lab Equipment")</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card p-4 shadow-sm">
+            <h2 class="text-center">@(Model?.Id > 0 ? "Edit Lab Equipment " : "Add New Lab Equipment")</h2>
+
+            <form method="post" asp-action="@(Model?.Id > 0 ? "Edit" : "Create")" asp-controller="Lab">
+                @if (Model?.Id > 0)
+                {
+                    <input type="hidden" asp-for="Id" />
+                }
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label">Stock Name</label>
+                    <input type="text" class="form-control" asp-for="Name" placeholder="Enter stock name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Quantity" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" asp-for="Quantity" placeholder="Enter quantity" required>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MaxQuantity" class="form-label">Max Quantity</label>
+                    <input type="number" class="form-control" asp-for="MaxQuantity" placeholder="Enter max quantity">
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Type" class="form-label">LabType</label>
+                    <select class="form-select" asp-for="Type" >
+                        <option value="">Select a location</option>
+                        <option value="Design Lab">Design</option>
+                        <option value="Chemistry Lab">Physics </option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Type" class="form-label">LabType</label>
+                    <select class="form-select" asp-for="Type">
+                        <option value="">Select a location</option>
+                        <option value="Available">Available</option>
+                        <option value="Use">In Use</option>
+                        <option value="Broken">Broken</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">@(Model?.Id > 0 ? "Update" : "Save")</button>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a asp-action="Index" class="btn btn-link">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        padding: 19px;
+    }
+</style>

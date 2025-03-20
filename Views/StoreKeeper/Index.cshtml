@@ -158,37 +158,42 @@
             <div class="card blue">Pending List<br><strong>@pending</strong></div>
             <div class="card blue">Today Request<br><strong>@pending</strong></div>
         </div>
-        <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-12">
-                <form method="get" class="d-flex justify-content-between mb-3">
-                    <select name="filterType" class="form-control w-auto" onchange="this.form.submit()">
-                        <option value="All" @@(selectedFilter == "All" ? "selected" : "")>All</option>
-                        <option value="Today" @@(selectedFilter == "Today" ? "selected" : "")>Today</option>
-                        <option value="Week" @@(selectedFilter == "Week" ? "selected" : "")>Last 7 Days</option>
-                        <option value="Month" @@(selectedFilter == "Month" ? "selected" : "")>Last 30 Days</option>
-                    </select>
-                </form>
+        <!-- Filter Section -->
+        <div class="my-4">
+            <form method="get" class="d-flex">
+                <select name="filterType" class="form-select w-auto" onchange="this.form.submit()">
+                    <option value="All" @@(selectedFilter= ="All" ? "selected" : "" )>All</option>
+                    <option value="Today" @@(selectedFilter= ="Today" ? "selected" : "" )>Today</option>
+                    <option value="Week" @@(selectedFilter= ="Week" ? "selected" : "" )>Last 7 Days</option>
+                    <option value="Month" @@(selectedFilter= ="Month" ? "selected" : "" )>Last 30 Days</option>
+                </select>
+            </form>
+        </div>
 
-                <table class="table table-striped table-bordered">
-                    <thead>
+
+        <!-- Logs Table -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model)
+                    {
                         <tr>
-                            <th>Name</th>
-                            <th>Date</th>
-                            <th>Action</th>
+                            <td>@log.UserName</td>
+                            <td>@log.CreatedDate.ToString()</td>
+                            <td>@log.Description</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var log in Model)
-                        {
-                            <tr>
-                                <td>@log.UserName</td>
-                                <td>@log.CreatedDate.ToString()</td>
-                                <td>@log.Description</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                    }
+                </tbody>
+            </table>
+        </div>
+
 
                 <!-- Pagination -->
                 <nav>
@@ -201,9 +206,6 @@
                         }
                     </ul>
                 </nav>
-            </div>
-        </div>
-        </div>
     </div>
 </body>
 </html>

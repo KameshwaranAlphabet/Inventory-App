@@ -146,6 +146,9 @@ namespace Inventree_App.Controllers
             if (user != null && user.UserRoles == "Storekeeper")
                 return RedirectToAction("Index", "Storekeeper");
 
+            if (user != null && user.UserRoles == "Lab Supervisor")
+                return RedirectToAction("Index", "Lab");
+
             return RedirectToAction("Index", "Dashboard");
         }
 
