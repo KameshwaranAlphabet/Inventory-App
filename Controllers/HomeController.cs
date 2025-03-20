@@ -26,6 +26,10 @@ namespace Inventree_App.Controllers
         }
         public IActionResult Index()
         {
+            bool isCustomerTableEmpty = !_context.Customer.Any();
+            if(isCustomerTableEmpty)
+                return View("Register");
+
             return View();
         }
 
@@ -82,9 +86,14 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult Register(string firstName, string lastName, string username, string password, string confirmPassword, string email,string userroles)
         {
+            int customerCount = _context.Customer.Count();
+
             if (password != confirmPassword)
             {
                 ModelState.AddModelError("ConfirmPassword", "Passwords do not match!");
+                if(customerCount == 0)
+                    return View("Register");
+
                 return View("SignUp");
             }
 
@@ -110,6 +119,11 @@ namespace Inventree_App.Controllers
             _context.Customer.Add(user);
             _context.SaveChanges();
 
+            int customer = _context.Customer.Count();
+
+            if (customer == 1)
+                return View("Index");
+    
             return RedirectToAction("Index", "Customer");
         }
        
