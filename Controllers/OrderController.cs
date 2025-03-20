@@ -30,17 +30,25 @@ namespace Inventree_App.Controllers
 
         public List<StockViewModel> GetFilteredProducts(string search, int? locationId, int page, int pageSize)
         {
-            var query = _context.Stocks
-                .Join(_context.Location, p => p.LocationId, l => l.Id,
-                      (p, l) => new StockViewModel
-                      {
-                          ID = p.Id,
-                          Name = p.Name,
-                          StockQuantity = p.Quantity,
-                          LocationId = p.LocationId,
-                          StockLocation = l.LocationName
-                      }).AsQueryable();
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
 
+            var query = _context.Stocks
+      .Join(_context.Location, p => p.LocationId, l => l.Id,
+            (p, l) => new { p, l })
+      .GroupJoin(_context.CartItem.Where(c => c.UserId == user.Id),
+                 stock => stock.p.Id,
+                 cart => cart.StockId,
+                 (stock, cart) => new StockViewModel
+                 {
+                     ID = stock.p.Id,
+                     Name = stock.p.Name,
+                     StockQuantity = stock.p.Quantity,
+                     LocationId = stock.p.LocationId,
+                     StockLocation = stock.l.LocationName,
+                     CartQuantity = cart.Sum(c => (int?)c.Quantity) ?? 0  // Handle null cases
+                 })
+      .AsQueryable();
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(p => p.Name.Contains(search));
@@ -166,7 +174,7 @@ namespace Inventree_App.Controllers
                 var existingItem = _context.CartItem.FirstOrDefault(c => c.StockName == request.StockId && c.UserId == user.Id);
                 if (existingItem != null)
                 {
-                    existingItem.Quantity += request.Quantity;
+                    existingItem.Quantity = request.Quantity;
                     _context.CartItem.Update(existingItem);
                 }
                 else
@@ -196,7 +204,7 @@ namespace Inventree_App.Controllers
                 var existingItem = _context.CartItem.FirstOrDefault(c => c.StockId == stockIdInt && c.UserId == user.Id);
                 if (existingItem != null)
                 {
-                    existingItem.Quantity += request.Quantity;
+                    existingItem.Quantity = request.Quantity;
                     _context.CartItem.Update(existingItem);
                 }
                 else

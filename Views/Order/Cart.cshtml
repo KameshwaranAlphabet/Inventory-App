@@ -9,66 +9,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            padding: 19px;
+            background: #f8f9fa;
+            padding: 20px;
         }
-
 
         .container-cart {
-/*             max-width: 800px;
- */            margin-top: 50px;
-           /*  background: white; */
+            margin-top: 30px;
+            background: white;
             padding: 20px;
             border-radius: 10px;
-         /*    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 0.5s ease-in-out; */
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-
-        @@keyframes fadeIn {
-            from
-
-        {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        }
-
-      /*   .table {
-            animation: slideIn 0.5s ease-in-out;
-        } */
-/* 
-        @@keyframes slideIn {
-            from
-
-        {
-            opacity: 0;
-            transform: translateX(-20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
- */
-        }
-
-        .btn {
-            transition: all 0.3s ease;
-        }
-
-            .btn:hover {
-                transform: scale(1.05);
-            }
 
         .quantity-container {
             display: flex;
@@ -117,8 +71,7 @@
     </style>
 </head>
 <body>
-
-    <div class="container-cart">
+    <div class="container container-cart">
         <h2 class="text-center mb-4">Your Cart</h2>
 
         @if (Model == null || !Model.Any())
@@ -127,36 +80,38 @@
         }
         else
         {
-            <table class="table table-striped text-center">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Stock Name</th>
-                        <th>Quantity</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model)
-                    {
+            <div class="table-responsive">
+                <table class="table table-striped text-center">
+                    <thead class="table-dark">
                         <tr>
-                            <td>@item.StockName</td>
-                            <td class="quantity-container">
-                                <button class="quantity-btn" onclick="updateQuantity('@item.StockId', -1)">-</button>
-                                <span id="qty-@item.StockId">@item.Quantity</span>
-                                <button class="quantity-btn" onclick="updateQuantity('@item.StockId', 1)">+</button>
-                            </td>
-                            <td>
-                                <button class="btn btn-danger btn-sm" onclick="removeFromCart(@item.StockId)">
-                                    Remove
-                                </button>
-                            </td>
+                            <th>Stock Name</th>
+                            <th>Quantity</th>
+                            <th>Action</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.StockName</td>
+                                <td class="quantity-container">
+                                    <button class="quantity-btn btn-sm" onclick="updateQuantity('@item.StockId', -1)">-</button>
+                                    <span id="qty-@item.StockId">@item.Quantity</span>
+                                    <button class="quantity-btn btn-sm" onclick="updateQuantity('@item.StockId', 1)">+</button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-danger btn-sm" onclick="removeFromCart(@item.StockId)">
+                                        Remove
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="text-center">
-                <button class="btn btn-success mt-3 px-4" onclick="placeOrder()">Place Order</button>
+            <div class="text-center mt-3">
+                <button class="btn btn-success px-4" onclick="placeOrder()">Place Order</button>
             </div>
         }
 
@@ -170,7 +125,7 @@
             let newQty = currentQty + change;
 
             if (newQty < 1) {
-                Swal.fire("Invalid!", "Quantity cannot be less than 1.", "warning");
+                alert("Invalid! Quantity cannot be less than 1.");
                 return;
             }
             fetch("/Order/AddToCart", {
@@ -183,54 +138,38 @@
                 if (data.success) {
                     qtyElement.innerText = newQty;
                 } else {
-                    Swal.fire("Error!", data.message || "Could not update quantity.", "error");
+                    alert(data.message || "Could not update quantity.");
                 }
             });
         }
 
         function removeFromCart(stockId) {
-            Swal.fire({
-                title: "Are you sure?",
-                text: "This item will be removed from your cart!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, remove it!"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch('/Order/RemoveFromCart', {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ stockId: stockId })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        Swal.fire("Removed!", data.message || "Item removed.", "success")
-                            .then(() => location.reload());
-                    });
-                }
-            });
+            if (confirm("Are you sure you want to remove this item from your cart?")) {
+                fetch('/Order/RemoveFromCart', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stockId: stockId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || "Item removed.");
+                    location.reload();
+                });
+            }
         }
 
         function placeOrder() {
-            Swal.fire({
-                title: "Processing...",
-                text: "Placing your order...",
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                    fetch('/Order/PlaceOrder', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        Swal.fire("Success!", data.message || "Order placed successfully.", "success")
-                            .then(() => location.reload());
-                    });
-                }
-            });
+            if (confirm("Are you sure you want to place the order?")) {
+                fetch('/Order/PlaceOrder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || "Order placed successfully.");
+                    location.reload();
+                });
+            }
         }
     </script>
 

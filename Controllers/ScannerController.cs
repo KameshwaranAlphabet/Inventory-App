@@ -41,6 +41,9 @@ namespace Inventree_App.Controllers
         /// <returns></returns>
         public IActionResult Index()
         {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
             return View("Index");
         }
 
@@ -77,6 +80,7 @@ namespace Inventree_App.Controllers
                         {
                             Name = stocks.Name,
                             StockQuantity = stocks.Quantity,
+                            SerialNumber = stocks.SerialNumber
                         }
                     });
                 }

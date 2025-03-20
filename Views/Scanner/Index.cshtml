@@ -17,7 +17,7 @@
     <div id="productDetails" class="product-details">
         <h3>Product Details</h3>
         <p><strong>Name:</strong> <span id="productName"></span></p>
-        <p><strong>Barcode:</strong> <span id="productBarcode"></span></p>
+        <p><strong>Serial No:</strong> <span id="productBarcode"></span></p>
         <p><strong>Stock Quantity:</strong> <span id="productStock"></span></p>
     </div>
     </div>
@@ -51,7 +51,7 @@
                 if (response.success) {
                     console.log(response);
                     $("#productName").text(response.product.name);
-                    $("#productBarcode").text(response.product.Barcode);
+                    $("#productBarcode").text(response.product.serialNumber);
                     $("#productStock").text(response.product.stockQuantity);
                     $("#productDetails").slideDown(500);
                 } else {
@@ -81,7 +81,7 @@
     }  */
     body {
         font-family: Arial, sans-serif;
-        padding: 20px;
+        padding: 19px;
         text-align: center;
     }
     .title {

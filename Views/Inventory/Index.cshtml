@@ -7,14 +7,15 @@
     int totalItem = ViewBag.TotalItems;
 }
 
-@* @await Html.PartialAsync("_Sidebar") <!-- Include Sidebar Here -->
- *@
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Overview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,53 +23,6 @@
             padding: 19px;
             text-align: center;
         }
-/* 
-        .container {
-            max-width: 90%;
-            width: 60%;
-            margin: 6% 21%;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.1);
-        } */
-
-        .head {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            margin: 5px;
-        }
-
-            .btn:hover {
-                background: #0056b3;
-            }
-
-        .btn-danger {
-            background: #dc3545;
-        }
-
-            .btn-danger:hover {
-                background: #a71d2a;
-            }
-
-        h2 {
-            color: #333;
-            margin: 0;
-        }
-
         .inventory-item {
             display: flex;
             flex-wrap: wrap;
@@ -84,7 +38,7 @@
             flex: 1;
             min-width: 150px;
             text-align: left;
-            word-wrap: break-word;
+            font-weight: bold;
         }
 
         .progress-bar {
@@ -103,171 +57,31 @@
             transition: width 1.5s ease-in-out;
         }
 
-        .low {
-            background: #ff4d4d;
-        }
-
-        .medium {
-            background: #ffb84d;
-        }
-
-        .high {
-            background: #4caf50;
-        }
-
-        .details {
-            display: flex;
-            align-items: center;
-            min-width: 100px;
-            justify-content: space-between;
-        }
-
-        .actions {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #fff;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-            border-radius: 5px;
-        }
-
-            .dropdown-content a {
-                color: black;
-                padding: 10px;
-                text-decoration: none;
-                display: block;
-            }
-
-                .dropdown-content a:hover {
-                    background-color: #f1f1f1;
-                }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-        @@media (max-width: 768px) {
-            .container {
-                width: 100%;
-                padding: 10px;
-            }
-
-            .inventory-item {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .name, .progress-bar, .details, .actions {
-                width: 100%;
-                text-align: center;
-            }
-
-            .head {
-                flex-direction: column;
-                text-align: center;
-            }              
-            
-            .filter-section
-            {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            }
-
-        #searchInput {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 250px;
-            outline: none;
-            transition: border-color 0.3s ease-in-out;
-        }
-
-        #searchInput:focus {
-            border-color: #007bff;
-        }
-
-        #filterDropdown {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: white;
-            cursor: pointer;
-            outline: none;
-            transition: background-color 0.3s ease-in-out;
-        }
-
-            #filterDropdown:hover,
-            #filterDropdown:focus {
-                background-color: #f8f9fa;
-            }
-
-        .btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s ease-in-out;
-        }
-
-            .btn:hover {
-                background: #0056b3;
-            }
-
-        @@media (max-width: 768px) {
-            .filter-section
-
-        {
-            flex-direction: column;
-        }
-
-        #searchInput, #filterDropdown {
-            width: 100%;
-        }
-        }
+        .low { background: #ff4d4d; }
+        .medium { background: #ffb84d; }
+        .high { background: #4caf50; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="head">
-            <h2>📦 Inventory Overview</h2>
-            <div>
-                <input type="text" id="searchInput" placeholder="Search stocks..." value="@ViewBag.CurrentSearch">
-    
-                <select id="filterDropdown">
+        <h2 class="text-center mb-3">📦 Inventory Overview</h2>
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap gap-2 align-items-center w-100">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search stocks..." value="@ViewBag.CurrentSearch" style="max-width: 250px;">
+                <select id="filterDropdown" class="form-select" style="max-width: 200px;">
                     <option value="all" @@(ViewBag.CurrentFilter == "all" ? "selected" : "")>All</option>
                     <option value="red" @@(ViewBag.CurrentFilter == "red" ? "selected" : "")>🔴 Low Stock</option>
                     <option value="orange" @@(ViewBag.CurrentFilter == "orange" ? "selected" : "")>🟠 Medium Stock</option>
                     <option value="green" @@(ViewBag.CurrentFilter == "green" ? "selected" : "")>🟢 High Stock</option>
                 </select>
-                <button class="btn" onclick="applyFilters()">Apply</button>
-
-                 <button class="btn" onclick="window.location.href='@Url.Action("Create", "Inventory")'">Add New</button>  
+                <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
+                <button class="btn btn-success" onclick="window.location.href='@Url.Action("Create", "Inventory")'">Add New</button>
                 <div class="dropdown">
-                    <button class="btn">Download as PDF ▼</button>
-                    <div class="dropdown-content">
-                        <a href="#" onclick="downloadPdf('all')">Full List</a>
-                        <a href="#" onclick="downloadPdf('low')">Low Stock Only</a>
-                    </div>
+                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Download as PDF</button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="downloadPdf('all')">Full List</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="downloadPdf('low')">Low Stock Only</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -288,56 +102,62 @@
                     <span>@item.MaxQuantity</span>
                 </div>
                 <div class="actions">
-                    <button class="btn" onclick="window.location.href='@Url.Action("GetStockById", "Inventory", new { id = item.Id })'">Edit</button>
+                    <button class="btn btn-warning" onclick="window.location.href='@Url.Action("GetStockById", "Inventory", new { id = item.Id })'">Edit</button>
                     <button class="btn btn-danger" onclick="deleteStock(@item.Id)">Delete</button>
                 </div>
             </div>
         }
-
-
-       @*  !-- Pagination --> *@
-        <div class="pagination">
-            @if (currentPage > 1)
-            {
-                <a href="@Url.Action("Index", new { page = currentPage - 1, pageSize = ViewBag.PageSize, filter = ViewBag.CurrentFilter, search = ViewBag.CurrentSearch })" class="btn">Previous</a>
-            }
-
-            <span>Page @currentPage of @totalItem</span>
-
-            @if (currentPage < totalPages)
-            {
-                <a href="@Url.Action("Index", new { page = currentPage + 1, pageSize = ViewBag.PageSize, filter = ViewBag.CurrentFilter, search = ViewBag.CurrentSearch })" class="btn">Next</a>
-            }
-        </div>
     </div>
 
+    <div class="d-flex justify-content-center mt-3">
+        <nav>
+            <ul class="pagination">
+                @if (currentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = currentPage - 1, pageSize = ViewBag.PageSize, filter = ViewBag.CurrentFilter, search = ViewBag.CurrentSearch })">Previous</a>
+                    </li>
+                }
+
+                <li class="page-item disabled">
+                    <span class="page-link">Page @currentPage of @totalPages</span>
+                </li>
+
+                @if (currentPage < totalPages)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { page = currentPage + 1, pageSize = ViewBag.PageSize, filter = ViewBag.CurrentFilter, search = ViewBag.CurrentSearch })">Next</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-           function downloadPdf(filter) {
+        function downloadPdf(filter) {
             window.location.href = `/Inventory/DownloadPdf?filter=${filter}`;
         }
+
         function updateProgressBars() {
             let progressBars = document.querySelectorAll(".progress-fill");
             progressBars.forEach(bar => {
                 let finalWidth = bar.getAttribute("data-percentage");
+                bar.style.width = "0%";
                 setTimeout(() => {
                     bar.style.width = finalWidth + "%";
-                }, 300);
+                }, 100);
             });
         }
 
-        updateProgressBars();
-
-        function importCSV() {
-            alert("Import CSV Clicked");
-        }
+        document.addEventListener("DOMContentLoaded", updateProgressBars);
 
         function deleteStock(id) {
             if (confirm("Are you sure you want to delete this stock?")) {
                 fetch(`/Inventory/Delete/${id}`, {
-                    method: "Delete",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" }
                 }).then(response => {
                     if (response.ok) {
                         location.reload();
@@ -347,13 +167,12 @@
                 }).catch(error => console.error("Error:", error));
             }
         }
-         function applyFilters() {
+
+        function applyFilters() {
             let searchValue = document.getElementById("searchInput").value;
             let filterValue = document.getElementById("filterDropdown").value;
             window.location.href = `@Url.Action("Index")?page=1&pageSize=@ViewBag.PageSize&filter=${filterValue}&search=${searchValue}`;
         }
-      
     </script>
 </body>
 </html>
-

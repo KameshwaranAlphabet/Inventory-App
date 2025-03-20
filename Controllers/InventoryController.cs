@@ -63,7 +63,7 @@ namespace Inventree_App.Controllers
         //    return View("Index", stocks);
         //}
 
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 7, string filter = "all", string search = "")
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string filter = "all", string search = "")
         {
             var userName = GetCurrentUser();
             if (userName == null)
