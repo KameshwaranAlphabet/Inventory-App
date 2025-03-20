@@ -55,7 +55,7 @@ namespace Inventree_App
             builder.Services.AddRazorPages();            // For Razor Pages
 
             var app = builder.Build();
-        
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
@@ -68,10 +68,16 @@ namespace Inventree_App
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
             app.UseRouting();
 
-            app.UseAuthentication(); // ?? Must come before UseAuthorization
+            // Apply migrations automatically
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+                context.Database.Migrate(); // Apply migrations automatically
+            }
+
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
@@ -79,7 +85,7 @@ namespace Inventree_App
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
             app.Run();
-
+       
         }
     }
 }
