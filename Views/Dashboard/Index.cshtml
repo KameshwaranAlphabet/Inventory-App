@@ -201,10 +201,10 @@
         </div> *@
 
         <div class="cards">
-            <div class="card purple">Total Stocks<br><strong>@totalStocks</strong></div>
-            <div class="card green">Available Stocks<br><strong>@availableStocks</strong></div>
-            <div class="card red">Low Stocks<br><strong>@lowStocks</strong></div>
-            <div class="card blue">Agent<br><strong>v1.0.0.8</strong></div>
+            <div class="card purple" onclick="navigateToDashboard()" style="cursor: pointer;">Total Stocks<br><strong>@totalStocks</strong></div>            
+            <div class="card green" onclick="navigateToAvailabe()" >Available Stocks<br><strong>@availableStocks</strong></div>
+            <div class="card red" onclick="navigateToLowStock()">Low Stocks<br><strong>@lowStocks</strong></div>
+            <div class="card blue" onclick="navigateToPending()">Pending<br><strong></strong></div>
         </div>
 
         <!-- Filter Section -->
@@ -276,10 +276,24 @@
        }
 
        // Close dropdown when clicking outside
-       document.addEventListener("click", function(event) {
-           var container = document.querySelector(".notification-container");
-           if (!container.contains(event.target)) {
-               document.getElementById("notification-dropdown").style.display = "none";
-           }
-       });
+    
+        function navigateToDashboard() {
+        const url = `/Inventory/Index?page=${1}&pageSize=${10}&filter=${"All"}&search=${""}`;
+
+        window.location.href = url;
+    }
+    function navigateToAvailabe() {
+        const url = `/Inventory/Index?page=${1}&pageSize=${10}&filter=${"Available"}&search=${""}`;
+
+        window.location.href = url;
+    }
+    function navigateToLowStock(){
+        const url = `/Inventory/Index?page=${1}&pageSize=${10}&filter=${"red"}&search=${""}`;
+        window.location.href = url;
+    }
+    function navigateToPending(){
+            const url = `/Admin/Index?page=${1}&pageSize=${10}&search=${""}&orderDate=${""}&filter=${"Pending"}`;
+
+        window.location.href = url;
+    }
 </script>

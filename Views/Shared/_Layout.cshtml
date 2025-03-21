@@ -12,6 +12,7 @@
         body.layoutbody {
             display: flex;
             margin :-1%;
+            padding: 19px;
         }
         header
         {
@@ -32,7 +33,7 @@
         }
 
             #sidebar.collapsed {
-                width:70px;
+                width:60px;
             }
 
             #sidebar a {
@@ -90,12 +91,21 @@
             object-fit: contain;
         }
 
+        .logo-default-img
+        {
+            height: 40px;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius:50%;
+        }
+
         button {
-            margin-top: 0px;
-            padding: 10px 19px;
-            background: #007bff;
+            margin-top: 3px;
+            padding: 10px 16px;
+            background: #14181c;
             color: white;
             border: none;
+            margin-right: 10px;
             border-radius: 5px;
             cursor: pointer;
         }
@@ -194,11 +204,11 @@
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item">
-                                <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image" class="logo">
-                                <span>@ViewBag.UserName</span>
+                                <button onclick="window.location.href='@Url.Action("Register", "Home")'">Create User</button>
                             </li>
                             <li class="nav-item">
-                                <button onclick="window.location.href='@Url.Action("Register", "Home")'">Create User</button>
+                                <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image" class="logo-default-img">
+                                <span>@ViewBag.UserName</span>
                             </li>
                         </ul>
                     </div>

@@ -36,7 +36,7 @@ namespace Inventree_App.Controllers
         //    var stocks = _context.Order.ToList();
         //    return View(stocks);
         //}
-        public IActionResult Index(int page = 1, int pageSize = 10, string search = "", string orderDate = "")
+        public IActionResult Index(int page = 1, int pageSize = 10, string search = "", string orderDate = "", string filter ="")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
@@ -53,6 +53,9 @@ namespace Inventree_App.Controllers
 
                 query = query.Where(x => customerIds.Contains(x.UserId));
             }
+
+            if(filter == "Pending")
+                query = query.Where(o => o.Status == "Pending");
 
             // Order Date Sorting
             if (orderDate == "asc")

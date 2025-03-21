@@ -7,12 +7,17 @@ using Inventree_App.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MySql.Data.MySqlClient;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
+using ZXing.Common;
+using ZXing;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Inventree_App.Controllers
@@ -259,6 +264,194 @@ namespace Inventree_App.Controllers
             var userName = jwtToken.Claims.First(c => c.Type == "sub")?.Value;
             var user = _context.Customer.FirstOrDefault(x => x.Email == userName);
             return user; // Return username from token
+        }
+        public IActionResult Create()
+        {
+            ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
+
+            ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");
+            return View("AddStock"); // Matches @model List<Stocks>           
+        }
+
+        [HttpPost]
+        public IActionResult Create(Stocks stock)
+        {
+            var userName = GetCurrentUser();
+
+            if (ModelState.IsValid)
+            {
+                stock.CreatedOn = DateTime.Now;
+                stock.Email = userName.Email;
+
+                // Add stock to database
+                _context.Stocks.Add(stock);
+                _context.SaveChanges();
+
+                // Generate Barcode based on ID
+                stock.SerialNumber = $"STK{stock.Id:D6}";  // Example: STK000123
+                stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
+
+                // Update stock with barcode details
+                _context.Stocks.Update(stock);
+                _context.SaveChanges();
+
+                // Log Stock Creation
+                var log = new Logs
+                {
+                    UserID = userName.Id,
+                    Type = "CreateStock",
+                    Description = $"Stock {stock.SerialNumber} created by {userName.Email}",
+                    CreatedDate = DateTime.Now,
+                    UserName = userName.Email,
+                };
+
+                _context.Logs.Add(log);
+                _context.SaveChanges();
+
+                return RedirectToAction("Index");
+            }
+
+            return View(stock);
+        }
+
+        private string GenerateBarcodeImage(string barcodeValue)
+        {
+            var writer = new BarcodeWriter<Image<Rgba32>>
+            {
+                Format = BarcodeFormat.CODE_128,
+                Options = new EncodingOptions
+                {
+                    Height = 100,
+                    Width = 300,
+                    Margin = 10
+                },
+                Renderer = new ZXing.ImageSharp.Rendering.ImageSharpRenderer<Rgba32>() // Fix for the error
+            };
+
+            // Generate barcode image
+            using (Image<Rgba32> image = writer.Write(barcodeValue))
+            {
+                string folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "barcodes");
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+
+                string barcodePath = Path.Combine(folderPath, $"{barcodeValue}.png");
+
+                // Save barcode as PNG
+                image.Save(barcodePath, new PngEncoder()); //  Cross-platform saving
+                return $"/barcodes/{barcodeValue}.png"; // Path to store in DB
+            }
+        }
+        // Delete method
+        //The Delete method removes a record based on the provided id.
+        // the method used to delete the stock permanetly from the stock table 
+        [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                string query = "DELETE FROM stocks WHERE id = @id";
+                connection.Execute(query, new { id });
+            }
+
+            return RedirectToAction("Inventory");
+        }
+
+        /// <summary>
+        /// Get the stock by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        // Get the stock by id  
+        [HttpGet]
+        public IActionResult GetStockById(int? id)
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                List<string> columnNames = connection.Query<string>("SHOW COLUMNS FROM stocks").ToList();
+                ViewBag.ColumnNames = columnNames;
+                ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
+
+                ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");
+                if (id.HasValue)
+                {
+                    string query = "SELECT * FROM stocks WHERE Id = @id";
+                    //var stock = connection.QueryFirstOrDefault(query, new { id });
+                    var stock = _context.Stocks.FirstOrDefault(x => x.Id == id);
+
+                    if (stock == null)
+                    {
+                        return NotFound();
+                    }
+
+                    return View("AddStock", stock);
+                }
+
+                return View("Index");
+            }
+        }
+        [HttpPost]
+        public IActionResult Edit(int id, Stocks updatedStock)
+        {
+            if (ModelState.IsValid)
+            {
+                var stock = _context.Stocks.Find(id);
+                if (stock == null)
+                {
+                    return NotFound();
+                }
+
+                var user = GetCurrentUser(); // Get current user details
+
+                // Capture old values before updating
+                var oldStockData = new
+                {
+                    stock.Name,
+                    stock.LocationId,
+                    stock.CategoryId,
+                    stock.Quantity,
+                    stock.MaxQuantity
+                };
+
+                // Update stock properties dynamically
+                stock.Name = updatedStock.Name;
+                stock.LocationId = updatedStock.LocationId;
+                stock.CategoryId = updatedStock.CategoryId;
+                stock.Quantity = updatedStock.Quantity;
+                stock.MaxQuantity = updatedStock.MaxQuantity;
+
+                _context.Stocks.Update(stock);
+                _context.SaveChanges();
+
+                // Log changes
+                var logDetails = $"Stock {stock.SerialNumber} updated by {user.Email}. Changes: ";
+
+                if (oldStockData.Name != stock.Name) logDetails += $"Name: {oldStockData.Name} ? {stock.Name}, ";
+                if (oldStockData.LocationId != stock.LocationId) logDetails += $"LocationId: {oldStockData.LocationId} ? {stock.LocationId}, ";
+                if (oldStockData.CategoryId != stock.CategoryId) logDetails += $"CategoryId: {oldStockData.CategoryId} ? {stock.CategoryId}, ";
+                if (oldStockData.Quantity != stock.Quantity) logDetails += $"Quantity: {oldStockData.Quantity} ? {stock.Quantity}, ";
+                if (oldStockData.MaxQuantity != stock.MaxQuantity) logDetails += $"MaxQuantity: {oldStockData.MaxQuantity} ? {stock.MaxQuantity}, ";
+
+                logDetails = logDetails.TrimEnd(',', ' '); // Remove trailing comma
+
+                var log = new Logs
+                {
+                    UserID = user.Id,
+                    Type = "Updated",
+                    Description = logDetails,
+                    UserName = user.UserName,
+                    CreatedDate = DateTime.Now
+                };
+
+                _context.Logs.Add(log);
+                _context.SaveChanges();
+
+                return RedirectToAction("Index");
+            }
+
+            return View(updatedStock);
         }
     }
 }

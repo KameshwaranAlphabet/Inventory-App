@@ -234,7 +234,7 @@ namespace Inventree_App.Controllers
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
         /// <returns>list of order</returns>
-        public IActionResult OrderList(string status, DateTime? startDate, DateTime? endDate, int page = 1, int pageSize = 5)
+        public IActionResult OrderList(string status, DateTime? startDate, DateTime? endDate, int page = 1, int pageSize = 10)
         {
             var user = GetCurrentUser();
             if (user == null)
@@ -242,19 +242,18 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Login", "Account");
             }
             ViewBag.UserName = user.UserName;
-            // Fetch orders for the current user
+
+            // Base query for filtering orders
             var ordersQuery = _context.Order
                 .Where(o => o.UserId == user.Id)
                 .OrderByDescending(o => o.OrderDate)
                 .AsQueryable();
 
-            // Filter by status
+            // Apply filters
             if (!string.IsNullOrEmpty(status))
             {
                 ordersQuery = ordersQuery.Where(o => o.Status == status);
             }
-
-            // Filter by date range
             if (startDate.HasValue)
             {
                 ordersQuery = ordersQuery.Where(o => o.OrderDate >= startDate.Value);
@@ -264,21 +263,28 @@ namespace Inventree_App.Controllers
                 ordersQuery = ordersQuery.Where(o => o.OrderDate <= endDate.Value);
             }
 
-            // Pagination
+            // Get total count for pagination before applying Skip & Take
             int totalOrders = ordersQuery.Count();
-            // Pagination
-            var orders = ordersQuery.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-            var orderList = ordersQuery.Select(order => new OrderDetailsModel
-            {
-                OrderId = order.Id,
-                OrderedDate = order.OrderDate,
-                CustomerName = order!=null ? _context.Customer.FirstOrDefault(c => c.Id == order.UserId).UserName : "",
-                ItemsCount = order.ItemsCount,
-                Status = order.Status,
-                Items = _context.OrderItem.Where(x => x.OrderId == order.Id).ToList()
 
-            }).ToList();
+            // Apply pagination *before* projecting to DTO
+            var orders = ordersQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(order => new OrderDetailsModel
+                {
+                    OrderId = order.Id,
+                    OrderedDate = order.OrderDate,
+                    CustomerName = _context.Customer
+                        .Where(c => c.Id == order.UserId)
+                        .Select(c => c.UserName)
+                        .FirstOrDefault(),
+                    ItemsCount = order.ItemsCount,
+                    Status = order.Status,
+                    Items = _context.OrderItem.Where(x => x.OrderId == order.Id).ToList()
+                })
+                .ToList();
 
+            // Pass pagination details
             ViewBag.StatusFilter = status;
             ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
             ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
@@ -286,8 +292,9 @@ namespace Inventree_App.Controllers
             ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalOrders / pageSize);
 
-            return View("OrderList", orderList);
+            return View("OrderList", orders);
         }
+
         /// <summary>
         /// Get OrderDetails by orderIs
         /// </summary>

@@ -19,6 +19,8 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Formats.Png;
 using Image = iTextSharp.text.Image;
 using Document = iTextSharp.text.Document;
+using System.Globalization;
+using iText.IO.Image;
 
 namespace Inventree_App.Controllers
 {
@@ -84,6 +86,8 @@ namespace Inventree_App.Controllers
                 stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 30 && (s.Quantity / (float)s.MaxQuantity) * 100 < 70);
             else if (filter == "green")
                 stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 70);
+            else if (filter == "Available")
+                stocks = stocks.Where(s => (s.Quantity != 0));
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
@@ -450,14 +454,14 @@ namespace Inventree_App.Controllers
                 return View("Index");
             }
             }
-        public IActionResult DownloadPdf(string filter)
+        public IActionResult DownloadPdf()
         {
             var stocks = _context.Stocks.ToList();
 
-            if (filter == "low")
-            {
-                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30).ToList();
-            }
+            //if (filter == "low")
+            //{
+            //    stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30).ToList();
+            //}
 
             using (MemoryStream ms = new MemoryStream())
             {
@@ -465,87 +469,152 @@ namespace Inventree_App.Controllers
                 PdfWriter writer = PdfWriter.GetInstance(document, ms);
                 document.Open();
 
-                PdfPTable headerTable = new PdfPTable(2);
-                headerTable.WidthPercentage = 100;
-                float[] columnWidths = { 1f, 3f };
-                headerTable.SetWidths(columnWidths);
-
-                // Add Logo on the Left
-                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "alphabet-logo.png");
-                if (System.IO.File.Exists(imagePath))
+                // Title
+                Paragraph title = new Paragraph("Stock Barcode List", new Font(Font.FontFamily.HELVETICA, 18f, Font.BOLD))
                 {
-                    Image logo = Image.GetInstance(imagePath);
-                    logo.ScaleToFit(100f, 50f);
-                    PdfPCell logoCell = new PdfPCell(logo) { Border = PdfPCell.NO_BORDER, HorizontalAlignment = Element.ALIGN_LEFT };
-                    headerTable.AddCell(logoCell);
-                }
-                else
-                {
-                    headerTable.AddCell("");
-                }
-
-                // Add Inventory List Title at Center
-                PdfPCell titleCell = new PdfPCell(new Phrase("Inventory List", new Font(Font.FontFamily.HELVETICA, 18f, Font.BOLD)));
-                titleCell.Border = PdfPCell.NO_BORDER;
-                titleCell.HorizontalAlignment = Element.ALIGN_CENTER;
-                titleCell.VerticalAlignment = Element.ALIGN_MIDDLE;
-                titleCell.Colspan = 2; // Span across both columns
-                headerTable.AddCell(titleCell);
-
-
-                document.Add(headerTable);
+                    Alignment = Element.ALIGN_CENTER
+                };
+                document.Add(title);
                 document.Add(new Paragraph("\n"));
-
-                PdfPTable table = new PdfPTable(5);
-                Font boldFont = new Font(Font.FontFamily.HELVETICA, 12f, Font.BOLD);
-                table.AddCell(new PdfPCell(new Phrase("Name", boldFont)));
-                table.AddCell(new PdfPCell(new Phrase("Quantity", boldFont)));
-                table.AddCell(new PdfPCell(new Phrase("Max Quantity", boldFont)));
-                table.AddCell(new PdfPCell(new Phrase("Serial Number", boldFont)));
-                table.AddCell(new PdfPCell(new Phrase("Barcode", boldFont)));
 
                 foreach (var stock in stocks)
                 {
-                    table.AddCell(stock.Name);
-                    table.AddCell(stock.Quantity.ToString());
-                    table.AddCell(stock.MaxQuantity.ToString());
-                    table.AddCell(stock.SerialNumber.ToString());
+                    // Add Company Label
+                    Paragraph companyLabel = new Paragraph("aLphabet school", new Font(Font.FontFamily.HELVETICA, 12f, Font.BOLD))
+                    {
+                        Alignment = Element.ALIGN_CENTER
+                    };
+                    document.Add(companyLabel);
 
+                    // Add Barcode Image from Path
                     if (!string.IsNullOrEmpty(stock.Barcode))
                     {
+                        //string barcodeImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Barcodes", stock.Barcode);
                         string baseUrl = $"{Request.Scheme}://{Request.Host}";
-                        string barcodeUrl = baseUrl+stock.Barcode;
-                        if (barcodeUrl!="")
+                        string barcodeImagePath = baseUrl + stock.Barcode;
+                        if ((barcodeImagePath!=""))
                         {
-                            Image barcodeImage = Image.GetInstance(barcodeUrl);
-                            barcodeImage.ScaleAbsolute(150f, 60f); // Increase width and height
-                            PdfPCell barcodeCell = new PdfPCell(barcodeImage, true)
-                            {
-                                Border = PdfPCell.BOX,
-                                HorizontalAlignment = Element.ALIGN_CENTER,
-                                VerticalAlignment = Element.ALIGN_MIDDLE,
-                                Padding = 5f
-                            };
-
-                            table.AddCell(barcodeCell);
-                        }
-                        else
-                        {
-                            table.AddCell("No Barcode");
+                            Image barcodeImage = Image.GetInstance(barcodeImagePath);
+                            barcodeImage.ScaleAbsolute(180f, 60f); // Adjust size
+                            barcodeImage.Alignment = Element.ALIGN_CENTER;
+                            document.Add(barcodeImage);
                         }
                     }
-                    else
+
+                    // Add Serial Number Below Barcode
+                    Paragraph serialNumber = new Paragraph(stock.SerialNumber, new Font(Font.FontFamily.HELVETICA, 14f, Font.BOLD))
                     {
-                        table.AddCell("No Barcode");
+                        Alignment = Element.ALIGN_CENTER
+                    };
+                    document.Add(serialNumber);
+
+                    document.Add(new Paragraph("\n")); // Spacing
+                }
+
+                document.Close();
+                return File(ms.ToArray(), "application/pdf", "StockBarcodes.pdf");
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> UploadCsv(IFormFile file)
+        {
+            var userName = GetCurrentUser();
+
+            if (file == null || file.Length == 0)
+            {
+                ModelState.AddModelError("", "Please select a CSV file.");
+                return View();
+            }
+
+            using (var stream = new StreamReader(file.OpenReadStream()))
+            {
+                var stationeryList = new List<Stocks>();
+                bool isFirstRow = true;
+
+                while (!stream.EndOfStream)
+                {
+                    var line = await stream.ReadLineAsync();
+                    if (isFirstRow) // Skip header row
+                    {
+                        isFirstRow = false;
+                        continue;
+                    }
+
+                    var values = line.Split(',');
+
+                    if (values.Length == 10) // Ensure correct columns count
+                    {
+                        var stationery = new Stocks
+                        {
+                            Name = values[0].Trim(),
+                            SerialNumber = values[1].Trim(),
+                            Quantity = int.Parse(values[2]),
+                            MaxQuantity = int.Parse(values[3]),
+                            CreatedOn = DateTime.Now,
+                            Email = userName.Email,
+                            Barcode = values[6].Trim(),
+                            UpdatedOn = DateTime.Now,
+                            LocationId = int.Parse(values[8]),
+                            CategoryId = int.Parse(values[9]),
+                        };
+                        stationeryList.Add(stationery);
                     }
                 }
 
-                document.Add(table);
-                document.Close();
+                if (stationeryList.Count > 0)
+                {
+                    _context.Stocks.AddRange(stationeryList);
+                    await _context.SaveChangesAsync(); // Save initially to generate IDs
 
-                return File(ms.ToArray(), "application/pdf", "Inventory_List.pdf");
+                    // Update Serial Numbers and Barcodes in bulk
+                    stationeryList.ForEach(stock =>
+                    {
+                        stock.SerialNumber = $"STK{stock.Id:D6}"; // Format: STK000123
+                        stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
+                    });
+
+                    _context.Stocks.UpdateRange(stationeryList); // Bulk update
+                    await _context.SaveChangesAsync(); // Save changes again
+                }
             }
+
+            return RedirectToAction("Index"); // Redirect to inventory list
         }
+        //public async Task<IActionResult> DownloadBarcodePdf()
+        //{
+        //    var stocks = await _context.Stocks.ToListAsync();
+
+        //    using (var memoryStream = new MemoryStream())
+        //    {
+        //        using (var writer = new PdfWriter(memoryStream))
+        //        {
+        //            var pdf = new PdfDocument(writer);
+        //            var document = new Document(pdf);
+
+        //            document.Add(new Paragraph("Stock Barcode List").SetBold().SetFontSize(16));
+
+        //            foreach (var stock in stocks)
+        //            {
+        //                var barcodeImage = stock.Barcode;
+
+        //                if (barcodeImage != null)
+        //                {
+        //                    Image image = new Image(ImageDataFactory.Create(barcodeImage));
+        //                    document.Add(new Paragraph($"Property of ABC Company").SetFontSize(10));
+        //                    document.Add(image.SetWidth(150)); // Adjust barcode size
+        //                    document.Add(new Paragraph(stock.SerialNumber).SetFontSize(12).SetBold());
+        //                    document.Add(new Paragraph("\n")); // Add spacing
+        //                }
+        //            }
+
+        //            document.Close();
+        //        }
+
+        //        return File(memoryStream.ToArray(), "application/pdf", "StockBarcodes.pdf");
+        //    }
+        //}
     }
 
 }

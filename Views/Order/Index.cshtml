@@ -62,7 +62,7 @@
                         <td style="width: 120px;">
                             <div class="input-group input-group-sm" style="max-width: 100px;">
                                 <button class="btn btn-outline-secondary decrement" style="width: 25px; padding: 2px 5px;">-</button>
-                                <input type="text" class="form-control text-center quantity" value="@product.CartQuantity" min="0" max="@product.StockQuantity" readonly style="width: 40px; padding: 2px 5px;" data-id="@product.ID">
+                                <input type="text" class="form-control text-center quantity" value="@product.CartQuantity" min="0" max="@product.StockQuantity" readonly style="width: 40px; padding: 2px 5px;" data-id="@product.CartQuantity">
                                 <button class="btn btn-outline-secondary increment" style="width: 25px; padding: 2px 5px;">+</button>
                             </div>
                         </td>
@@ -173,9 +173,13 @@
 </script>
 
 <style>
-    body {
+/*     body {
         font-family: Arial, sans-serif;
         background: #f4f4f4;
         padding: 19px;
+    } */
+    .container
+    {
+        max-width: 100%;
     }
 </style>

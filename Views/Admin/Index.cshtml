@@ -1,7 +1,7 @@
 ﻿@model List<OrderDetailsModel>
 
 <div class="container mt-3">
-    <h2>My Orders</h2>
+    <h2>Requests</h2>
 
     <!-- Filters -->
     <div class="d-flex justify-content-between mb-3">
@@ -71,7 +71,7 @@
                                         <td>@item.StockName</td>
                                         <td>@item.OrderId</td>
                                         <td>@item.Quantity</td>
-                                        <td><span class="badge bg-info">Pending approval</span></td>
+                                        <td><span class="badge bg-info">@item.State</span></td>
                                         <td><span class="badge bg-secondary">@item.Status</span></td>
                                     </tr>
                                 }
@@ -165,10 +165,9 @@
 </script>
 }
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        padding: 19px;
-        text-align: center;
+
+    .container
+    {
+        max-width: 100%;
     }
 </style>

@@ -24,6 +24,19 @@ namespace Inventree_App.Controllers
             _context = context;
             _customerService = customerService;
         }
+        private Customer GetCurrentUser()
+        {
+            var token = Request.Cookies["jwt"]; // Get JWT token from cookies
+
+            if (string.IsNullOrEmpty(token))
+                return null; // No token means user is not logged in
+
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var userName = jwtToken.Claims.First(c => c.Type == "sub")?.Value;
+            var user = _context.Customer.FirstOrDefault(x => x.Email == userName);
+            return user; // Return username from token
+        }
         public IActionResult Index()
         {
             bool isCustomerTableEmpty = !_context.Customer.Any();
@@ -168,6 +181,11 @@ namespace Inventree_App.Controllers
 
         public IActionResult Register()
         {
+            var userName = GetCurrentUser();
+            if (userName == null)
+                return RedirectToAction("Index", "Home");
+
+            ViewBag.UserName = userName.UserName;
             return View("SignUp");
         }
         /// <summary>

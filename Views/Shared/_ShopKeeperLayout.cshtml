@@ -12,6 +12,7 @@
         body.layoutbody {
             display: flex;
             margin :-1%;
+            padding :19px;
         }
         header
         {
@@ -32,7 +33,7 @@
         }
 
             #sidebar.collapsed {
-                width:70px;
+                width:60px;
             }
 
             #sidebar a {
@@ -79,7 +80,13 @@
             transition: left 0.3s;
             z-index: 1050;
         }
-      
+
+        .logo-default-img {
+            height: 40px;
+            max-width: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
         #sidebar.collapsed ~ .toggle-btn {
             left: 70px;
         }
@@ -91,11 +98,12 @@
         }
 
         button {
-            margin-top: 0px;
-            padding: 10px 19px;
-            background: #007bff;
+            margin-top: 3px;
+            padding: 10px 16px;
+            background: #14181c;
             color: white;
             border: none;
+            margin-right: 10px;
             border-radius: 5px;
             cursor: pointer;
         }
@@ -162,17 +170,18 @@
                     <img src="@Url.Content("~/Images/barcode.png")" class="sidebar-icon" alt="Barcode">
                     <span class="sidebar-text">Barcode</span>
                 </a>
-            <li class="nav-item">
-                <a href="@Url.Action("Logout", "Home")">
-                    <i class="fas fa-sign-out-alt sidebar-icon"></i>
-                    <span class="sidebar-text">LogOut</span>
-                </a>
-            </li>
 
             <li class="nav-item">
                 <a href="@Url.Action("ApproveList", "StoreKeeper")">
                     <i class="fas fa-clipboard-check sidebar-icon"></i>
                     <span class="sidebar-text">ApproveList</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="@Url.Action("Logout", "Home")">
+                    <i class="fas fa-sign-out-alt sidebar-icon"></i>
+                    <span class="sidebar-text">LogOut</span>
                 </a>
             </li>
 
@@ -188,7 +197,7 @@
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item">
-                                <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image" class="logo">
+                                <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image" class="logo-default-img">
                                 <span>@ViewBag.UserName</span>
                             </li>
                            
