@@ -117,7 +117,7 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult CreateOrUpdate(Categories model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 if (model.Id == 0) // Create new category
                 {

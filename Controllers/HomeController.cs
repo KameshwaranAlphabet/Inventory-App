@@ -139,27 +139,17 @@ namespace Inventree_App.Controllers
     
             return RedirectToAction("Index", "Customer");
         }
-       
+
         [HttpPost]
         public async Task<IActionResult> Authenticate(string email, string password)
         {
-            if (email!=null)
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
             {
-                // Authenticate user and sign in
-                var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Email, email)
-            };
-
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-                HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                ViewBag.Error = "Email and password are required!";
+                return View("Index");
             }
+
             var user = _context.Customer.FirstOrDefault(u => u.Email == email);
-
-            var token = _customerService.GenerateJwtToken(user);
-            Response.Cookies.Append("jwt", token);
-
 
             if (user == null || user.Password != HashPassword(password))
             {
@@ -167,17 +157,35 @@ namespace Inventree_App.Controllers
                 return View("Index");
             }
 
-            if (user != null && user.UserRoles == "Faculty")
-                return RedirectToAction("OrderList", "Order");
+            // Generate JWT token after verifying the user exists
+            var token = _customerService.GenerateJwtToken(user);
+            Response.Cookies.Append("jwt", token);
 
-            if (user != null && user.UserRoles == "Storekeeper")
-                return RedirectToAction("Index", "Storekeeper");
+            // Authenticate user and sign in
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Email, email),
+        new Claim(ClaimTypes.Role, user.UserRoles) // Adding role claim
+    };
 
-            if (user != null && user.UserRoles == "Lab Supervisor")
-                return RedirectToAction("Index", "Lab");
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-            return RedirectToAction("Index", "Dashboard");
+            // Redirect based on user role
+            switch (user.UserRoles)
+            {
+                case "Faculty":
+                    return RedirectToAction("OrderList", "Order");
+                case "Storekeeper":
+                    return RedirectToAction("Index", "Storekeeper");
+                case "Lab Supervisor":
+                    return RedirectToAction("Index", "Lab");
+                default:
+                    return RedirectToAction("Index", "Dashboard");
+            }
         }
+
 
         public IActionResult Register()
         {
