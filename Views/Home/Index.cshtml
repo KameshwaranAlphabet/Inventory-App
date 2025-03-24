@@ -1,8 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Login";
-}
-@{
-    Layout = null; // This prevents the layout from being applied to the login page
+    Layout = null; // Prevent applying the layout
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -10,74 +8,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="./css/site.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+        body {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-control {
+            border-radius: 8px;
+        }
+
+        .btn-login {
+            background-color: #4c83ff;
+            color: white;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+            .btn-login:hover {
+                background-color: #3a6fd8;
+            }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
+        <img src="@Url.Content("~/Images/alphabet-logo.png")" alt="Logo" class="img-fluid mb-3" style="max-width: 200px;">
         <form method="post" action="/Home/Authenticate">
-            <img src=@Url.Content("~/Images/alphabet-logo.png") alt="Logo">
-            <input type="email" name="email" placeholder="Email" required />
-            <input type="password" name="password" placeholder="Password" required />
-            <button type="submit">Log in</button>
-            <p class="error-message">@ViewBag.Error</p>
-           @*  <p class="signup-text">
-                Don't have an account? <a href="@Url.Action("Register", "Home")">Sign Up</a>
-            </p> *@
-            @* @if (TempData["SessionExpired"] != null)
-            {
-                <p class="text-danger">@TempData["SessionExpired"]</p>
-            } *@
+            <div class="mb-3 text-start">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-control" placeholder="Enter your email" required />
+            </div>
+            <div class="mb-3 text-start position-relative">
+                <label class="form-label">Password</label>
+                <div class="input-group">
+                    <input type="password" name="password" class="form-control" placeholder="Enter your password" required id="password">
+                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                        <i class="bi bi-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mb-3 form-check text-start">
+                <input type="checkbox" class="form-check-input" id="robotCheck">
+                <label class="form-check-label" for="robotCheck">I'm not a robot</label>
+            </div>
 
+            <button type="submit" class="btn btn-login w-100">Sign In</button>
+            <p class="error-message">@ViewBag.Error</p>
         </form>
+        <p>Designed by <strong>@@aLphabet</strong> Team ✨</p>
     </div>
 
+    <script>
+        function togglePassword() {
+            var passwordField = document.getElementById("password");
+            var eyeIcon = document.getElementById("eyeIcon");
+            if (passwordField.type === "password") {
+                passwordField.type = "text";
+                eyeIcon.classList.remove("bi-eye");
+                eyeIcon.classList.add("bi-eye-slash");
+            } else {
+                passwordField.type = "password";
+                eyeIcon.classList.remove("bi-eye-slash");
+                eyeIcon.classList.add("bi-eye");
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-        text-align: center;
-    }
-
-    .login-container {
-        width: 300px;
-        margin: 100px auto;
-        padding: 20px;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-
-        .login-container img {
-            width: 100px;
-            margin-bottom: 20px;
-        }
-
-        .login-container input {
-            width: 85%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .login-container button {
-            width: 93%;
-            padding: 10px;
-            background: #6b4e57;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-    .error-message {
-        color: red;
-    }
-
-    .signup-text {
-        margin-top: 10px;
-    }
-
-</style>

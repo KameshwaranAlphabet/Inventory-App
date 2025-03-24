@@ -22,6 +22,7 @@ namespace Inventree_App
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
             ;
             builder.Services.AddScoped<ICustomerService, CustomerService>();
+            builder.Services.AddScoped<BackupService>(); // Background service
             builder.Services.AddScoped<DatabaseHelper>();
             // Configure JWT Authentication
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -60,7 +61,7 @@ namespace Inventree_App
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Home/Index");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }

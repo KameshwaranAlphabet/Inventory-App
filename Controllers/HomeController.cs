@@ -161,12 +161,14 @@ namespace Inventree_App.Controllers
             var token = _customerService.GenerateJwtToken(user);
             Response.Cookies.Append("jwt", token);
 
-            // Authenticate user and sign in
+            var role = user.UserRoles ?? string.Empty; // Assign an empty string if null
+
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Email, email),
-        new Claim(ClaimTypes.Role, user.UserRoles) // Adding role claim
-    };
+{
+    new Claim(ClaimTypes.Email, email),
+    new Claim(ClaimTypes.Role, role) // Avoids null value issue
+};
+
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);

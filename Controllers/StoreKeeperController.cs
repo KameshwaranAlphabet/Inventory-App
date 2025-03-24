@@ -59,9 +59,11 @@ namespace Inventree_App.Controllers
             var stocks = _context.Stocks.AsQueryable();
             var lowstocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
             var order = _context.Order.Where(x => x.Status == OrderStatus.Approved.ToString()).ToList();
-            var orderPending = _context.Order.Where(x => x.Status == OrderStatus.Pending.ToString()).ToList();
+            var orderPending = _context.Order.Where(x => x.Status == OrderStatus.Pending.ToString()).Count();
+            var orderApproved = _context.Order.Where(x => x.Status == OrderStatus.Approved.ToString()).Count();
+            var today = DateTime.Now.Date; // Get today's date in UTC
+            var orderApprovedCount = _context.Order.Where(x => x.OrderDate == today).Count();
 
-            DateTime today = DateTime.Today;
             DateTime lastWeek = today.AddDays(-7);
             DateTime lastMonth = today.AddMonths(-1);
 
@@ -91,12 +93,14 @@ namespace Inventree_App.Controllers
             ViewBag.ApprovedCount = order.Count();
             ViewBag.LowStocksCount = lowstocks.Count();
             ViewBag.AvailableStocks = stocks.Where(s => s.Quantity > 0).Count();
-            ViewBag.Pending = orderPending.Count();
+            ViewBag.Pending = orderPending;
+            ViewBag.Approved = orderApproved;
+            ViewBag.TodayCount = orderApprovedCount;
 
             return View(logs.ToList());
         }
 
-        public IActionResult ApproveList(int page = 1, int pageSize = 10, string search = "", string orderDate = "", DateTime? fromDate = null, DateTime? toDate = null)
+        public IActionResult ApproveList(int page = 1, int pageSize = 10, string search = "", string orderDate = "", DateTime? fromDate = null, DateTime? toDate = null, string filter = "")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
@@ -123,6 +127,12 @@ namespace Inventree_App.Controllers
             {
                 query = query.OrderByDescending(o => o.OrderDate);
             }
+
+            if (filter == "Pending")
+                query = query.Where(o => o.Status == "Pending");
+
+            if (filter == "Approved")
+                query = query.Where(o => o.Status == "Approved");
 
             if (fromDate.HasValue)
             {

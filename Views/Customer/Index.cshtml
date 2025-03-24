@@ -3,194 +3,112 @@
 @{
     ViewData["Title"] = "Customer List";
 }
-@* @await Html.PartialAsync("_Sidebar") <!-- Sidebar -->
- *@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="customer-list bg-light">
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">Customer List</h2>
 
- </head>
- <body class="customer-list">
-<h2>Customer List</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Created Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var customer in Model)
+                    {
+                        <tr data-id="@customer.Id">
+                            <td class="editable">@customer.UserName</td>
+                            <td>@customer.Email</td>
+                            <td class="editable">@customer.UserName</td>
+                            <td class="editable">@customer.FirstName</td>
+                            <td class="editable">@customer.LastName</td>
+                            <td>@customer.CreatedOn.ToString()</td>
+                            <td>
+                                <button class="edit-btn btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="save-btn btn btn-success btn-sm d-none">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <a href="@Url.Action("DeleteConfirmed", "Customer", new { id = customer.Id })"
+                                   class="btn btn-danger btn-sm delete-btn"
+                                   onclick="return confirm('Are you sure?');">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-<table id="customerTable">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Username</th>
-            <th>FirstName</th>
-            <th>LastName</th>
-            <th>CreatedDate</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var customer in Model)
-        {
-            <tr data-id="@customer.Id">
-                <td class="editable">@customer.UserName</td>
-                <td >@customer.Email</td>
-                <td class="editable">@customer.UserName</td>
-                <td class="editable">@customer.FirstName</td>
-                <td class="editable">@customer.LastName</td>
-                <td>@customer.CreatedOn.ToString()</td>
-                    <td>
-                        <button class="edit-btn btn btn-warning btn-sm">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="save-btn btn btn-success btn-sm" style="display: none;">
-                            <i class="fas fa-save"></i>
-                        </button>
-                        <a href="@Url.Action("Delete", "Customer", new { id = customer.Id })"
-                           class="btn btn-danger btn-sm delete-btn"
-                           onclick="return confirm('Are you sure?');">
-                            <i class="fas fa-trash-alt"></i>
-                        </a>
-                    </td>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".edit-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    let row = this.closest("tr");
+                    row.querySelectorAll(".editable").forEach(cell => {
+                        let text = cell.innerText;
+                        cell.innerHTML = `<input type="text" class="form-control" value="${text}" />`;
+                    });
+                    this.classList.add("d-none");
+                    row.querySelector(".save-btn").classList.remove("d-none");
+                });
+            });
 
-            </tr>
-        }
-    </tbody>
-</table>
+            document.querySelectorAll(".save-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    let row = this.closest("tr");
+                    let id = row.getAttribute("data-id");
+                    let updatedData = {};
+
+                    row.querySelectorAll(".editable").forEach(cell => {
+                        let input = cell.querySelector("input");
+                        if (input) {
+                            updatedData[cell.getAttribute("data-field")] = input.value;
+                            cell.innerText = input.value;
+                        }
+                    });
+
+                    this.classList.add("d-none");
+                    row.querySelector(".edit-btn").classList.remove("d-none");
+
+                    fetch(`/Customer/Update/${id}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(updatedData)
+                    })
+                    .then(response => response.json())
+                    .then(data => alert("Customer updated successfully!"))
+                    .catch(error => alert("Error updating customer!"));
+                });
+            });
+        });
+    </script>
 </body>
 </html>
-
-<!-- CSS Styling -->
 <style>
-/*    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 20px;
-      text-align: center;
-  }
- */
- .list{
-     max-width:100%;
- }
-    h2 {
-        color: #333;
-    }
-
-    table {
-        width: 100%;
-        margin: 20px auto;
-        border-collapse: collapse;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        background: white;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    th, td {
-        padding: 12px;
-        border: 1px solid #ddd;
-        text-align: center;
-        transition: background 0.3s;
-    }
-
-    th {
-        background: #202620;
-        color: white;
-    }
-
-    tr:hover {
-        background: #f1f1f1;
-    }
-
-    .edit-btn, .save-btn, .delete-btn {
-        padding: 6px 12px;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-        transition: 0.3s;
-    }
-
-    .edit-btn {
-        background: #008CBA;
-        color: white;
-    }
-
-        .edit-btn:hover {
-            background: #005f7f;
-        }
-
-    .save-btn {
-        background: #4CAF50;
-        color: white;
-    }
-
-        .save-btn:hover {
-            background: #357a38;
-        }
-
-    .delete-btn {
-        background: #f44336;
-        color: white;
-        text-decoration: none;
-        padding: 6px 12px;
-        display: inline-block;
-    }
-
-        .delete-btn:hover {
-            background: #d32f2f;
-        }
-
-    input {
-        width: 100%;
-        padding: 6px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
+    .container
+    {
+        max-width:100%;
     }
 </style>
-
-<!-- JavaScript for Inline Editing -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".edit-btn").forEach(button => {
-            button.addEventListener("click", function () {
-                let row = this.closest("tr");
-                row.querySelectorAll(".editable").forEach(cell => {
-                    let text = cell.innerText;
-                    cell.innerHTML = `<input type="text" value="${text}" />`;
-                });
-
-                this.style.display = "none";
-                row.querySelector(".save-btn").style.display = "inline-block";
-            });
-        });
-
-        document.querySelectorAll(".save-btn").forEach(button => {
-            button.addEventListener("click", function () {
-                let row = this.closest("tr");
-                let id = row.getAttribute("data-id");
-                let updatedData = {};
-
-                row.querySelectorAll(".editable").forEach(cell => {
-                    let input = cell.querySelector("input");
-                    if (input) {
-                        updatedData[cell.getAttribute("data-field")] = input.value;
-                        cell.innerText = input.value;
-                    }
-                });
-
-                this.style.display = "none";
-                row.querySelector(".edit-btn").style.display = "inline-block";
-
-                // Send data to server via AJAX
-                fetch(`/Customer/Update/${id}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(updatedData)
-                })
-                .then(response => response.json())
-                .then(data => alert("Customer updated successfully!"))
-                .catch(error => alert("Error updating customer!"));
-            });
-        });
-    });
-</script>

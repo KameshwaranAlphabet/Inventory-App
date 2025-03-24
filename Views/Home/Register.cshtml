@@ -1,8 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Register";
-}
-@{
-    Layout = null;
+    Layout = null; // Prevent applying the layout
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -12,219 +9,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
 
-    <!-- Include Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-KyZXEJ6gF11tL8kfu3+KnujsI3j3zRYTzOTq6lR69psVpXz5P7tWv2g8o+nyVYj5" crossorigin="anonymous">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom CSS -->
     <style>
         body {
-            background-color: #f0f2f5;
+            height: 100vh;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f2f5;
+        }
+
+        .container-fluid {
+            max-width: 900px;
+        }
+
+        .left-panel {
+            background: linear-gradient(135deg, #00bfa6, #008c8c);
+            color: white;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px 0 0 10px;
         }
 
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        .right-panel {
+            background: white;
+            padding: 40px;
+            border-radius: 0 10px 10px 0;
         }
 
-        .card-body {
-            padding: 3rem;
+        .social-buttons button {
+            width: 100%;
+            margin-bottom: 10px;
         }
 
         .form-control {
             border-radius: 5px;
-            box-shadow: none;
         }
 
         .btn-primary {
             width: 100%;
-            padding: 10px;
-            border-radius: 5px;
         }
 
-        .form-label {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .invalid-feedback {
-            font-size: 0.875rem;
-        }
-
-        .text-center h2 {
-            font-size: 2rem;
-            color: #333;
-            font-weight: bold;
-        }
-
-        .select-role {
-            border-radius: 5px;
-            padding: 10px;
-            width: 100%;
-        }
-
-        /* Responsive Adjustments */
-        @@media (max-width: 767px) {
-            .card-body
+        @@media (max-width: 768px) {
+            .left-panel
 
         {
-            padding: 2rem;
+            display: none;
         }
 
-        .btn-primary {
-            padding: 12px;
+        .right-panel {
+            border-radius: 10px;
         }
 
-        }
-
-        /* Animation for submit button */
-        .btn-primary:hover {
-            background-color: #0056b3;
-            transition: all 0.3s ease;
-        }
-
-        .card {
-            background-color: #fff;
-        }
-
-        .form-control:focus {
-            border-color: #0062cc;
-            box-shadow: 0 0 5px rgba(0, 99, 204, 0.5);
         }
     </style>
-
 </head>
 
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6 col-xl-4">
-                <div class="card shadow-lg">
-                    <div class="card-body">
-                        <h2 class="text-center mb-4">Register</h2>
+    <div class="container-fluid">
+        <div class="row shadow-lg">
+            <!-- Left Panel -->
+            <div class="col-md-6 left-panel">
+                <h2>Welcome Back!</h2>
+                <p>To keep connected with us please login with your personal info</p>
+                <a href="@Url.Action("Index", "Home")" class="btn btn-outline-light">SIGN IN</a>
+            </div>
 
-                        <!-- Registration Form -->
-                        <form method="post" action="/Home/Register" class="needs-validation" novalidate>
-                            <!-- First Name -->
-                            <div class="mb-3">
-                                <label for="FirstName" class="form-label">First Name</label>
-                                <input type="text" id="FirstName" name="FirstName" class="form-control" required
-                                       placeholder="Enter your first name" />
-                                <div class="invalid-feedback">
-                                    First name is required.
-                                </div>
-                            </div>
+            <!-- Right Panel -->
+            <div class="col-md-6 right-panel">
+                <h2 class="text-center mb-4">Create Account</h2>
 
-                            <!-- Last Name -->
-                            <div class="mb-3">
-                                <label for="LastName" class="form-label">Last Name</label>
-                                <input type="text" id="LastName" name="LastName" class="form-control" required
-                                       placeholder="Enter your last name" />
-                                <div class="invalid-feedback">
-                                    Last name is required.
-                                </div>
-                            </div>
-
-                            <!-- Username -->
-                            <div class="mb-3">
-                                <label for="Username" class="form-label">Username</label>
-                                <input type="text" id="Username" name="Username" class="form-control" required
-                                       placeholder="Enter your username" />
-                                <div class="invalid-feedback">
-                                    Username is required.
-                                </div>
-                            </div>
-
-                            <!-- Email -->
-                            <div class="mb-3">
-                                <label for="Email" class="form-label">Email</label>
-                                <input type="email" id="Email" name="Email" class="form-control" required
-                                       placeholder="Enter your email" />
-                                <div class="invalid-feedback">
-                                    A valid email is required.
-                                </div>
-                            </div>
-
-                            <!-- Password -->
-                            <div class="mb-3">
-                                <label for="Password" class="form-label">Password</label>
-                                <input type="password" id="Password" name="Password" class="form-control" required
-                                       placeholder="Enter your password" />
-                                <div class="invalid-feedback">
-                                    Password is required.
-                                </div>
-                            </div>
-
-                            <!-- Confirm Password -->
-                            <div class="mb-3">
-                                <label for="ConfirmPassword" class="form-label">Confirm Password</label>
-                                <input type="password" id="ConfirmPassword" name="ConfirmPassword" class="form-control"
-                                       required placeholder="Confirm your password" />
-                                <div class="invalid-feedback">
-                                    Please confirm your password.
-                                </div>
-                            </div>
-
-                            <!-- User Role -->
-                            <div class="mb-3">
-                                <label for="UserRoles" class="form-label">User Role</label>
-                                <select name="UserRoles" id="UserRoles" class="form-control select-role" required>
-                                    <option value="">Select Role</option>
-                                    <option value="Admin">Admin</option>
-                                    <option value="Lab Supervisor">Lab Supervisor</option>
-                                    <option value="Purchase Team">Purchase Team</option>
-                                    <option value="Faculty">Faculty</option>
-                                    <option value="Storekeeper">Storekeeper</option>
-                                    <option value="Lab Faculty">Lab Faculty</option>
-                                </select>
-                                <div class="invalid-feedback">
-                                    Please select a role.
-                                </div>
-                            </div>
-
-                            <div class="text-center">
-                                <button type="submit" class="btn btn-primary">Register</button>
-                            </div>
-                        </form>
-                    </div>
+                <!-- Social Login -->
+                <div class="social-buttons text-center mb-3">
+                    <button class="btn btn-outline-dark"><i class="bi bi-facebook"></i> Facebook</button>
+                    <button class="btn btn-outline-dark"><i class="bi bi-google"></i> Google</button>
+                    <button class="btn btn-outline-dark"><i class="bi bi-linkedin"></i> LinkedIn</button>
                 </div>
+                <p class="text-center">or use your email for registration</p>
+
+                <!-- Registration Form -->
+                <form method="post" action="/Home/Register" class="needs-validation" novalidate onsubmit="return validatePasswords()">
+                    <div class="mb-3">
+                        <input type="text" id="FirstName" name="FirstName" class="form-control" placeholder="First Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="LastName" name="LastName" class="form-control" placeholder="Last Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" id="Username" name="Username" class="form-control" placeholder="Username" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="email" id="Email" name="Email" class="form-control" placeholder="Email" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" id="Password" name="Password" class="form-control" placeholder="Password" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" id="ConfirmPassword" name="ConfirmPassword" class="form-control" placeholder="Confirm Password" required>
+                        <div class="text-danger" id="passwordError" style="display: none;">Passwords do not match</div>
+                    </div>
+                    <div class="mb-3">
+                        <select name="UserRoles" id="UserRoles" class="form-control" required>
+                            <option value="">Select Role</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Lab Supervisor">Lab Supervisor</option>
+                            <option value="Purchase Team">Purchase Team</option>
+                            <option value="Faculty">Faculty</option>
+                            <option value="Storekeeper">Storekeeper</option>
+                            <option value="Lab Faculty">Lab Faculty</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">SIGN UP</button>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Include Bootstrap 5 JavaScript and Popper.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@@popperjs/core@2.11.6/dist/umd/popper.min.js"
-            integrity="sha384-oBqDVmMz4fnFO9gyb66X5yATdR91pdG0WgU8lR5c5z4ydb6LgYf2jDAXzvTKhz3Kh" crossorigin="anonymous">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"
-            integrity="sha384-pzjw8f+ua7Kw1TIq0dXWlEx5S6zB1xskYFFGV7iy5qvE/daRFAgBh9Ri8pd7FE4"
-            crossorigin="anonymous"></script>
+    <!-- Bootstrap 5 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Custom JavaScript for form validation -->
+    <!-- Password Validation Script -->
     <script>
-        (function () {
-            'use strict'
+        function validatePasswords() {
+            var password = document.getElementById("Password").value;
+            var confirmPassword = document.getElementById("ConfirmPassword").value;
+            var errorElement = document.getElementById("passwordError");
 
-            // Get all forms
-            var forms = document.querySelectorAll('.needs-validation');
-
-            // Loop over them and prevent submission if invalid
-            Array.prototype.slice.call(forms)
-                .forEach(function (form) {
-                    form.addEventListener('submit', function (event) {
-                        if (!form.checkValidity()) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
-                        form.classList.add('was-validated');
-                    }, false);
-                });
-        })();
+            if (password !== confirmPassword) {
+                errorElement.style.display = "block";
+                return false;
+            } else {
+                errorElement.style.display = "none";
+                return true;
+            }
+        }
     </script>
 </body>
 

@@ -1,15 +1,10 @@
-﻿
-@{
+﻿@{
     int totalStocks = ViewBag.StocksCount;
     int lowStocks = ViewBag.LowStocksCount;
     int availableStocks = ViewBag.AvailableStocks;
     int approveList = ViewBag.ApprovedCount;
     int pending = ViewBag.Pending;
-}
-@{
-    int totalPages = (int)Math.Ceiling((double)ViewBag.TotalLogs / ViewBag.PageSize);
-    int currentPage = ViewBag.CurrentPage;
-    string selectedFilter = ViewBag.FilterType;
+    string username = ViewBag.UserName;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -17,267 +12,339 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <!-- FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/@@phosphor-icons/web"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <style>
-
         body {
-            font-family: Arial, sans-serif;
             background: #f4f4f4;
-            padding: 19px;
-            text-align: center;
-        }
-        .container {
-            max-width: 91%;
-            margin: 2%;
-            animation: fadeIn 0.8s ease-in-out;
         }
 
-        .notification-container {
-            position: fixed;
-            top: 7%;
-            left: 89%;
-            display: inline-block;
-            z-index: 1000;
-        }
-        /* Notification Icon */
-        .notification-icon {
-            position: relative;
-            cursor: pointer;
-            font-size: 24px;
-            padding: 10px;
-            background: #fff;
-            border-radius: 50%;
-            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
-        }
-        .notification-dropdown {
-            display: none;
-            position: absolute;
-            top: 40px;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            width: 200px;
-            z-index: 100;
-        }
-
-            .notification-dropdown ul {
-                list-style: none;
-                padding: 10px;
-                margin: 0;
-            }
-
-                .notification-dropdown ul li {
-                    padding: 10px;
-                    border-bottom: 1px solid #ddd;
-                    cursor: pointer;
-                }
-
-                    .notification-dropdown ul li:hover {
-                        background: #f5f5f5;
-                    }
-
-        .badge {
-            background: red;
-            color: white;
-            font-size: 12px;
-            border-radius: 50%;
-            padding: 5px 8px;
-            position: absolute;
-            top: 0;
-            right: 0;
-        }
-
-      /*   @@keyframes fadeIn {
-            from
-
-        {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        } */
-
-        }
-
-        .search-bar {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-            .search-bar input {
-                width: 100%;
-                padding: 12px;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-            }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .card {
-            padding: 56px;
+        .welcome {
+            background: linear-gradient(to right, #ffffff, #ffffff);
+            color: #1e1e1e;
+            padding: 15px;
             border-radius: 8px;
-            color: white;
-            text-align: center;
-            transition: transform 0.3s ease-in-out;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
 
-            .card:hover {
+        .container
+        {
+            max-width:100%;
+        }
+        .stats-cards .card {
+            color: white;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+            .stats-cards .card:hover {
                 transform: scale(1.05);
             }
 
-        .purple {
-            background-color: #6b46c1;
-        }
+            .stats-cards .card i {
+                font-size: 2rem;
+            }
 
         .green {
             background-color: #38a169;
-        }
-
-        .red {
-            background-color: red;
         }
 
         .blue {
             background-color: #3182ce;
         }
 
-        .bonus-section {
-            background-color: #6b46c1;
-            color: white;
-            padding: 24px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
+        .red {
+            background-color: #e53e3e;
         }
 
-            .bonus-section button {
-                background-color: white;
-                color: #6b46c1;
-                padding: 10px 20px;
-                border-radius: 8px;
-                border: none;
-                cursor: pointer;
-                transition: background 0.3s;
-            }
+        .yellow {
+            background-color: #dd6b20;
+        }
 
-                .bonus-section button:hover {
-                    background-color: #ddd;
-                }
+        .filter-dropdown {
+            width: 23%;
+            background: white;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
-<body class="dashboard">
-    <div class="container">
-      @*   <div class="search-bar">
-            <input type="text" placeholder="Search project, folder or file">
-        </div> *@
-        <!-- Notification Icon -->
-       @*  <div class="notification-container">
-            <div class="notification-icon" onclick="toggleNotifications()">
-                <i class="fas fa-bell"></i>
-                <span class="badge" id="notification-count">3</span>
+<body>
+    <div class="container py-4">
+        <div class="welcome">Hi, @username</div>
+        <div class="row g-3 stats-cards mt-3">
+            <div class="col-md-3" onclick="navigateToDashboard()">
+                <div class="card blue">
+                    <div>
+                        Total Stocks<br><strong>@totalStocks</strong>
+                    </div>
+                    <i class="ph ph-shopping-cart"></i>
+                </div>
             </div>
-            <div class="notification-dropdown" id="notification-dropdown">
-                <ul id="notification-list">
-                    <li>No new notifications</li>
-                </ul>
+            <div class="col-md-3" onclick="navigateToAvailabe()">
+                <div class="card green">
+                    <div>
+                        Available Stocks<br><strong>@availableStocks</strong>
+                    </div>
+                    <i class="ph ph-wallet"></i>
+                </div>
             </div>
-        </div> *@
-
-        <div class="cards">
-            <div class="card purple" onclick="navigateToDashboard()" style="cursor: pointer;">Total Stocks<br><strong>@totalStocks</strong></div>            
-            <div class="card green" onclick="navigateToAvailabe()" >Available Stocks<br><strong>@availableStocks</strong></div>
-            <div class="card red" onclick="navigateToLowStock()">Low Stocks<br><strong>@lowStocks</strong></div>
-            <div class="card blue" onclick="navigateToPending()">Pending<br><strong></strong></div>
+            <div class="col-md-3" onclick="navigateToLowStock()">
+                <div class="card red">
+                    <div>
+                        Low Stocks<br><strong>@lowStocks</strong>
+                    </div>
+                    <i class="ph ph-truck"></i>
+                </div>
+            </div>
+            <div class="col-md-3" onclick="navigateToPending()">
+                <div class="card yellow">
+                    <div>
+                        Pending<br><strong>@pending</strong>
+                    </div>
+                    <i class="ph ph-chart-line"></i>
+                </div>
+            </div>
         </div>
-
-        <!-- Filter Section -->
-        <div class="my-4">
-            <form method="get" class="d-flex">
-                <select name="filterType" class="form-select w-auto" onchange="this.form.submit()">
-                    <option value="All" @@(selectedFilter= ="All" ? "selected" : "" )>All</option>
-                    <option value="Today" @@(selectedFilter= ="Today" ? "selected" : "" )>Today</option>
-                    <option value="Week" @@(selectedFilter= ="Week" ? "selected" : "" )>Last 7 Days</option>
-                    <option value="Month" @@(selectedFilter= ="Month" ? "selected" : "" )>Last 30 Days</option>
-                </select>
-                <!-- Status Filter -->
-                <select name="statusFilter" id="statusFilter" class="form-select w-auto ms-2" onchange="this.form.submit()">
-                    <option value="All">All</option>
-                    <option value="Created">CreateStock</option>
-                    <option value="Updated">Updated</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Approved">Approved</option>
-                </select>
-            </form>
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card p-3">
+                    <div class="d-flex justify-content-between">
+                    <h5>Top Buyed Faculty</h5>
+                        <select id="monthFilter" class="form-select filter-dropdown">
+                            <option value="all">All</option>
+                            <option value="01">January</option>
+                            <option value="02">February</option>
+                            <option value="03">March</option>
+                            <option value="04">April</option>
+                            <option value="05">May</option>
+                            <option value="06">June</option>
+                            <option value="07">July</option>
+                            <option value="08">August</option>
+                            <option value="09">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <table class="table table-striped mt-3">
+                        <thead>
+                            <tr>
+                                <th>Profile</th>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>Projects</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTable"></tbody>
+                    </table>
+                    <nav>
+                        <ul class="pagination justify-content-center" id="pagination"></ul>
+                    </nav>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5>Logs</h5>
+                        <select id="updateFilter" class="form-select filter-dropdown">
+                            <option value="all">All</option>
+                            <option value="01">January</option>
+                            <option value="02">February</option>
+                            <option value="03">March</option>
+                            <option value="04">April</option>
+                            <option value="05">May</option>
+                            <option value="06">June</option>
+                            <option value="07">July</option>
+                            <option value="08">August</option>
+                            <option value="09">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <ul class="list-unstyled mt-3" id="updatesList"></ul>
+                    <nav>
+                        <ul class="pagination justify-content-center" id="logPagination"></ul>
+                    </nav>
+                </div>
+            </div>
         </div>
-
-
-        <!-- Logs Table -->
-        <div class="table-responsive">
-            <table class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Date</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var log in Model)
-                    {
-                        <tr>
-                            <td>@log.UserName</td>
-                            <td>@log.CreatedDate.ToString()</td>
-                            <td>@log.Description</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <nav>
-            <ul class="pagination justify-content-center">
-                @for (int i = 1; i <= totalPages; i++)
-                {
-                    <li class="page-item @(i == currentPage ? "active" : "")">
-                        <a class="page-link" href="@Url.Action("Index", new { filterType = selectedFilter, page = i })">@i</a>
-                    </li>
-                }
-            </ul>
-        </nav>
     </div>
-
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 <script>
+     var currentPage = 1;
+    var pageSize = 7;
 
-    function toggleNotifications() {
-           var dropdown = document.getElementById("notification-dropdown");
-           dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-       }
+    function fetchOrders(page = 1) {
+        var month = $("#monthFilter").val();
+        $.get("/Dashboard/GetOrders", { month: month, page: page, pageSize: pageSize }, function (response) {
+            console.log("111111",response.data)
+               $("#ordersTable").html(response.data.map(o =>
+                `<tr>
+                    <td>
+                        <div style="width: 25px; height: 25px; border-radius: 50%; background-color: ${getColor(o.name)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                            ${o.profile}
+                        </div>
+                    </td>
+                    <td>${o.name}</td>
+                    <td>${new Date(o.date).toLocaleDateString()}</td>
+                    <td>${o.quantity}</td>
+                </tr>`
+            ).join(""));
 
-       // Close dropdown when clicking outside
-    
-        function navigateToDashboard() {
+            // Pagination
+            setupPagination(response.totalRecords, page);
+        });
+    }
+        function getInitials(name) {
+        let initials = name.split(" ").map(word => word[0]).join("").toUpperCase();
+        return initials.substring(0, 2); // Keep it at 2 characters max
+    }
+
+    function getColor(name) {
+        const colors = ["#4A90E2", "#50E3C2", "#F5A623", "#D0021B", "#BD10E0"];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length]; // Pick color based on name hash
+    }
+        function setupPagination(totalRecords, currentPage) {
+        var totalPages = Math.ceil(totalRecords / pageSize);
+        var paginationHtml = "";
+
+        if (totalPages > 1) {
+            paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="fetchOrders(1)">&laquo;</a>
+            </li>`;
+
+            if (currentPage > 2) {
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(1)">1</a></li>`;
+                if (currentPage > 3) {
+                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, currentPage + 1);
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="fetchOrders(${i})">${i}</a>
+                </li>`;
+            }
+
+            if (currentPage < totalPages - 1) {
+                if (currentPage < totalPages - 2) {
+                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(${totalPages})">${totalPages}</a></li>`;
+            }
+
+            paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="fetchOrders(${totalPages})">&raquo;</a>
+            </li>`;
+        }
+
+        $("#pagination").html(paginationHtml);
+    }
+
+    $("#monthFilter").change(function () {
+        currentPage = 1;
+        fetchOrders(currentPage);
+    });
+
+    fetchOrders(currentPage);
+
+    var logPage = 1;
+      var logPageSize = 4; // Number of logs per page
+
+      function fetchLogs(page = 1) {
+          var month = $("#updateFilter").val();
+          $.get("/Dashboard/GetLogs", { month: month, page: page, pageSize: logPageSize }, function (response) {
+              $("#updatesList").html(response.data.map(log =>
+                  `<li class="mb-2">
+                      <strong>${log.userName}</strong><br>
+                      ${log.description}<br>
+                      <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
+                  </li>`
+              ).join(""));
+
+              setupLogPagination(response.totalRecords, page);
+          });
+      }
+
+      function formatTimeAgo(dateString) {
+          let date = new Date(dateString);
+          let now = new Date();
+          let seconds = Math.floor((now - date) / 1000);
+          let minutes = Math.floor(seconds / 60);
+          let hours = Math.floor(minutes / 60);
+          let days = Math.floor(hours / 24);
+
+          if (seconds < 60) return "Just now";
+          if (minutes < 60) return `${minutes} min ago`;
+          if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+          if (days === 1) return "Yesterday";
+          return `${days} days ago`;
+      }
+    function setupLogPagination(totalRecords, currentPage) {
+        var totalPages = Math.ceil(totalRecords / logPageSize);
+        var paginationHtml = "";
+
+        if (totalPages > 1) {
+            paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="fetchLogs(1)">&laquo;</a>
+            </li>`;
+
+            if (currentPage > 2) {
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(1)">1</a></li>`;
+                if (currentPage > 3) {
+                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, currentPage + 1);
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="fetchLogs(${i})">${i}</a>
+                </li>`;
+            }
+
+            if (currentPage < totalPages - 1) {
+                if (currentPage < totalPages - 2) {
+                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(${totalPages})">${totalPages}</a></li>`;
+            }
+
+            paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="fetchLogs(${totalPages})">&raquo;</a>
+            </li>`;
+        }
+
+        $("#logPagination").html(paginationHtml);
+    }
+      $("#updateFilter").change(function () {
+          logPage = 1;
+          fetchLogs(logPage);
+      });
+
+      fetchLogs(logPage);
+
+      function navigateToDashboard() {
         const url = `/Inventory/Index?page=${1}&pageSize=${10}&filter=${"All"}&search=${""}`;
 
         window.location.href = url;
@@ -296,4 +363,5 @@
 
         window.location.href = url;
     }
+
 </script>

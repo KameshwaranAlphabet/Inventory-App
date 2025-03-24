@@ -19,8 +19,8 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Formats.Png;
 using Image = iTextSharp.text.Image;
 using Document = iTextSharp.text.Document;
-using System.Globalization;
-using iText.IO.Image;
+using OfficeOpenXml;
+
 
 namespace Inventree_App.Controllers
 {
@@ -524,64 +524,84 @@ namespace Inventree_App.Controllers
 
             if (file == null || file.Length == 0)
             {
-                ModelState.AddModelError("", "Please select a CSV file.");
-                return View();
+                TempData["Message"] = "Please select a CSV file.";
+                return RedirectToAction("Index");
             }
 
-            using (var stream = new StreamReader(file.OpenReadStream()))
+            // Validate file extension
+            var fileExtension = Path.GetExtension(file.FileName);
+            if (fileExtension.ToLower() != ".csv")
             {
-                var stationeryList = new List<Stocks>();
-                bool isFirstRow = true;
-
-                while (!stream.EndOfStream)
-                {
-                    var line = await stream.ReadLineAsync();
-                    if (isFirstRow) // Skip header row
-                    {
-                        isFirstRow = false;
-                        continue;
-                    }
-
-                    var values = line.Split(',');
-
-                    if (values.Length == 10) // Ensure correct columns count
-                    {
-                        var stationery = new Stocks
-                        {
-                            Name = values[0].Trim(),
-                            SerialNumber = values[1].Trim(),
-                            Quantity = int.Parse(values[2]),
-                            MaxQuantity = int.Parse(values[3]),
-                            CreatedOn = DateTime.Now,
-                            Email = userName.Email,
-                            Barcode = values[6].Trim(),
-                            UpdatedOn = DateTime.Now,
-                            LocationId = int.Parse(values[8]),
-                            CategoryId = int.Parse(values[9]),
-                        };
-                        stationeryList.Add(stationery);
-                    }
-                }
-
-                if (stationeryList.Count > 0)
-                {
-                    _context.Stocks.AddRange(stationeryList);
-                    await _context.SaveChangesAsync(); // Save initially to generate IDs
-
-                    // Update Serial Numbers and Barcodes in bulk
-                    stationeryList.ForEach(stock =>
-                    {
-                        stock.SerialNumber = $"STK{stock.Id:D6}"; // Format: STK000123
-                        stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
-                    });
-
-                    _context.Stocks.UpdateRange(stationeryList); // Bulk update
-                    await _context.SaveChangesAsync(); // Save changes again
-                }
+                TempData["Message"] = "Invalid file format. Please upload a CSV file.";
+                return RedirectToAction("Index");
             }
 
-            return RedirectToAction("Index"); // Redirect to inventory list
+            try
+            {
+                using (var stream = new StreamReader(file.OpenReadStream()))
+                {
+                    var stationeryList = new List<Stocks>();
+                    bool isFirstRow = true;
+
+                    while (!stream.EndOfStream)
+                    {
+                        var line = await stream.ReadLineAsync();
+                        if (isFirstRow) // Skip header row
+                        {
+                            isFirstRow = false;
+                            continue;
+                        }
+
+                        var values = line.Split(',');
+
+                        if (values.Length == 10) // Ensure correct columns count
+                        {
+                            var stationery = new Stocks
+                            {
+                                Name = values[0].Trim(),
+                                SerialNumber = values[1].Trim(),
+                                Quantity = int.Parse(values[2]),
+                                MaxQuantity = int.Parse(values[3]),
+                                CreatedOn = DateTime.Now,
+                                Email = userName.Email,
+                                Barcode = values[6].Trim(),
+                                UpdatedOn = DateTime.Now,
+                                LocationId = int.Parse(values[8]),
+                                CategoryId = int.Parse(values[9]),
+                            };
+                            stationeryList.Add(stationery);
+                        }
+                    }
+
+                    if (stationeryList.Count > 0)
+                    {
+                        _context.Stocks.AddRange(stationeryList);
+                        await _context.SaveChangesAsync(); // Save initially to generate IDs
+
+                        // Update Serial Numbers and Barcodes in bulk
+                        stationeryList.ForEach(stock =>
+                        {
+                            stock.SerialNumber = $"STK{stock.Id:D6}"; // Format: STK000123
+                            stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
+                        });
+
+                        _context.Stocks.UpdateRange(stationeryList); // Bulk update
+                        await _context.SaveChangesAsync(); // Save changes again
+                    }
+                }
+
+                TempData["Message"] = "CSV uploaded successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = "An error occurred: " + ex.Message;
+            }
+
+            return RedirectToAction("Index");
         }
+
+
+
         //public async Task<IActionResult> DownloadBarcodePdf()
         //{
         //    var stocks = await _context.Stocks.ToListAsync();
@@ -615,6 +635,53 @@ namespace Inventree_App.Controllers
         //        return File(memoryStream.ToArray(), "application/pdf", "StockBarcodes.pdf");
         //    }
         //}
+
+        public IActionResult ExportToExcel()
+        {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            var inventoryData = GetRecentInventoryData(); // Fetch recent data
+
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Inventory Backup");
+                worksheet.Cells.LoadFromCollection(inventoryData, true);
+
+                var stream = new MemoryStream();
+                package.SaveAs(stream);
+                stream.Position = 0;
+
+                string fileName = "InventoryBackup_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".xlsx";
+                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+        }
+        public IActionResult BackupList()
+        {
+            string backupFolder = Path.Combine(Directory.GetCurrentDirectory(), "Backups");
+            Directory.CreateDirectory(backupFolder);
+            var files = Directory.GetFiles(backupFolder, "*.xlsx")
+                                 .Select(f => new BackupFile
+                                 {
+                                     FileName = Path.GetFileName(f),
+                                     FilePath = "/Backups/" + Path.GetFileName(f),
+                                     CreatedDate = System.IO.File.GetCreationTime(f)
+                                 })
+                                 .OrderByDescending(f => f.CreatedDate)
+                                 .ToList();
+            return View(files);
+        }
+
+        [HttpPost]
+        public IActionResult TriggerExport()
+        {
+            return RedirectToAction("ExportToExcel");
+        }
+        private List<Stocks> GetRecentInventoryData()
+        {
+            // Replace with actual database fetching logic
+            return _context.Stocks.ToList();
+        
+        }
     }
 
 }

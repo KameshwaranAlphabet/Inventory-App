@@ -5,6 +5,8 @@
 
 @{
     ViewData["Title"] = "Inventory";
+    int currentPage = Context.Request.Query.ContainsKey("page") ? int.Parse(Context.Request.Query["page"]) : 1;
+    int totalPages = 9; // Change this dynamically based on your data
 }
 
 <div class="container mt-4">
@@ -58,12 +60,10 @@
                                 <span class="badge bg-success">@product.StockQuantity</span>
                             }
                         </td>
-                        <td><span class="badge bg-primary">@product.StockLocation</span></td>
+                        <td><span>@product.StockLocation</span></td>
                         <td style="width: 120px;">
                             <div class="input-group input-group-sm" style="max-width: 100px;">
-                                <button class="btn btn-outline-secondary decrement" style="width: 25px; padding: 2px 5px;">-</button>
-                                <input type="text" class="form-control text-center quantity" value="@product.CartQuantity" min="0" max="@product.StockQuantity" readonly style="width: 40px; padding: 2px 5px;" data-id="@product.CartQuantity">
-                                <button class="btn btn-outline-secondary increment" style="width: 25px; padding: 2px 5px;">+</button>
+                                <input type="text" class="form-control text-center quantity" value="@(product.StockQuantity > 0 ? 1 : 0)" min="0" max="1" readonly style="width: 40px; padding: 2px 5px;" data-id="@product.ID" @(product.StockQuantity == 0 ? "disabled" : "")>
                             </div>
                         </td>
                         <td>
@@ -83,9 +83,33 @@
     <div class="d-flex justify-content-center">
         <nav>
             <ul class="pagination">
-                @for (int i = 1; i <= 3; i++)
+                @if (currentPage > 1)
                 {
-                    <li class="page-item"><a class="page-link" href="?page=@i&search=@Context.Request.Query["search"]&locationId=@Context.Request.Query["locationId"]">@i</a></li>
+                    <li class="page-item"><a class="page-link" href="?page=@(currentPage - 1)&search=@Context.Request.Query["search"]&locationId=@Context.Request.Query["locationId"]">&laquo;</a></li>
+                }
+
+                <li class="page-item @(currentPage == 1 ? "active" : "")"><a class="page-link" href="?page=1&search=@Context.Request.Query["search"]&locationId=@Context.Request.Query["locationId"]">1</a></li>
+
+                @if (currentPage > 3)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+
+                @for (int i = Math.Max(2, currentPage - 1); i <= Math.Min(totalPages - 1, currentPage + 1); i++)
+                {
+                    <li class="page-item @(currentPage == i ? "active" : "")"><a class="page-link" href="?page=@i&search=@Context.Request.Query["search"]&locationId=@Context.Request.Query["locationId"]">@i</a></li>
+                }
+
+                @if (currentPage < totalPages - 2)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+
+                <li class="page-item @(currentPage == totalPages ? "active" : "")"><a class="page-link" href="?page=@totalPages&search=@Context.Request.Query["search"]&locationId=@Context.Request.Query["locationId"]">@totalPages</a></li>
+
+                @if (currentPage < totalPages)
+                {
+                    <li class="page-item"><a class="page-link" href="?page=@(currentPage + 1)&search=@Context.Request.Query["search"]&locationId=@Context.Request.Query["locationId"]">&raquo;</a></li>
                 }
             </ul>
         </nav>
@@ -94,52 +118,10 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        let storedQuantities = JSON.parse(localStorage.getItem("cartQuantities")) || {};
-
-        // Restore stored quantities
-        document.querySelectorAll(".quantity").forEach(input => {
-            let stockId = input.getAttribute("data-id");
-            if (storedQuantities[stockId]) {
-                input.value = storedQuantities[stockId];
-            }
-        });
-        // clearCart();
-        // Handle increment button click
-        document.querySelectorAll(".increment").forEach(button => {
-            button.addEventListener("click", function () {
-                let input = this.previousElementSibling;
-                let max = parseInt(input.getAttribute("max"));
-                let value = parseInt(input.value);
-                let stockId = input.getAttribute("data-id");
-
-                if (value < max) {
-                    input.value = value + 1;
-                    storedQuantities[stockId] = input.value;
-                    localStorage.setItem("cartQuantities", JSON.stringify(storedQuantities));
-                }
-            });
-        });
-
-        // Handle decrement button click
-        document.querySelectorAll(".decrement").forEach(button => {
-            button.addEventListener("click", function () {
-                let input = this.nextElementSibling;
-                let value = parseInt(input.value);
-                let stockId = input.getAttribute("data-id");
-
-                if (value > 1) {
-                    input.value = value - 1;
-                    storedQuantities[stockId] = input.value;
-                    localStorage.setItem("cartQuantities", JSON.stringify(storedQuantities));
-                }
-            });
-        });
-
-        // Handle add-to-cart button click
         document.querySelectorAll(".add-to-cart").forEach(button => {
             button.addEventListener("click", function () {
                 let stockId = this.getAttribute("data-id");
-                let quantity = this.closest("tr").querySelector(".quantity").value;
+                let quantity = 1;
 
                 fetch("/Order/AddToCart", {
                     method: 'POST',
@@ -150,8 +132,6 @@
                 .then(data => {
                     if (data.success) {
                         alert("Item added to cart!");
-                        storedQuantities[stockId] = quantity;
-                        localStorage.setItem("cartQuantities", JSON.stringify(storedQuantities));
                     } else {
                         alert("Failed to add item.");
                     }
@@ -165,21 +145,10 @@
         let location = document.getElementById("locationFilter").value;
         window.location.href = `?search=${search}&locationId=${location}`;
     }
-
-    function clearCart() {
-        localStorage.removeItem("cartQuantities");
-        window.location.reload();
-    }
 </script>
-
 <style>
-/*     body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        padding: 19px;
-    } */
     .container
     {
-        max-width: 100%;
+       max-width:100%;
     }
 </style>

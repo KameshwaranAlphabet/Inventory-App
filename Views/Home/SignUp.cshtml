@@ -3,239 +3,96 @@
 @{
     ViewData["Title"] = "Register";
 }
-@* @await Html.PartialAsync("_Sidebar") <!-- Sidebar -->
- *@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <link rel="stylesheet" href="~/css/site.css" />
-</head>
-<body>
-    <div class="form-container">
-        <h2 style="text-align: center;">Register New User</h2>
-        <form method="post" asp-controller="Home" asp-action="Register" enctype="multipart/form-data">
-
-            <div class="form-group">
-                <label>First Name:</label>
-                <input type="text" name="FirstName" asp-for="FirstName" required />
-            </div>
-            <span class="error-message" asp-validation-for="FirstName"></span>
-
-            <div class="form-group">
-                <label>Last Name:</label>
-                <input type="text" name="LastName" asp-for="LastName" required />
-            </div>
-            <span class="error-message" asp-validation-for="LastName"></span>
-
-            <div class="form-group">
-                <label>Username:</label>
-                <input type="text" name="Username" asp-for="UserName" required />
-            </div>
-            <span class="error-message" asp-validation-for="UserName"></span>
-
-            <div class="form-group">
-                <label>Password:</label>
-                <input type="password" name="Password" asp-for="Password" required />
-            </div>
-            <span class="error-message" asp-validation-for="Password"></span>
-
-            <div class="form-group">
-                <label>Confirm Password:</label>
-                <input type="password" name="ConfirmPassword" required />
-            </div>
-            <span class="error-message" id="confirmPasswordError"></span>
-
-   @*          <div class="checkbox-container">
-                <input type="checkbox" id="userCanLogin" name="UserCanLogin">
-                <label for="userCanLogin">This user can login</label>
-            </div> *@
-
-            <div class="form-group">
-                <label>Email:</label>
-                <input type="email" name="Email" asp-for="Email" required />
-            </div>
-            <span class="error-message" asp-validation-for="Email"></span>
-
-       @*      <div class="checkbox-container">
-                <input type="checkbox" id="emailCredentials" name="EmailCredentials">
-                <label for="emailCredentials">Email this user their credentials?</label>
-            </div>
-            <p style="font-size: 12px; color: gray;">
-                You must provide an email address for this user to send them credentials.
-                Emailing credentials can only be done on user creation.
-                Passwords are stored in a one-way hash and cannot be retrieved once saved.
-            </p>
- *@  <!-- User Role Dropdown -->
-            <div class="form-group">
-                <label>User Role:</label>
-                <select name="UserRoles" asp-for="UserRoles" required>
-                    <option value="">Select Role</option>
-                    <option value="Admin">Admin</option>
-                    <option value="Lab Supervisor">Lab Supervisor</option>
-                    <option value="Purchase Team">Purchase Team</option>
-                    <option value="Faculty">Faculty</option>
-                    <option value="Storekeeper">Storekeeper</option>
-                    <option value="Lab Faculty">Lab Faculty</option>
-                </select>
-            </div>
-            <span class="error-message" asp-validation-for="UserRoles"></span>
-            @* <div class="form-group">
-                <label>Upload Image:</label>
-                <input type="file" name="ProfileImage" accept="image/*" />
-            </div> *@
-@*             <p style="font-size: 12px; color: gray; text-align: right;">Accepted file types: jpg, webp, png, gif, svg, avif. Max size: 2MB.</p>
- *@
-            <button class="register-button" type="submit">Register</button>
-            <p>Already have an account? <a href="@Url.Action("Index", "Customer")">User List</a></p>
-        </form>
-    </div>
-
-</body>
-</html>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        padding: 20px;
-        text-align: center;
-    }
-
-    .form-container {
-        /*           background: #fff; */
-        padding: 30px;
-        position: relative;
-        border-radius: 8px;
-        /*             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-     */ width: 350px;
-        text-align: center;
-    }
-
-    h2 {
-        font-size: 24px;
-        margin-bottom: 5px;
-    }
-
-    p {
-        font-size: 14px;
-        color: #6c757d;
-        margin-bottom: 20px;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-        text-align: left;
-    }
-
-    input[type="text"], input[type="password"], input[type="email"], input[type="file"] {
-        width: 94%;
-        padding: 10px;
-        margin-top: 5px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-    }
-
-    .register-button {
-        width: 100%;
-        padding: 10px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 16px;
-        margin-top: 10px;
-    }
-
-        .register-button:hover {
-            background-color: #0056b3;
-        }
-
-    .remember-container {
-        display: flex;
-        align-items: center;
-        justify-content: start;
-        margin-bottom: 15px;
-    }
-
-        .remember-container input {
-            margin-right: 10px;
-        }
-
-    .social-buttons {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 15px;
-    }
-
-        .social-buttons button {
-            flex: 1;
-            margin: 0 5px;
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-    .google-btn {
-        background-color: #db4437;
-        color: white;
-    }
-
-    .linkedin-btn {
-        background-color: #0077b5;
-        color: white;
-    }
-
-    .sso-btn {
-        background-color: #6c757d;
-        color: white;
-    }
-
-    .divider {
-        display: flex;
-        align-items: center;
-        text-align: center;
-        margin: 15px 0;
-    }
-
-        .divider::before,
-        .divider::after {
-            content: "";
-            flex: 1;
-            border-bottom: 1px solid #ccc;
-        }
-
-    .divider-text {
-        padding: 0 10px;
-        font-size: 12px;
-        color: #6c757d;
-    }
-</style>
-
-@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
-    }
+    <style>
+      
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container d-flex justify-content-center align-items-center mt-5">
+        <div class="card shadow p-4 w-100" style="max-width: 400px;">
+            <h2 class="text-center mb-3">Register New User</h2>
+            <form method="post" asp-controller="Home" asp-action="Register" enctype="multipart/form-data">
 
-<script>
-    document.querySelector('form').addEventListener('submit', function (e) {
-        let password = document.querySelector('input[name="Password"]').value;
-        let confirmPassword = document.querySelector('input[name="ConfirmPassword"]').value;
-        let errorSpan = document.getElementById("confirmPasswordError");
+                <div class="mb-3">
+                    <label class="form-label">First Name:</label>
+                    <input type="text" class="form-control" name="FirstName" asp-for="FirstName" required>
+                    <span class="text-danger" asp-validation-for="FirstName"></span>
+                </div>
 
-        if (password !== confirmPassword) {
-            errorSpan.textContent = "Passwords do not match!";
-            e.preventDefault(); // Prevent form submission
-        } else {
-            errorSpan.textContent = ""; // Clear error if fixed
-        }
-    });
-</script>
+                <div class="mb-3">
+                    <label class="form-label">Last Name:</label>
+                    <input type="text" class="form-control" name="LastName" asp-for="LastName" required>
+                    <span class="text-danger" asp-validation-for="LastName"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Username:</label>
+                    <input type="text" class="form-control" name="Username" asp-for="UserName" required>
+                    <span class="text-danger" asp-validation-for="UserName"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password:</label>
+                    <input type="password" class="form-control" name="Password" asp-for="Password" required>
+                    <span class="text-danger" asp-validation-for="Password"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Confirm Password:</label>
+                    <input type="password" class="form-control" name="ConfirmPassword" required>
+                    <span class="text-danger" id="confirmPasswordError"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email:</label>
+                    <input type="email" class="form-control" name="Email" asp-for="Email" required>
+                    <span class="text-danger" asp-validation-for="Email"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">User Role:</label>
+                    <select class="form-select" name="UserRoles" asp-for="UserRoles" required>
+                        <option value="">Select Role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Lab Supervisor">Lab Supervisor</option>
+                        <option value="Purchase Team">Purchase Team</option>
+                        <option value="Faculty">Faculty</option>
+                        <option value="Storekeeper">Storekeeper</option>
+                        <option value="Lab Faculty">Lab Faculty</option>
+                    </select>
+                    <span class="text-danger" asp-validation-for="UserRoles"></span>
+                </div>
+
+                <button class="btn btn-primary w-100" type="submit">Register</button>
+                <p class="text-center mt-3">Already have an account? <a href="@Url.Action("Index", "Customer")">User List</a></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', function (e) {
+            let password = document.querySelector('input[name="Password"]').value;
+            let confirmPassword = document.querySelector('input[name="ConfirmPassword"]').value;
+            let errorSpan = document.getElementById("confirmPasswordError");
+
+            if (password !== confirmPassword) {
+                errorSpan.textContent = "Passwords do not match!";
+                e.preventDefault(); // Prevent form submission
+            } else {
+                errorSpan.textContent = ""; // Clear error if fixed
+            }
+        });
+    </script>
+</body>
+</html>

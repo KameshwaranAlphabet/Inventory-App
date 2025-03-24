@@ -113,4 +113,62 @@ public class DashboardController : Controller
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+
+    [HttpGet]
+    public IActionResult GetOrders(string month, int page = 1, int pageSize = 5)
+    {
+        var orders = _context.Order.ToList();
+
+        var result = new List<DashBoardOrder>();
+       
+        // Filter by month if selected
+        if (month != "all")
+        {
+            orders = orders.Where(o => o.OrderDate.ToString("MM") == month).ToList();
+        }
+        foreach (var order in orders)
+        {
+            var user = _context.Customer.FirstOrDefault(x => x.Id == order.UserId);
+            if (user != null) // Ensure user is not null to avoid exceptions
+            {
+                string firstInitial = !string.IsNullOrEmpty(user.FirstName) ? user.FirstName[0].ToString() : "";
+                string lastInitial = !string.IsNullOrEmpty(user.LastName) ? user.LastName[^1].ToString() : ""; // ^1 gets the last character
+
+                result.Add(new DashBoardOrder
+                {
+                    Profile = firstInitial + lastInitial,
+                    Name = user.UserName,
+                    Date = order.OrderDate,
+                    Quantity = order.ItemsCount
+                });
+            }
+        }
+        // Calculate total quantity per order and sort by highest quantity
+        var sortedOrders = result.Where(x=>x.Quantity > 0).OrderByDescending(x => x.Quantity).ToList();
+       
+        // Apply pagination
+        int totalRecords = sortedOrders.Count;
+        var paginatedOrders = sortedOrders.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        return Json(new { data = paginatedOrders, totalRecords, pageSize });
+    }
+    [HttpGet]
+    public IActionResult GetLogs(string month, int page = 1, int pageSize = 5)
+    {
+        var orders = _context.Logs.OrderByDescending(x => x.CreatedDate).ToList();
+
+        var result = new List<Logs>();
+
+        // Filter by month if selected
+        if (month != "all")
+        {
+            orders = orders.Where(o => o.CreatedDate.Value.Month.ToString("00") == month).ToList();
+        }
+
+        // Apply pagination
+        int totalRecords = orders.Count;
+        var paginatedOrders = orders.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        return Json(new { data = paginatedOrders, totalRecords, pageSize });
+    }
 }

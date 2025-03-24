@@ -95,8 +95,8 @@
                                             <td>@item.StockName</td>
                                             <td>@item.OrderId</td>
                                             <td>@item.Quantity</td>
-                                            <td><span class="badge bg-info">Pending approval</span></td>
-                                            <td><span class="badge bg-secondary">@item.Status</span></td>
+                                            <td><span class="badge bg-info">@item.Status</span></td>
+                                            <td><span class="badge bg-secondary">@item.State</span></td>
                                         </tr>
                                     }
                                 </tbody>
@@ -164,3 +164,9 @@
 }
 </body>
 </html>
+<style>
+    .container
+    {
+        max-width:100%;
+    }
+</style>
