@@ -75,42 +75,68 @@
             padding: 10px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        .icon-circle {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 20px;
+        }
+
     </style>
 </head>
 <body>
     <div class="container py-4">
         <div class="welcome">Hi, @username</div>
         <div class="row g-3 stats-cards mt-3">
-            <div class="col-md-3" onclick="navigateToDashboard()">
-                <div class="card blue">
-                    <div>
-                        Total Stocks<br><strong>@totalStocks</strong>
+            <div class="col-md-3">
+                <div class="card text-white bg-primary p-3 d-flex flex-row align-items-center" onclick="navigateToDashboard()">
+                    <div class="icon-circle bg-white text-primary me-3">
+                        <i class="ph ph-shopping-cart"></i>
                     </div>
-                    <i class="ph ph-shopping-cart"></i>
+                    <div>
+                        <span>Total Stocks</span><br>
+                        <strong class="fs-5">@totalStocks</strong>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3" onclick="navigateToAvailabe()">
-                <div class="card green">
-                    <div>
-                        Available Stocks<br><strong>@availableStocks</strong>
+
+            <div class="col-md-3">
+                <div class="card text-white bg-success p-3 d-flex flex-row align-items-center" onclick="navigateToAvailabe()">
+                    <div class="icon-circle bg-white text-success me-3">
+                        <i class="ph ph-wallet"></i>
                     </div>
-                    <i class="ph ph-wallet"></i>
+                    <div>
+                        <span>Available Stocks</span><br>
+                        <strong class="fs-5">@availableStocks</strong>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3" onclick="navigateToLowStock()">
-                <div class="card red">
-                    <div>
-                        Low Stocks<br><strong>@lowStocks</strong>
+
+            <div class="col-md-3">
+                <div class="card text-white bg-danger p-3 d-flex flex-row align-items-center" onclick="navigateToLowStock()">
+                    <div class="icon-circle bg-white text-danger me-3">
+                        <i class="ph ph-trend-down"></i>
                     </div>
-                    <i class="ph ph-truck"></i>
+                    <div>
+                        <span>Low Stocks</span><br>
+                        <strong class="fs-5">@lowStocks</strong>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-3" onclick="navigateToPending()">
-                <div class="card yellow">
-                    <div>
-                        Pending<br><strong>@pending</strong>
+
+            <div class="col-md-3">
+                <div class="card text-white bg-warning p-3 d-flex flex-row align-items-center" onclick="navigateToPending()">
+                    <div class="icon-circle bg-white text-warning me-3">
+                        <i class="ph ph-hourglass-simple-medium"></i>
                     </div>
-                    <i class="ph ph-chart-line"></i>
+                    <div>
+                        <span>Pending</span><br>
+                        <strong class="fs-5">@pending</strong>
+                    </div>
                 </div>
             </div>
         </div>
@@ -141,7 +167,7 @@
                                 <th>Profile</th>
                                 <th>Name</th>
                                 <th>Date</th>
-                                <th>Projects</th>
+                                <th>Quantity</th>
                             </tr>
                         </thead>
                         <tbody id="ordersTable"></tbody>
