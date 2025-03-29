@@ -23,5 +23,7 @@ namespace Inventree_App.Context
         public DbSet<Chemicals> Chemicals { get; set; } 
         public DbSet<BrokenReports> BrokenReports { get; set; } 
         public DbSet<AccidentReports> AccidentReports { get; set; } 
+        public DbSet<UnitTypes> UnitTypes { get; set; } 
+        public DbSet<SubUnitTypes> SubUnitTypes { get; set; } 
     }
 }

@@ -145,18 +145,22 @@
             <div class="col-md-8">
                 <div class="card p-3">
                     <div class="d-flex justify-content-between">
-                    <h5>Top Buyed Faculty</h5>
+                    <h5>Most Indented</h5>
+                        <!-- User Name Search Filter with Smaller Size -->
+                        <input type="text" id="userFilter" class="form-control form-control-sm"
+                               style="width: 180px;" placeholder="Search User">
+
                         <select id="monthFilter" class="form-select filter-dropdown">
                             <option value="all">All</option>
-                            <option value="01">January</option>
-                            <option value="02">February</option>
-                            <option value="03">March</option>
-                            <option value="04">April</option>
-                            <option value="05">May</option>
-                            <option value="06">June</option>
-                            <option value="07">July</option>
-                            <option value="08">August</option>
-                            <option value="09">September</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
                             <option value="10">October</option>
                             <option value="11">November</option>
                             <option value="12">December</option>
@@ -167,8 +171,9 @@
                             <tr>
                                 <th>Profile</th>
                                 <th>Name</th>
+                                <th>ItemCount</th>
                                 <th>Date</th>
-                                <th>Quantity</th>
+                                <th>TotalQuantity</th>
                             </tr>
                         </thead>
                         <tbody id="ordersTable"></tbody>
@@ -182,6 +187,11 @@
                 <div class="card p-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5>Logs</h5>
+
+                        <!-- User Name Search Filter with Smaller Size -->
+                        <input type="text" id="userFilterlog" class="form-control form-control-sm"
+                               style="width: 180px;" placeholder="Search User">
+
                         <select id="updateFilter" class="form-select filter-dropdown">
                             <option value="all">All</option>
                             <option value="01">January</option>
@@ -212,27 +222,53 @@
      var currentPage = 1;
     var pageSize = 7;
 
-    function fetchOrders(page = 1) {
+      function fetchOrders(page = 1) {
         var month = $("#monthFilter").val();
-        $.get("/Dashboard/GetOrders", { month: month, page: page, pageSize: pageSize }, function (response) {
-            console.log("111111",response.data)
-               $("#ordersTable").html(response.data.map(o =>
-                `<tr>
-                    <td>
-                        <div style="width: 25px; height: 25px; border-radius: 50%; background-color: ${getColor(o.name)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                            ${o.profile}
-                        </div>
-                    </td>
-                    <td>${o.name}</td>
-                    <td>${new Date(o.date).toLocaleDateString()}</td>
-                    <td>${o.quantity}</td>
-                </tr>`
-            ).join(""));
+        var searchUser = $("#userFilter").val().trim(); // Get search input value
+        var pageSize = 7; // Set default page size
 
-            // Pagination
-            setupPagination(response.totalRecords, page);
+        $.get("/Dashboard/GetOrders", { month: month, searchUser: searchUser, page: page, pageSize: pageSize }, function (response) {
+            var ordersTable = $("#ordersTable");
+            ordersTable.empty(); // Clear previous data
+
+            if (response.data.length === 0) {
+                ordersTable.append(`<tr><td colspan="5" class="text-center">No records found</td></tr>`);
+            } else {
+                ordersTable.html(response.data.map(o =>
+                    `<tr>
+                        <td>
+                            <div style="width: 25px; height: 25px; border-radius: 50%; background-color: ${getColor(o.name)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                ${o.profile}
+                            </div>
+                        </td>
+                        <td>${o.name}</td>
+                        <td>${o.itemCount}</td>
+                        <td>
+                            ${new Date(o.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            ${new Date(o.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                        </td>                       
+                        <td>${o.quantity}</td>
+                    </tr>`
+                ).join(""));
+            }
+
+            // Update Pagination
+            setupPagination(response.totalRecords, page, pageSize);
+        }).fail(function () {
+            console.error("Error fetching orders");
+            $("#ordersTable").html(`<tr><td colspan="5" class="text-center text-danger">Error loading data</td></tr>`);
         });
     }
+
+    // Event Listeners for Filters
+    $("#monthFilter, #userFilter").on("change keyup", function () {
+        fetchOrders(1); // Fetch orders on filter change
+    });
+
+    // Initial Load
+    fetchOrders();
+
+    
         function getInitials(name) {
         let initials = name.split(" ").map(word => word[0]).join("").toUpperCase();
         return initials.substring(0, 2); // Keep it at 2 characters max
@@ -293,38 +329,48 @@
 
     fetchOrders(currentPage);
 
-    var logPage = 1;
-      var logPageSize = 4; // Number of logs per page
+      var logPage = 1;
+    var logPageSize = 4;
 
       function fetchLogs(page = 1) {
-          var month = $("#updateFilter").val();
-          $.get("/Dashboard/GetLogs", { month: month, page: page, pageSize: logPageSize }, function (response) {
-              $("#updatesList").html(response.data.map(log =>
-                  `<li class="mb-2">
-                      <strong>${log.userName}</strong><br>
-                      ${log.description}<br>
-                      <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
-                  </li>`
-              ).join(""));
+        var month = $("#updateFilter").val();
+        var searchUser = $("#userFilterlog").val() || "";
 
-              setupLogPagination(response.totalRecords, page);
-          });
-      }
+        $.get("/Dashboard/GetLogs", { month: month, searchUser: searchUser, page: page, pageSize: logPageSize }, function (response) {
+            var ordersTable = $("#updatesList");
+            ordersTable.empty(); // Clear previous records
 
-      function formatTimeAgo(dateString) {
-          let date = new Date(dateString);
-          let now = new Date();
-          let seconds = Math.floor((now - date) / 1000);
-          let minutes = Math.floor(seconds / 60);
-          let hours = Math.floor(minutes / 60);
-          let days = Math.floor(hours / 24);
+            if (response.data.length === 0) {
+                ordersTable.append(`<tr><td colspan="5" class="text-center">No records found</td></tr>`);
+            } else {
+                ordersTable.html(response.data.map(log =>
+                    `<li class="mb-2">
+                        <strong>${log.userName}</strong><br>
+                        ${log.description}<br>
+                        <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
+                    </li>`
+                ).join(""));
+            }
 
-          if (seconds < 60) return "Just now";
-          if (minutes < 60) return `${minutes} min ago`;
-          if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-          if (days === 1) return "Yesterday";
-          return `${days} days ago`;
-      }
+            setupLogPagination(response.totalRecords, page);
+        });
+    }
+
+    function formatTimeAgo(dateString) {
+        let date = new Date(dateString);
+        let now = new Date();
+        let seconds = Math.floor((now - date) / 1000);
+        let minutes = Math.floor(seconds / 60);
+        let hours = Math.floor(minutes / 60);
+        let days = Math.floor(hours / 24);
+
+        if (seconds < 60) return "Just now";
+        if (minutes < 60) return `${minutes} min ago`;
+        if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        if (days === 1) return "Yesterday";
+        return `${days} days ago`;
+    }
+
     function setupLogPagination(totalRecords, currentPage) {
         var totalPages = Math.ceil(totalRecords / logPageSize);
         var paginationHtml = "";
@@ -364,12 +410,14 @@
 
         $("#logPagination").html(paginationHtml);
     }
-      $("#updateFilter").change(function () {
-          logPage = 1;
-          fetchLogs(logPage);
-      });
 
-      fetchLogs(logPage);
+    $("#updateFilter, #userFilterlog").on("change keyup", function () {
+        logPage = 1;
+        fetchLogs(logPage);
+    });
+
+    fetchLogs(logPage);
+
 
       function navigateToDashboard() {
         const url = `/Inventory/Index?page=${1}&pageSize=${10}&filter=${"All"}&search=${""}`;

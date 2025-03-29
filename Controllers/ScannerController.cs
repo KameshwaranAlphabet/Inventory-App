@@ -53,7 +53,7 @@ namespace Inventree_App.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public IActionResult ScanAndReduceStock([FromBody] BarcodeScanRequest request)
+        public IActionResult ScanAndReduceStockaa([FromBody] BarcodeScanRequest request)
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
@@ -90,5 +90,68 @@ namespace Inventree_App.Controllers
                 }
             }
         }
+        [HttpPost]
+        public IActionResult ScanAndReduceStock([FromBody] BarcodeScanRequest request)
+        {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user?.UserName;
+
+            if (string.IsNullOrEmpty(request.Barcode))
+            {
+                return BadRequest(new { success = false, error = "Invalid barcode." });
+            }
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                // Fetch current stock details
+                string checkStockQuery = "SELECT UnitQuantity, UnitCapacity, Quantity FROM stocks WHERE SerialNumber = @barcode";
+                var stock = connection.QueryFirstOrDefault<Stocks>(checkStockQuery, new { barcode = request.Barcode });
+
+                if (stock == null)
+                {
+                    return Json(new { success = false, message = "Stock not found." });
+                }
+
+                int? totalAvailablePieces = (stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity;
+
+                if (1 > totalAvailablePieces)
+                {
+                    return Json(new { success = false, message = "Not enough stock available." });
+                }
+
+                // Calculate new stock levels after deduction
+                int? remainingQuantity = totalAvailablePieces - 1;
+                int? newPackQuantity = remainingQuantity / stock.UnitCapacity;
+                int? newPieceQuantity = remainingQuantity % stock.UnitCapacity;
+
+                // Update database with new stock values
+                string updateQuery = @"
+            UPDATE stocks 
+            SET UnitQuantity = @newPackQuantity, Quantity = @newPieceQuantity 
+            WHERE SerialNumber = @barcode";
+
+                connection.Execute(updateQuery, new
+                {
+                    newPackQuantity,
+                    newPieceQuantity,
+                    barcode = request.Barcode
+                });
+
+                // Fetch updated stock details
+                var updatedStock = connection.QueryFirstOrDefault<Stocks>(checkStockQuery, new { barcode = request.Barcode });
+
+                return Json(new
+                {
+                    success = true,
+                    product = new
+                    {
+                        StockName = updatedStock?.Name,                   
+                        StockQuantity = (updatedStock?.UnitQuantity*updatedStock?.UnitCapacity) + updatedStock?.Quantity,
+                        SerialNumber = request.Barcode
+                    }
+                });
+            }
+        }
+
     }
 }
