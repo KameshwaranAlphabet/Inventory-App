@@ -182,32 +182,60 @@ namespace Inventree_App.Controllers
             ViewBag.CurrentPage = page;
             ViewBag.PageSize = pageSize;
 
-            var stocks = _context.Stocks.AsQueryable();
+            var stocksQuery = _context.Stocks.AsQueryable();
 
             // Apply stock level filtering
             if (filter == "red")
-                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
+                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
             else if (filter == "orange")
-                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 30 && (s.Quantity / (float)s.MaxQuantity) * 100 < 70);
+                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 30 && (s.Quantity / (float)s.MaxQuantity) * 100 < 70);
             else if (filter == "green")
-                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 70);
+                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 70);
+            else if (filter == "Available")
+                stocksQuery = stocksQuery.Where(s => s.Quantity != 0);
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
-                stocks = stocks.Where(s => s.Name.Contains(search));
+                stocksQuery = stocksQuery.Where(s => s.Name.Contains(search));
 
-            int totalItems = stocks.Count();
+            int totalItems = stocksQuery.Count();
 
-            var paginatedStocks =  stocks
+            var paginatedStocks =  stocksQuery
                 .OrderBy(s => s.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
+                .Select(a => new
+                {
+                    a.Id,
+                    a.Name,
+                    a.Quantity,
+                    a.MaxQuantity,
+                    a.UnitCapacity,
+                    a.UnitQuantity,
+                    a.SerialNumber,
+                    UnitType = _context.UnitTypes.Where(x => x.Id.ToString() == a.UnitType).Select(x => x.UnitName).FirstOrDefault(),
+                    SubUnitType = _context.SubUnitTypes.Where(x => x.Id.ToString() == a.SubUnitType).Select(x => x.SubUnitName).FirstOrDefault()
+                })
                 .ToList();
+
+            // Convert anonymous type to a proper model (if needed)
+            var stockList = paginatedStocks.Select(a => new Stocks
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Quantity = a.Quantity,
+                MaxQuantity = a.MaxQuantity,
+                UnitCapacity = a.UnitCapacity,
+                UnitQuantity = a.UnitQuantity,
+                SerialNumber = a.SerialNumber,
+                UnitType = a.UnitType ?? "",  // Default value if null
+                SubUnitType = a.SubUnitType ?? ""
+            }).ToList();
 
             ViewBag.TotalItems = totalItems;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
-            return View("Inventory", paginatedStocks);
+            return View("Inventory", stockList);
         }
 
         /// <summary>
@@ -280,6 +308,11 @@ namespace Inventree_App.Controllers
             ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
 
             ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");
+
+            ViewData["UnitTypes"] = new SelectList(_context.UnitTypes, "Id", "UnitName");
+
+            ViewData["SubUnitTypes"] = new SelectList(_context.SubUnitTypes, "Id", "SubUnitName");
+
             return View("AddStock"); // Matches @model List<Stocks>           
         }
 
@@ -292,6 +325,7 @@ namespace Inventree_App.Controllers
             {
                 stock.CreatedOn = DateTime.Now;
                 stock.Email = userName.Email;
+                stock.MaxQuantity = (stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity;
 
                 // Add stock to database
                 _context.Stocks.Add(stock);
@@ -385,6 +419,11 @@ namespace Inventree_App.Controllers
                 ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
 
                 ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");
+
+                ViewData["UnitTypes"] = new SelectList(_context.UnitTypes, "Id", "UnitName");
+
+                ViewData["SubUnitTypes"] = new SelectList(_context.SubUnitTypes, "Id", "SubUnitName");
+
                 if (id.HasValue)
                 {
                     string query = "SELECT * FROM stocks WHERE Id = @id";
@@ -422,7 +461,11 @@ namespace Inventree_App.Controllers
                     stock.LocationId,
                     stock.CategoryId,
                     stock.Quantity,
-                    stock.MaxQuantity
+                    stock.MaxQuantity,
+                    stock.UnitType,
+                    stock.UnitQuantity,
+                    stock.UnitCapacity,
+                    stock.SubUnitType,
                 };
 
                 // Update stock properties dynamically
@@ -430,6 +473,11 @@ namespace Inventree_App.Controllers
                 stock.LocationId = updatedStock.LocationId;
                 stock.CategoryId = updatedStock.CategoryId;
                 stock.Quantity = updatedStock.Quantity;
+                stock.MaxQuantity = updatedStock.MaxQuantity;
+                stock.UnitType = updatedStock.UnitType;
+                stock.UnitQuantity = updatedStock.UnitQuantity;
+                stock.UnitCapacity = updatedStock.UnitCapacity;
+                stock.SubUnitType = updatedStock.SubUnitType;
                 stock.MaxQuantity = updatedStock.MaxQuantity;
 
                 _context.Stocks.Update(stock);
@@ -462,6 +510,392 @@ namespace Inventree_App.Controllers
             }
 
             return View(updatedStock);
+        }
+        public JsonResult GetUnitTypes()
+        {
+            var unitTypes = _context.UnitTypes.Select(u => new { u.Id, u.UnitName }).ToList();
+            return Json(unitTypes);
+        }
+
+        public JsonResult GetSubUnitTypes()
+        {
+            var subUnitTypes = _context.SubUnitTypes.Select(s => new { s.Id, s.SubUnitName }).ToList();
+            return Json(subUnitTypes);
+        }
+        public IActionResult StationeryCategories(int pageNumber = 1, int pageSize = 5)
+        {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
+            var categoriesQuery = _context.Categories.Select(category => new CategoryViewModel
+            {
+                Id = category.Id,
+                Name = category.CategoryName,
+                CreatedOn = category.CreatedOn,
+                ParentId = category.ParentCategoryId,
+                Count = _context.Stocks.Count(x => x.CategoryId == category.Id)
+            });
+
+            // Get total count for pagination
+            int totalRecords = categoriesQuery.Count();
+
+            // Apply pagination
+            var categories = categoriesQuery
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+
+            return View("StationeryCategories", categories);
+        }
+
+        [HttpPost]
+        public IActionResult CreateOrUpdate(Categories model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (model.Id == 0) // Create new category
+                {
+                    model.CreatedOn = DateTime.Now;
+                    _context.Categories.Add(model);
+                }
+                else // Update existing category
+                {
+                    var existingCategory = _context.Categories.Find(model.Id);
+                    if (existingCategory != null)
+                    {
+                        existingCategory.CategoryName = model.CategoryName;
+                        _context.Categories.Update(existingCategory);
+                    }
+                }
+                _context.SaveChanges();
+                return RedirectToAction("StationeryCategories");
+            }
+
+            return RedirectToAction("StationeryCategories");
+        }
+
+
+        [HttpPost]
+        public IActionResult Edit(Categories model)
+        {
+            var category = _context.Categories.FirstOrDefault(c => c.Id == model.Id);
+            if (category == null) return NotFound();
+            category.CategoryName = model.CategoryName;
+
+            _context.Update(category);
+            _context.SaveChanges();
+            return RedirectToAction("StationeryCategories");
+        }
+
+        [HttpGet]
+        public IActionResult DeleteCategory(int id)
+        {
+            var category = _context.Categories.FirstOrDefault(c => c.Id == id);
+            if (category != null)
+            {
+                _context.Remove(category);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("StationeryCategories");
+        }
+
+        //public IActionResult StationeryLocation()
+        //{
+        //    var user = GetCurrentUser();
+        //    ViewBag.UserName = user.UserName;
+        //    var locations = _context.Location.ToList();
+
+        //    var model = new List<LocationViewModel>();
+        //    foreach (var location in locations)
+        //    {
+        //        var count = _context.Stocks.Count(x => x.LocationId == location.Id);
+
+        //        model.Add(new LocationViewModel
+        //        {
+        //            Id = location.Id,
+        //            Name = location.LocationName,
+        //            CreatedOn = DateTime.Now,
+        //            Count = count
+        //        });
+        //    }
+        //    return View("Location", model);
+        //}
+
+        public IActionResult StationeryLocation(int pageNumber = 1, int pageSize = 5)
+        {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
+            var categoriesQuery = _context.Location.Select(category => new LocationViewModel
+            {
+                Id = category.Id,
+                Name = category.LocationName,
+                Count = _context.Stocks.Count(x => x.LocationId == category.Id)
+            });
+
+            // Get total count for pagination
+            int totalRecords = categoriesQuery.Count();
+
+            // Apply pagination
+            var categories = categoriesQuery
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+
+            return View("Location", categories);
+        }
+
+        [HttpPost]
+        public IActionResult CreateOrUpdateLocation(Location model)
+        {
+            if (ModelState.IsValid)
+            {
+                if (model.Id == 0) // Create new category
+                {
+                    _context.Location.Add(model);
+                }
+                else // Update existing category
+                {
+                    var existingCategory = _context.Location.Find(model.Id);
+                    if (existingCategory != null)
+                    {
+                        existingCategory.LocationName = model.LocationName;
+                        _context.Location.Update(existingCategory);
+                    }
+                }
+                _context.SaveChanges();
+                return RedirectToAction("StationeryLocation");
+            }
+
+            return RedirectToAction("StationeryLocation");
+        }
+        [HttpGet]
+        public IActionResult DeleteLocation(int id)
+        {
+            var category = _context.Location.FirstOrDefault(c => c.Id == id);
+            if (category != null)
+            {
+                _context.Remove(category);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("StationeryLocation");
+        }
+
+        // API to search customers
+        [HttpGet]
+        public JsonResult SearchCustomers(string term)
+        {
+            //var result = _context.Customer.Where(c => c.UserName.Contains(term.ToLower())).ToList();
+            var customers = _context.Customer
+                            .Where(c => c.UserName.Contains(term))
+                            .Select(c => new { name = c.UserName })
+                            .ToList();
+            return Json(customers);
+        }
+
+        // API to search stocks
+        [HttpGet]
+        public JsonResult SearchStocks(string term)
+        {
+            //var result = _context.Stocks.Where(s => s.Name.Contains(term.ToLower())).ToList();
+            var stocks = _context.Stocks
+                           .Where(s => s.Name.Contains(term))
+                           .Select(s => new { stockName = s.Name })
+                           .ToList();
+
+            return Json(stocks);
+        }
+
+        [HttpPost]
+        public IActionResult CreateManual(ManualStockPage model)
+        {
+            var user = GetCurrentUser();
+            if (ModelState.IsValid)
+            {
+                // Find the stock entry for the item
+                var stock1 = _context.Stocks.FirstOrDefault(s => s.Name == model.StockName);
+                if (stock1 != null)
+                {
+                    var totalStockQuantity = (stock1.UnitCapacity * stock1.UnitQuantity) + stock1.Quantity; // Total available stock
+
+                    if (model.Quantity > totalStockQuantity)
+                    {
+                        TempData["ErrorMessage"] = "Insufficient stock available!";
+                        return RedirectToAction("CreateManual");
+                    }
+
+                    if (model.Quantity <= totalStockQuantity)
+                    {
+                        // Calculate how many full packs to deduct
+                        int? fullPacksToDeduct = model.Quantity / stock1.UnitCapacity; // Full packs
+                        int? remainingPieces = model.Quantity % stock1.UnitCapacity;   // Leftover pieces
+
+                        // Deduct from packs
+                        stock1.UnitQuantity -= fullPacksToDeduct;
+
+                        // Deduct from loose pieces
+                        stock1.Quantity -= remainingPieces;
+
+                        // Ensure we don't have negative pack counts
+                        if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
+
+                        // Ensure loose pieces are correctly adjusted
+                        if (stock1.Quantity < 0)
+                        {
+                            stock1.UnitQuantity--; // Deduct 1 more pack
+                            stock1.Quantity += stock1.UnitCapacity; // Convert a pack into pieces
+                        }
+
+                        // Ensure stock is not negative
+                        if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
+                        if (stock1.Quantity < 0) stock1.Quantity = 0;
+                    }
+                }
+                var newPurchase = new Logs
+                {
+                    UserID = user.Id,
+                    UserName = model.CustomerName,
+                    CreatedDate = DateTime.Now,
+                    Description = $"{model.StockName} qty {model.Quantity} as Picked by {model.CustomerName} Given by {user.UserName} ",
+                    Type = "Completed",
+                };
+                TempData["SuccessMessage"] = "Stock successfully deducted!";
+                _context.Logs.Add(newPurchase);
+                _context.SaveChanges();
+                return RedirectToAction("CreateManual");
+            }
+            TempData["ErrorMessage"] = "Invalid request!";
+            return View(model);
+        }
+        public IActionResult CreateManual()
+        {
+            return View("ManualEntry");
+        }
+        public IActionResult UnitTypes(int pageNumber = 1, int pageSize = 5)
+        {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
+            //var categoriesQuery = _context.Location.Select(category => new LocationViewModel
+            //{
+            //    Id = category.Id,
+            //    Name = category.LocationName,
+            //    Count = _context.Stocks.Count(x => x.LocationId == category.Id)
+            //});
+
+            // Get total count for pagination
+            int totalRecords = _context.UnitTypes.Count();
+
+            // Apply pagination
+            var categories = _context.UnitTypes
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+
+            return View("AddUnits", categories);
+        }
+
+        [HttpPost]
+        public IActionResult CreateOrUpdateUnitTypes(UnitTypes model)
+        {
+            
+            if (model.Id == 0) // Create new category
+            {
+                _context.UnitTypes.Add(model);
+            }
+            else // Update existing category
+            {
+                var existingCategory = _context.UnitTypes.Find(model.Id);
+                if (existingCategory != null)
+                {
+                    existingCategory.UnitName = model.UnitName;
+                    _context.UnitTypes.Update(existingCategory);
+                }
+            }
+            _context.SaveChanges();
+            return RedirectToAction("UnitTypes");
+        }
+        [HttpGet]
+        public IActionResult DeleteUnits(int id)
+        {   
+            var category = _context.UnitTypes.FirstOrDefault(c => c.Id == id);
+            if (category != null)
+            {
+                _context.UnitTypes.Remove(category);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("UnitTypes");
+        }
+        public IActionResult SubUnitTypes(int pageNumber = 1, int pageSize = 5)
+        {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
+            //var categoriesQuery = _context.Location.Select(category => new LocationViewModel
+            //{
+            //    Id = category.Id,
+            //    Name = category.LocationName,
+            //    Count = _context.Stocks.Count(x => x.LocationId == category.Id)
+            //});
+
+            // Get total count for pagination
+            int totalRecords = _context.SubUnitTypes.Count();
+
+            // Apply pagination
+            var categories = _context.UnitTypes
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+
+            return View("AddUnits", categories);
+        }
+
+        [HttpPost]
+        public IActionResult CreateOrUpdateSubUnitTypes(SubUnitTypes model)
+        {
+
+            if (model.Id == 0) // Create new category
+            {
+                _context.SubUnitTypes.Add(model);
+            }
+            else // Update existing category
+            {
+                var existingCategory = _context.SubUnitTypes.Find(model.Id);
+                if (existingCategory != null)
+                {
+                    existingCategory.SubUnitName = model.SubUnitName;
+                    _context.SubUnitTypes.Update(existingCategory);
+                }
+            }
+            _context.SaveChanges();
+            return RedirectToAction("UnitTypes");
+        }
+        [HttpGet]
+        public IActionResult DeleteSubUnits(int id)
+        {
+            var category = _context.SubUnitTypes.FirstOrDefault(c => c.Id == id);
+            if (category != null)
+            {
+                _context.SubUnitTypes.Remove(category);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("UnitTypes");
         }
     }
 }

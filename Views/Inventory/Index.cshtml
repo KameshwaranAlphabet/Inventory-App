@@ -70,6 +70,7 @@
                     <th>ID</th>
                     <th>Product Name</th>
                     <th>Serial Number</th>
+                    <th>Unit Quantity</th>
                     <th>QTY</th>
                     <th>Stock Level</th>
                     <th>Action</th>
@@ -78,14 +79,15 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    var percentage = (item.Quantity / (float)item.MaxQuantity) * 100;
+                    var percentage = ((item.UnitCapacity * item.UnitQuantity + item.Quantity) / (float)item.MaxQuantity) * 100;
                     var colorClass = percentage < 30 ? "bg-danger" : (percentage < 70 ? "bg-warning" : "bg-success");
 
                     <tr>
                         <td>@item.Id</td>
                         <td>@item.Name</td>
                         <td>@item.SerialNumber</td>
-                        <td>@item.Quantity / @item.MaxQuantity</td>
+                        <td>@item.UnitQuantity (@item.UnitType)  @item.SubUnitType (@item.Quantity) </td>
+                        <td> @(item.UnitCapacity * item.UnitQuantity + item.Quantity) / @item.MaxQuantity </td>
                         <td>
                             <div class="progress" style="height: 10px; min-width: 100px;">
                                 <div class="progress-bar @colorClass" role="progressbar" data-percentage="@percentage"></div>
