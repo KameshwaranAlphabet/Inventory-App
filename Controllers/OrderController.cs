@@ -1,4 +1,6 @@
+using AutoMapper;
 using Inventree_App.Context;
+using Inventree_App.Dto;
 using Inventree_App.Enum;
 using Inventree_App.Models;
 using Inventree_App.Service;
@@ -11,6 +13,7 @@ using System.Data.Entity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
+using static iTextSharp.text.pdf.AcroFields;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Inventree_App.Controllers
@@ -20,12 +23,14 @@ namespace Inventree_App.Controllers
         private readonly DatabaseHelper _dbHelper;
         private readonly ApplicationContext _context;
         private readonly ICustomerService _customerService;
+        private readonly IMapper _mapper;
 
-        public OrderController(DatabaseHelper dbHelper, ApplicationContext context, ICustomerService customerService)
+        public OrderController(DatabaseHelper dbHelper, ApplicationContext context, ICustomerService customerService , IMapper mapper)
         {
             _dbHelper = dbHelper;
             _context = context;
             _customerService = customerService;
+            _mapper = mapper;
         }
 
         public List<StockViewModel> GetFilteredProducts(string search, int? locationId, int page, int pageSize)
@@ -34,7 +39,7 @@ namespace Inventree_App.Controllers
             ViewBag.UserName = user.UserName;
 
             var query = _context.Stocks
-      .Join(_context.Location, p => p.LocationId, l => l.Id,
+      .Join(_context.Categories, p => p.CategoryId, l => l.Id,
             (p, l) => new { p, l })
       .GroupJoin(_context.CartItem.Where(c => c.UserId == user.Id),
                  stock => stock.p.Id,
@@ -43,9 +48,9 @@ namespace Inventree_App.Controllers
                  {
                      ID = stock.p.Id,
                      Name = stock.p.Name,
-                     StockQuantity = stock.p.Quantity,
+                     StockQuantity = (stock.p.UnitCapacity * stock.p.UnitQuantity + stock.p.Quantity),
                      LocationId = stock.p.LocationId,
-                     StockLocation = stock.l.LocationName,
+                     StockLocation = stock.l.CategoryName,
                      CartQuantity = cart.Sum(c => (int?)c.Quantity) ?? 0  // Handle null cases
                  })
       .AsQueryable();
@@ -89,7 +94,16 @@ namespace Inventree_App.Controllers
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
             var stocks = _context.CartItem.Where(x=>x.UserId == user.Id && x.Quantity > 0).ToList();
-            return View("Cart",stocks);
+
+            var test = _mapper.Map<List<CartItemDto>>(stocks);
+            foreach (var item in test)
+            {
+                var units = _context.Stocks.FirstOrDefault(x => x.Id == item.StockId);
+                var subUnits = _context.SubUnitTypes.FirstOrDefault(x => x.Id == int.Parse(units.SubUnitType));
+                item.Units = subUnits.SubUnitName;
+            }
+
+            return View("Cart", test);
         }
         /// <summary>
         /// 
@@ -199,7 +213,10 @@ namespace Inventree_App.Controllers
             }
 
             var stock = _context.Stocks.FirstOrDefault(s => s.Id == stockIdInt);
-            if (stock != null && stock.Quantity >= request.Quantity)
+
+            var stockQuantity = (stock.UnitCapacity * stock.UnitQuantity + stock.Quantity); // max quantity is t
+
+            if (stock != null && stockQuantity >= request.Quantity)
             {
                 var existingItem = _context.CartItem.FirstOrDefault(c => c.StockId == stockIdInt && c.UserId == user.Id);
                 if (existingItem != null)
@@ -239,7 +256,7 @@ namespace Inventree_App.Controllers
             var user = GetCurrentUser();
             if (user == null)
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
             ViewBag.UserName = user.UserName;
 
@@ -421,20 +438,46 @@ namespace Inventree_App.Controllers
                     if (request.Status == "Completed")
                     {
                         // Find the stock entry for the item
-                        var stock = _context.Stocks.FirstOrDefault(s => s.Id == item.StockId);
-                        if (stock != null)
+                        var stock1 = _context.Stocks.FirstOrDefault(s => s.Id == item.StockId);
+                        if (stock1 != null)
                         {
-                            stock.Quantity -= item.Quantity; // Reduce stock quantity
-                            if (stock.Quantity < 0)
-                                stock.Quantity = 0; // Ensure quantity does not go negative
+                            var totalStockQuantity = (stock1.UnitCapacity * stock1.UnitQuantity) + stock1.Quantity; // Total available stock
+
+                            if (item.Quantity <= totalStockQuantity)
+                            {
+                                // Calculate how many full packs to deduct
+                                int? fullPacksToDeduct = item.Quantity / stock1.UnitCapacity; // Full packs
+                                int? remainingPieces = item.Quantity % stock1.UnitCapacity;   // Leftover pieces
+
+                                // Deduct from packs
+                                stock1.UnitQuantity -= fullPacksToDeduct;
+
+                                // Deduct from loose pieces
+                                stock1.Quantity -= remainingPieces;
+
+                                // Ensure we don't have negative pack counts
+                                if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
+
+                                // Ensure loose pieces are correctly adjusted
+                                if (stock1.Quantity < 0)
+                                {
+                                    stock1.UnitQuantity--; // Deduct 1 more pack
+                                    stock1.Quantity += stock1.UnitCapacity; // Convert a pack into pieces
+                                }
+
+                                // Ensure stock is not negative
+                                if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
+                                if (stock1.Quantity < 0) stock1.Quantity = 0;
+                            }
                         }
+
 
                         logs.Add(new Logs
                         {
                             UserID = user.Id,
                             UserName = user.UserName,
-                            Description = $"{item.StockName} qty {item.Quantity} as Pickuped by {userName.UserName} Given by {user.UserName} ",
-                            CreatedDate = DateTime.UtcNow,
+                            Description = $"{item.StockName} qty {item.Quantity} as Picked by {userName.UserName} Given by {user.UserName} ",
+                            CreatedDate = DateTime.Now,
                             Type = "Completed"
                         });
                     }

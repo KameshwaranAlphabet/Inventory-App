@@ -77,34 +77,60 @@ namespace Inventree_App.Controllers
             ViewBag.CurrentPage = page;
             ViewBag.PageSize = pageSize;
 
-            var stocks = _context.Stocks.AsQueryable();
+            var stocksQuery = _context.Stocks.AsQueryable();
 
             // Apply stock level filtering
             if (filter == "red")
-                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
+                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
             else if (filter == "orange")
-                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 30 && (s.Quantity / (float)s.MaxQuantity) * 100 < 70);
+                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 30 && (s.Quantity / (float)s.MaxQuantity) * 100 < 70);
             else if (filter == "green")
-                stocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 70);
+                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 70);
             else if (filter == "Available")
-                stocks = stocks.Where(s => (s.Quantity != 0));
+                stocksQuery = stocksQuery.Where(s => s.Quantity != 0);
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
-                stocks = stocks.Where(s => s.Name.Contains(search));
+                stocksQuery = stocksQuery.Where(s => s.Name.Contains(search));
 
-            int totalItems = stocks.Count();
+            int totalItems = await stocksQuery.CountAsync();
 
-            var paginatedStocks = stocks
+            var paginatedStocks = await stocksQuery
                 .OrderBy(s => s.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .ToList();
+                .Select(a => new
+                {
+                    a.Id,
+                    a.Name,
+                    a.Quantity,
+                    a.MaxQuantity,
+                    a.UnitCapacity,
+                    a.UnitQuantity,
+                    a.SerialNumber,
+                    UnitType = _context.UnitTypes.Where(x => x.Id.ToString() == a.UnitType).Select(x => x.UnitName).FirstOrDefault(),
+                    SubUnitType = _context.SubUnitTypes.Where(x => x.Id.ToString() == a.SubUnitType).Select(x => x.SubUnitName).FirstOrDefault()
+                })
+                .ToListAsync();
+
+            // Convert anonymous type to a proper model (if needed)
+            var stockList = paginatedStocks.Select(a => new Stocks
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Quantity = a.Quantity,
+                MaxQuantity = a.MaxQuantity,
+                UnitCapacity = a.UnitCapacity,
+                UnitQuantity = a.UnitQuantity,
+                SerialNumber = a.SerialNumber,
+                UnitType = a.UnitType ?? "",  // Default value if null
+                SubUnitType = a.SubUnitType ?? ""
+            }).ToList();
 
             ViewBag.TotalItems = totalItems;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
-            return View(paginatedStocks);
+            return View(stockList);
         }
 
 
@@ -156,6 +182,12 @@ namespace Inventree_App.Controllers
             ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
 
             ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");
+
+            ViewData["UnitTypes"] = new SelectList(_context.UnitTypes, "Id", "UnitName");
+
+            ViewData["SubUnitTypes"] = new SelectList(_context.SubUnitTypes, "Id", "SubUnitName");
+
+
             return View("AddStock"); // Matches @model List<Stocks>           
         }
 
@@ -226,6 +258,9 @@ namespace Inventree_App.Controllers
             {
                 stock.CreatedOn = DateTime.Now;
                 stock.Email = userName.Email;
+                //stock.UnitType = _context.UnitTypes.Where(x => x.Id == int.Parse(stock.UnitType)).Select(x => x.UnitName).First();
+                //stock.SubUnitType = _context.SubUnitTypes.Where(x => x.Id == int.Parse(stock.SubUnitType)).Select(x => x.SubUnitName).First();
+                stock.MaxQuantity = (stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity;
 
                 // Add stock to database
                 _context.Stocks.Add(stock);
@@ -364,15 +399,29 @@ namespace Inventree_App.Controllers
                     stock.LocationId,
                     stock.CategoryId,
                     stock.Quantity,
-                    stock.MaxQuantity
+                    stock.MaxQuantity,
+                    stock.UnitType,
+                    stock.UnitQuantity,
+                    stock.UnitCapacity,
+                    stock.SubUnitType,
                 };
           
                 // Update stock properties dynamically
                 stock.Name = updatedStock.Name;
                 stock.LocationId = updatedStock.LocationId;
                 stock.CategoryId = updatedStock.CategoryId;
+             
+                if (updatedStock.UnitCapacity != stock.UnitCapacity ||
+      updatedStock.UnitQuantity != stock.UnitQuantity ||
+      updatedStock.Quantity != stock.Quantity)
+                {
+                    stock.MaxQuantity = (updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity;
+                }
+                stock.UnitQuantity = updatedStock.UnitQuantity;
+                stock.UnitCapacity = updatedStock.UnitCapacity;
+                stock.SubUnitType = updatedStock.SubUnitType;
                 stock.Quantity = updatedStock.Quantity;
-                stock.MaxQuantity = updatedStock.MaxQuantity;
+                stock.UnitType = updatedStock.UnitType;
 
                 _context.Stocks.Update(stock);
                 _context.SaveChanges();
@@ -437,6 +486,11 @@ namespace Inventree_App.Controllers
                 ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
 
                 ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");
+
+                ViewData["UnitTypes"] = new SelectList(_context.UnitTypes, "Id", "UnitName");
+
+                ViewData["SubUnitTypes"] = new SelectList(_context.SubUnitTypes, "Id", "SubUnitName");
+
                 if (id.HasValue)
                 {
                     string query = "SELECT * FROM stocks WHERE Id = @id";
@@ -453,7 +507,7 @@ namespace Inventree_App.Controllers
 
                 return View("Index");
             }
-            }
+        }
         public IActionResult DownloadPdf()
         {
             var stocks = _context.Stocks.ToList();
@@ -682,6 +736,18 @@ namespace Inventree_App.Controllers
             return _context.Stocks.ToList();
         
         }
+        public JsonResult GetUnitTypes()
+        {
+            var unitTypes = _context.UnitTypes.Select(u => new { u.Id, u.UnitName }).ToList();
+            return Json(unitTypes);
+        }
+
+        public JsonResult GetSubUnitTypes()
+        {
+            var subUnitTypes = _context.SubUnitTypes.Select(s => new { s.Id, s.SubUnitName }).ToList();
+            return Json(subUnitTypes);
+        }
+
     }
 
 }

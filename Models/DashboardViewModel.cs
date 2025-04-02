@@ -14,7 +14,9 @@
         public string? Profile { get; set; }
         public string? Name { get; set; }
         public DateTime Date { get; set; }
+        public int ItemCount { get; set; }
         public int? Quantity { get; set; }
+        public int OrderId { get; set; }
     }
 
     public class DashboardLog

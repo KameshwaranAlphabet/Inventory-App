@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Data.Entity;
 using Inventree_App.Enum;
 using System.IdentityModel.Tokens.Jwt;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Inventree_App.Controllers;
 
@@ -115,60 +116,93 @@ public class DashboardController : Controller
     }
 
     [HttpGet]
-    public IActionResult GetOrders(string month, int page = 1, int pageSize = 5)
+    public IActionResult GetOrders(string month, string searchUser = "", int page = 1, int pageSize = 5)
     {
-        var orders = _context.Order.ToList();
+        var ordersQuery = from o in _context.Order
+                          join oi in _context.OrderItem on o.Id equals oi.OrderId
+                          group oi by new { o.Id, o.UserId, o.OrderDate } into g
+                          select new
+                          {
+                              OrderId = g.Key.Id,
+                              UserId = g.Key.UserId,
+                              OrderDate = g.Key.OrderDate,
+                              TotalQuantity = g.Sum(x => x.Quantity),
+                              ItemCount = g.Count(x => x.Quantity > 0)
+                          };
 
-        var result = new List<DashBoardOrder>();
-       
         // Filter by month if selected
         if (month != "all")
         {
-            orders = orders.Where(o => o.OrderDate.ToString("MM") == month).ToList();
+            ordersQuery = ordersQuery.Where(o => o.OrderDate.Month.ToString() == month);
         }
-        foreach (var order in orders)
+
+        var ordersList = ordersQuery.OrderByDescending(x => x.TotalQuantity).AsEnumerable().ToList();
+        var result = new List<DashBoardOrder>();
+
+        foreach (var order in ordersList)
         {
             var user = _context.Customer.FirstOrDefault(x => x.Id == order.UserId);
-            if (user != null) // Ensure user is not null to avoid exceptions
+            if (user != null) // Ensure user is not null
             {
                 string firstInitial = !string.IsNullOrEmpty(user.FirstName) ? user.FirstName[0].ToString() : "";
                 string lastInitial = !string.IsNullOrEmpty(user.LastName) ? user.LastName[^1].ToString() : ""; // ^1 gets the last character
+                string fullName = user.UserName.ToLower(); // Convert to lowercase for case-insensitive search
 
                 result.Add(new DashBoardOrder
                 {
                     Profile = firstInitial + lastInitial,
                     Name = user.UserName,
                     Date = order.OrderDate,
-                    Quantity = order.ItemsCount
+                    ItemCount = order.ItemCount,
+                    Quantity = order.TotalQuantity,
+                    OrderId = order.OrderId
                 });
             }
         }
-        // Calculate total quantity per order and sort by highest quantity
-        var sortedOrders = result.Where(x=>x.Quantity > 0).OrderByDescending(x => x.Quantity).ToList();
-       
-        // Apply pagination
-        int totalRecords = sortedOrders.Count;
-        var paginatedOrders = sortedOrders.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-        return Json(new { data = paginatedOrders, totalRecords, pageSize });
-    }
-    [HttpGet]
-    public IActionResult GetLogs(string month, int page = 1, int pageSize = 5)
-    {
-        var orders = _context.Logs.OrderByDescending(x => x.CreatedDate).ToList();
-
-        var result = new List<Logs>();
-
-        // Filter by month if selected
-        if (month != "all")
+        // Apply user name filter (case-insensitive)
+        if (!string.IsNullOrEmpty(searchUser))
         {
-            orders = orders.Where(o => o.CreatedDate.Value.Month.ToString("00") == month).ToList();
+            result = result.Where(x => x.Name.ToLower().Contains(searchUser.ToLower())).ToList();
         }
 
-        // Apply pagination
-        int totalRecords = orders.Count;
-        var paginatedOrders = orders.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        // Apply pagination on filtered data
+        int totalRecords = result.Count;
+        var paginatedOrders = result.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
         return Json(new { data = paginatedOrders, totalRecords, pageSize });
     }
+
+    [HttpGet]
+    public IActionResult GetLogs(string month = "all", string searchUser = "", int page = 1, int pageSize = 5)
+    {
+        var query = _context.Logs
+                    .AsNoTracking() // Improves read performance by disabling tracking
+            .OrderByDescending(x => x.CreatedDate)
+            .AsQueryable();
+
+        // Filter by month if selected
+        if (!string.IsNullOrEmpty(month) && month != "all")
+        {
+            if (int.TryParse(month, out int monthValue) && monthValue >= 1 && monthValue <= 12)
+            {
+                query = query.Where(o => o.CreatedDate.HasValue && o.CreatedDate.Value.Month == monthValue);
+            }
+        }
+
+        // Filter by username if provided
+        if (!string.IsNullOrEmpty(searchUser))
+        {
+            query = query.Where(o => o.UserName.Contains(searchUser));
+        }
+
+        // Get total record count before pagination
+        int totalRecords = query.Count();
+
+        // Apply pagination
+        var paginatedOrders = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        return Json(new { data = paginatedOrders, totalRecords, pageSize });
+    }
+
 }

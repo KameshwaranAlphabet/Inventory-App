@@ -1,4 +1,5 @@
 using Inventree_App.Context;
+using Inventree_App.Mapping;
 using Inventree_App.Service;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -47,6 +48,8 @@ namespace Inventree_App
                     options.LoginPath = "/Home/Login"; // Set login page
                     options.AccessDeniedPath = "/Home/Index"; // Redirect unauthorized users
                 });
+
+            builder.Services.AddAutoMapper(typeof(CartItemProfile));
 
             // Add authorization
             builder.Services.AddAuthorization();

@@ -1,5 +1,7 @@
 ﻿@model List<CategoryViewModel>
-
+@{
+    Layout = "_ShopKeeperLayout";
+}
 @{
     ViewBag.Title = "Course Categories";
 }
@@ -18,7 +20,7 @@
     <div class="row">
         <div class="col-md-4">
             <h5 id="formTitle">Add New Category</h5>
-            <form method="post" enctype="multipart/form-data" asp-action="CreateOrUpdate" asp-controller="Admin">
+            <form method="post" enctype="multipart/form-data" asp-action="CreateOrUpdate" asp-controller="StoreKeeper">
                 <input type="hidden" name="Id" id="categoryId" />
 
                 <div class="mb-3">
@@ -73,7 +75,7 @@
                                 <td>@category.Count</td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.Name', '@category.ParentId', '@category.ImageUrl')">Edit</button>
-                                    <a href="/Admin/Delete/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                    <a href="/StoreKeeper/Delete/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                                 </td>
                             </tr>
                         }
@@ -123,20 +125,12 @@
     }
 
      function searchCategories() {
-        var input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("searchInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("categoryTable");
-        tr = table.getElementsByTagName("tr");
+        let searchTerm = document.getElementById("searchInput").value.trim();
 
-        for (i = 1; i < tr.length; i++) { // Skip header row
-            td = tr[i].getElementsByTagName("td")[1]; // Name column
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
-            }
-        }
+        let url = `/StoreKeeper/StationeryCategories?page=1&pageSize=5&search=${searchTerm}`;
+        window.location.href = url;
     }
+
 </script>
 <style>
  /*    body {
