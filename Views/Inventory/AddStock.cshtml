@@ -38,10 +38,10 @@
                         <option value="">Select a category</option>
                     </select>
                 </div>
-                <div class="mb-3">
+           @*      <div class="mb-3">
                     <label asp-for="MaxQuantity" class="form-label">Max Quantity</label>
                     <input type="number" class="form-control" asp-for="MaxQuantity" placeholder="Enter max quantity">
-                </div>
+                </div> *@
                 <div class="mb-3">
                     <label asp-for="UnitType" class="form-label">UnitType</label>
                     <select class="form-select" asp-for="UnitType" asp-items="@ViewData["UnitTypes"] as SelectList">

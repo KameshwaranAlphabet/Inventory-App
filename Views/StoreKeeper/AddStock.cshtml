@@ -25,16 +25,16 @@
                     <label asp-for="Name" class="form-label">Stock Name</label>
                     <input type="text" class="form-control" asp-for="Name" placeholder="Enter stock name" required>
                 </div>
-
+@* 
                 <div class="mb-3">
                     <label asp-for="Quantity" class="form-label">Quantity</label>
                     <input type="number" class="form-control" asp-for="Quantity" placeholder="Enter quantity" required>
-                </div>
+                </div> *@
 
-                <div class="mb-3">
+            @*     <div class="mb-3">
                     <label asp-for="MaxQuantity" class="form-label">Max Quantity</label>
                     <input type="number" class="form-control" asp-for="MaxQuantity" placeholder="Enter max quantity">
-                </div>
+                </div> *@
 
                 <div class="mb-3">
                     <label asp-for="LocationId" class="form-label">Location</label>
@@ -50,7 +50,33 @@
                         <option value="">Select a category</option>
                     </select>
                 </div>
+                <div class="mb-3">
+                    <label asp-for="UnitType" class="form-label">UnitType</label>
+                    <select class="form-select" asp-for="UnitType" asp-items="@ViewData["UnitTypes"] as SelectList">
+                        <option value="">Select a UnitType</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="UnitQuantity" class="form-label">UnitQuantity</label>
+                    <input type="number" class="form-control" asp-for="UnitQuantity" placeholder="Enter quantity" required>
+                </div>
 
+                <div class="mb-3">
+                    <label asp-for="UnitCapacity" class="form-label">UnitCapacity</label>
+                    <input type="number" class="form-control" asp-for="UnitCapacity" placeholder="Enter capacity" required>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="SubUnitType" class="form-label">SubUnitType</label>
+                    <select class="form-select" asp-for="SubUnitType" asp-items="@ViewData["SubUnitTypes"] as SelectList">
+                        <option value="">Select a SubUnitType</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Quantity" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" asp-for="Quantity" placeholder="Enter quantity" required>
+                </div>
                 <div class="d-flex justify-content-between">
                     <button type="submit" class="btn btn-primary">@(Model?.Id > 0 ? "Update" : "Save")</button>
                 </div>

@@ -1,9 +1,10 @@
-﻿@model List<LocationViewModel>
+﻿@model List<SubUnitTypes>
+
 @{
     Layout = "_ShopKeeperLayout";
 }
 @{
-    ViewBag.Title = "Location";
+    ViewBag.Title = "SubUnits";
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -16,15 +17,15 @@
 </head>
 <body>
 <div class="container mt-4">
-    <h2>Location</h2>
+    <h2>SubUnit Types</h2>
     <div class="row">
         <div class="col-md-4">
-            <h5 id="formTitle">Add New Location</h5>
-                <form method="post" enctype="multipart/form-data" asp-action="CreateOrUpdateLocation" asp-controller="StoreKeeper">
+            <h5 id="formTitle">Add New UnitTypes</h5>
+                <form method="post" enctype="multipart/form-data" asp-action="CreateOrUpdateSubUnitTypes" asp-controller="StoreKeeper">
                 <input type="hidden" name="Id" id="categoryId" />
                 <div class="mb-3">
                     <label class="form-label">Name</label>
-                    <input type="text" class="form-control" name="LocationName" id="locationName" required />
+                    <input type="text" class="form-control" name="SubUnitName" id="locationName" required />
                 </div>
 
                @*  <div class="mb-3">
@@ -44,7 +45,7 @@
                     <img id="categoryImagePreview" src="" width="50" height="50" class="img-thumbnail mt-2" style="display:none;" />
                 </div>
 
-                <button type="submit" class="btn btn-primary" id="submitButton">Add New Location</button>
+                <button type="submit" class="btn btn-primary" id="submitButton">Add New SubUnits</button>
             </form>
         </div>
 
@@ -57,15 +58,13 @@
                     </select>
                     <button class="btn btn-secondary">Apply</button>
                 </div>
-                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search Categories" onkeyup="searchCategories()" />
+                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search SubUnits" onkeyup="searchCategories()" />
             </div>
             <table class="table table-bordered" id="categoryTable">
                 <thead>
                     <tr>
                         <th><input type="checkbox" /></th>
-                        <th>Image</th>
                         <th>Name</th>
-                        <th>Count</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -74,12 +73,10 @@
                     {
                         <tr>
                             <td><input type="checkbox" /></td>
-                            <td><img src="@category.ImageUrl" width="50" height="50" class="img-thumbnail" /></td>
-                            <td>@category.Name</td>
-                            <td>@category.Count</td>
+                            <td>@category.SubUnitName</td>
                             <td>
-                                <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.Name', '@category.ImageUrl')">Edit</button>
-                                <a href="/StoreKeeper/DeleteLocation/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.SubUnitName')">Edit</button>
+                                <a href="/StoreKeeper/DeleteSubUnits/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                             </td>
                         </tr>
                     }
@@ -87,33 +84,32 @@
             </table>
         </div>
 
-            <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center">
-                <span>@(((ViewBag.PageNumber - 1) * ViewBag.PageSize) + 1)-@((ViewBag.PageNumber * ViewBag.PageSize) > ViewBag.TotalRecords ? ViewBag.TotalRecords : (ViewBag.PageNumber * ViewBag.PageSize)) of @ViewBag.TotalRecords</span>
-                <nav>
-                    <ul class="pagination">
-                        <li class="page-item @(ViewBag.PageNumber == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("StationeryLocation", new { pageNumber = ViewBag.PageNumber - 1, pageSize = ViewBag.PageSize })">&laquo;</a>
+        <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center">
+            <span>@(((ViewBag.PageNumber - 1) * ViewBag.PageSize) + 1)-@((ViewBag.PageNumber * ViewBag.PageSize) > ViewBag.TotalRecords ? ViewBag.TotalRecords : (ViewBag.PageNumber * ViewBag.PageSize)) of @ViewBag.TotalRecords</span>
+            <nav>
+                <ul class="pagination">
+                    <li class="page-item @(ViewBag.PageNumber == 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("UnitTypes", new { pageNumber = ViewBag.PageNumber - 1, pageSize = ViewBag.PageSize })">&laquo;</a>
+                    </li>
+                    @for (int i = 1; i <= Math.Ceiling((double)ViewBag.TotalRecords / ViewBag.PageSize); i++)
+                    {
+                        <li class="page-item @(ViewBag.PageNumber == i ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("UnitTypes", new { pageNumber = i, pageSize = ViewBag.PageSize })">@i</a>
                         </li>
-                        @for (int i = 1; i <= Math.Ceiling((double)ViewBag.TotalRecords / ViewBag.PageSize); i++)
-                        {
-                            <li class="page-item @(ViewBag.PageNumber == i ? "active" : "")">
-                                <a class="page-link" href="@Url.Action("StationeryLocation", new { pageNumber = i, pageSize = ViewBag.PageSize })">@i</a>
-                            </li>
-                        }
-                        <li class="page-item @(ViewBag.PageNumber * ViewBag.PageSize >= ViewBag.TotalRecords ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("StationeryLocation", new { pageNumber = ViewBag.PageNumber + 1, pageSize = ViewBag.PageSize })">&raquo;</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+                    }
+                    <li class="page-item @(ViewBag.PageNumber * ViewBag.PageSize >= ViewBag.TotalRecords ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("UnitTypes", new { pageNumber = ViewBag.PageNumber + 1, pageSize = ViewBag.PageSize })">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
 </div>
 </body>
 </html>
-
 <script>
-    function editCategory(id, name, imageUrl) {
+    function editCategory(id, name) {
         document.getElementById("categoryId").value = id;
         document.getElementById("locationName").value = name;
 
@@ -124,24 +120,18 @@
             document.getElementById("categoryImagePreview").style.display = "none";
         }
 
-        document.getElementById("formTitle").textContent = "Edit Location";
-        document.getElementById("submitButton").textContent = "Update Location";
+        document.getElementById("formTitle").textContent = "Edit Category";
+        document.getElementById("submitButton").textContent = "Update Category";
     }
     function searchCategories() {
         let searchTerm = document.getElementById("searchInput").value.trim();
 
-        let url = `/StoreKeeper/StationeryLocation?page=1&pageSize=5&search=${searchTerm}`;
+        let url = `/StoreKeeper/SubUnitTypes?page=1&pageSize=5&search=${searchTerm}`;
         window.location.href = url;
     }
 
 </script>
 <style>
- /*    body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        padding: 19px;
-        text-align: center;
-    } */
     .container
     {
         max-width:100%;

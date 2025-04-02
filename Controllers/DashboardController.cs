@@ -154,7 +154,8 @@ public class DashboardController : Controller
                     Name = user.UserName,
                     Date = order.OrderDate,
                     ItemCount = order.ItemCount,
-                    Quantity = order.TotalQuantity
+                    Quantity = order.TotalQuantity,
+                    OrderId = order.OrderId
                 });
             }
         }

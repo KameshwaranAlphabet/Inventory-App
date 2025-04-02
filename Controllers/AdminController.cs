@@ -37,7 +37,7 @@ namespace Inventree_App.Controllers
         //    var stocks = _context.Order.ToList();
         //    return View(stocks);
         //}
-        public IActionResult Index(int page = 1, int pageSize = 10, string search = "", string orderDate = "", string filter ="")
+        public IActionResult Index(int orderId,int page = 1, int pageSize = 10, string search = "", string orderDate = "", string filter ="")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
@@ -67,6 +67,9 @@ namespace Inventree_App.Controllers
             {
                 query = query.OrderByDescending(o => o.OrderDate);
             }
+
+            if(orderId > 0)
+                query = query.Where(o => o.Id == orderId);
 
             var totalOrders = query.Count();
 

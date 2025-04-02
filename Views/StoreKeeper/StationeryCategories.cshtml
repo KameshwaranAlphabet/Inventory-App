@@ -125,20 +125,12 @@
     }
 
      function searchCategories() {
-        var input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("searchInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("categoryTable");
-        tr = table.getElementsByTagName("tr");
+        let searchTerm = document.getElementById("searchInput").value.trim();
 
-        for (i = 1; i < tr.length; i++) { // Skip header row
-            td = tr[i].getElementsByTagName("td")[1]; // Name column
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
-            }
-        }
+        let url = `/StoreKeeper/StationeryCategories?page=1&pageSize=5&search=${searchTerm}`;
+        window.location.href = url;
     }
+
 </script>
 <style>
  /*    body {

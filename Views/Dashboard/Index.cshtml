@@ -230,14 +230,14 @@
         $.get("/Dashboard/GetOrders", { month: month, searchUser: searchUser, page: page, pageSize: pageSize }, function (response) {
             var ordersTable = $("#ordersTable");
             ordersTable.empty(); // Clear previous data
-
+            console.log("1111111",response.data);
             if (response.data.length === 0) {
                 ordersTable.append(`<tr><td colspan="5" class="text-center">No records found</td></tr>`);
             } else {
                 ordersTable.html(response.data.map(o =>
                     `<tr>
                         <td>
-                            <div style="width: 25px; height: 25px; border-radius: 50%; background-color: ${getColor(o.name)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                        <div onclick="redirectToApproveList('${o.orderId}')" style="width: 25px; height: 25px; border-radius: 50%; background-color: ${getColor(o.name)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer;">
                                 ${o.profile}
                             </div>
                         </td>
@@ -438,5 +438,8 @@
 
         window.location.href = url;
     }
-
+    function redirectToApproveList(name) {
+           const url = `/Admin/Index?page=${1}&pageSize=${10}&search=${""}&orderDate=${""}&filter=${"Pending"}&orderId=${name}`;
+    window.location.href = url;
+    }
 </script>

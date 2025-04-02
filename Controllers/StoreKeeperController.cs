@@ -62,7 +62,7 @@ namespace Inventree_App.Controllers
             var orderPending = _context.Order.Where(x => x.Status == OrderStatus.Pending.ToString()).Count();
             var orderApproved = _context.Order.Where(x => x.Status == OrderStatus.Approved.ToString()).Count();
             var today = DateTime.Now.Date; // Get today's date in UTC
-            var orderApprovedCount = _context.Order.Where(x => x.OrderDate == today).Count();
+            var orderApprovedCount = _context.Order.Where(x => x.OrderDate.Date == today).Count();
 
             DateTime lastWeek = today.AddDays(-7);
             DateTime lastMonth = today.AddMonths(-1);
@@ -133,6 +133,9 @@ namespace Inventree_App.Controllers
 
             if (filter == "Approved")
                 query = query.Where(o => o.Status == "Approved");
+
+            if (filter == "Today")
+                query = query.Where(o => o.OrderDate.Date == DateTime.Now.Date); // Always filter today's orders
 
             if (fromDate.HasValue)
             {
@@ -522,11 +525,12 @@ namespace Inventree_App.Controllers
             var subUnitTypes = _context.SubUnitTypes.Select(s => new { s.Id, s.SubUnitName }).ToList();
             return Json(subUnitTypes);
         }
-        public IActionResult StationeryCategories(int pageNumber = 1, int pageSize = 5)
+        public IActionResult StationeryCategories(int pageNumber = 1, int pageSize = 5, string search = "")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
 
+            // Base query to fetch categories and count stocks
             var categoriesQuery = _context.Categories.Select(category => new CategoryViewModel
             {
                 Id = category.Id,
@@ -535,6 +539,12 @@ namespace Inventree_App.Controllers
                 ParentId = category.ParentCategoryId,
                 Count = _context.Stocks.Count(x => x.CategoryId == category.Id)
             });
+
+            // Apply search filter if search term is provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                categoriesQuery = categoriesQuery.Where(c => c.Name.Contains(search)); // Search by category name
+            }
 
             // Get total count for pagination
             int totalRecords = categoriesQuery.Count();
@@ -545,10 +555,13 @@ namespace Inventree_App.Controllers
                 .Take(pageSize)
                 .ToList();
 
+            // Pass pagination info and data to the view
             ViewBag.TotalRecords = totalRecords;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
+            ViewBag.SearchTerm = search;  // Keep the search term to retain in the input field
 
+            // Return the view with filtered and paginated categories
             return View("StationeryCategories", categories);
         }
 
@@ -625,17 +638,24 @@ namespace Inventree_App.Controllers
         //    return View("Location", model);
         //}
 
-        public IActionResult StationeryLocation(int pageNumber = 1, int pageSize = 5)
+        public IActionResult StationeryLocation(int pageNumber = 1, int pageSize = 5, string search = "")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
 
+            // Base query to get categories and stock counts
             var categoriesQuery = _context.Location.Select(category => new LocationViewModel
             {
                 Id = category.Id,
                 Name = category.LocationName,
                 Count = _context.Stocks.Count(x => x.LocationId == category.Id)
             });
+
+            // Apply search filter if provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                categoriesQuery = categoriesQuery.Where(s => s.Name.Contains(search));
+            }
 
             // Get total count for pagination
             int totalRecords = categoriesQuery.Count();
@@ -646,10 +666,12 @@ namespace Inventree_App.Controllers
                 .Take(pageSize)
                 .ToList();
 
+            // Pass pagination info and data to the view
             ViewBag.TotalRecords = totalRecords;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
 
+            // Return the view with paginated categories
             return View("Location", categories);
         }
 
@@ -779,30 +801,34 @@ namespace Inventree_App.Controllers
         {
             return View("ManualEntry");
         }
-        public IActionResult UnitTypes(int pageNumber = 1, int pageSize = 5)
+        public IActionResult UnitTypes(int pageNumber = 1, int pageSize = 5, string search = "")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
 
-            //var categoriesQuery = _context.Location.Select(category => new LocationViewModel
-            //{
-            //    Id = category.Id,
-            //    Name = category.LocationName,
-            //    Count = _context.Stocks.Count(x => x.LocationId == category.Id)
-            //});
+            // Start with base query
+            var query = _context.UnitTypes.AsQueryable();
 
-            // Get total count for pagination
-            int totalRecords = _context.UnitTypes.Count();
+            // Apply search filter if searchTerm is provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(s => s.UnitName.Contains(search));
+            }
+
+            // Get total count after filtering
+            int totalRecords = query.Count();
 
             // Apply pagination
-            var categories = _context.UnitTypes
+            var categories = query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
+            // Pass data to View
             ViewBag.TotalRecords = totalRecords;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
+            ViewBag.SearchTerm = search; // To retain search value in input field
 
             return View("AddUnits", categories);
         }
@@ -838,33 +864,38 @@ namespace Inventree_App.Controllers
             }
             return RedirectToAction("UnitTypes");
         }
-        public IActionResult SubUnitTypes(int pageNumber = 1, int pageSize = 5)
+        public IActionResult SubUnitTypes(int pageNumber = 1, int pageSize = 5, string search ="")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
 
-            //var categoriesQuery = _context.Location.Select(category => new LocationViewModel
-            //{
-            //    Id = category.Id,
-            //    Name = category.LocationName,
-            //    Count = _context.Stocks.Count(x => x.LocationId == category.Id)
-            //});
+            // Start with base query
+            var query = _context.SubUnitTypes.AsQueryable();
 
-            // Get total count for pagination
-            int totalRecords = _context.SubUnitTypes.Count();
+            // Apply search filter if searchTerm is provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(s => s.SubUnitName.Contains(search));
+            }
+
+            // Get total count after filtering
+            int totalRecords = query.Count();
 
             // Apply pagination
-            var categories = _context.UnitTypes
+            var categories = query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
+            // Pass data to View
             ViewBag.TotalRecords = totalRecords;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
+            ViewBag.SearchTerm = search; // To retain search value in input field
 
-            return View("AddUnits", categories);
+            return View("AddSubUnits", categories);
         }
+
 
         [HttpPost]
         public IActionResult CreateOrUpdateSubUnitTypes(SubUnitTypes model)
@@ -884,7 +915,7 @@ namespace Inventree_App.Controllers
                 }
             }
             _context.SaveChanges();
-            return RedirectToAction("UnitTypes");
+            return RedirectToAction("SubUnitTypes");
         }
         [HttpGet]
         public IActionResult DeleteSubUnits(int id)
@@ -895,7 +926,7 @@ namespace Inventree_App.Controllers
                 _context.SubUnitTypes.Remove(category);
                 _context.SaveChanges();
             }
-            return RedirectToAction("UnitTypes");
+            return RedirectToAction("SubUnitTypes");
         }
     }
 }

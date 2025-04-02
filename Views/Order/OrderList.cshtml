@@ -21,8 +21,12 @@
 <body>
 
 <div class="container mt-4">
-    <h2 class="text-center mb-4">My Orders</h2>
-
+        <div class="d-flex justify-content-between align-items-center p-3 bg-light">
+            <h2 class="mb-0">My Orders</h2>
+            <div class="flex-grow-1 text-center">
+                <h2 class="mb-0" id="currentTime"></h2>
+            </div>
+        </div>
     <!-- Filters Row -->
     <div class="row g-2 align-items-center p-3 bg-light rounded">
         <div class="col-md-3">
@@ -160,6 +164,17 @@
             $("#details-" + orderId).toggleClass("d-none");
         });
     });
+
+    function updateTime() {
+    const now = new Date();
+    const options = { weekday: 'long', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+    const timeString = now.toLocaleString('en-US', options);
+    document.getElementById("currentTime").textContent = timeString;
+    }
+
+    setInterval(updateTime, 1000); // Update every second
+    updateTime(); // Initialize immediately
+
 </script>
 }
 </body>

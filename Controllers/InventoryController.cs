@@ -410,13 +410,18 @@ namespace Inventree_App.Controllers
                 stock.Name = updatedStock.Name;
                 stock.LocationId = updatedStock.LocationId;
                 stock.CategoryId = updatedStock.CategoryId;
-                stock.Quantity = updatedStock.Quantity;
-                stock.MaxQuantity = updatedStock.MaxQuantity;
-                stock.UnitType = updatedStock.UnitType;
+             
+                if (updatedStock.UnitCapacity != stock.UnitCapacity ||
+      updatedStock.UnitQuantity != stock.UnitQuantity ||
+      updatedStock.Quantity != stock.Quantity)
+                {
+                    stock.MaxQuantity = (updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity;
+                }
                 stock.UnitQuantity = updatedStock.UnitQuantity;
                 stock.UnitCapacity = updatedStock.UnitCapacity;
                 stock.SubUnitType = updatedStock.SubUnitType;
-                stock.MaxQuantity = updatedStock.MaxQuantity;
+                stock.Quantity = updatedStock.Quantity;
+                stock.UnitType = updatedStock.UnitType;
 
                 _context.Stocks.Update(stock);
                 _context.SaveChanges();
