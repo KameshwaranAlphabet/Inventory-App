@@ -87,6 +87,25 @@
             font-size: 20px;
         }
 
+        .bg-info {
+            background-color: #a3c4fd !important; /* Pastel Blue */
+            color: #1a3d7c !important; /* Darker text for contrast */
+        }
+
+        .bg-success {
+            background-color: #A8E6CF !important; /* Soft pastel green */
+            color: #2C5E4E !important; /* Darker text for contrast */
+        }
+
+        .bg-danger {
+            background-color: #F7A8A8 !important; /* Soft pastel red */
+            color: #702929 !important; /* Darker text for contrast */
+        }
+
+        .bg-warning {
+            background-color: #FFF4B2 !important; /* Soft pastel yellow */
+            color: #665B31 !important; /* Darker text for contrast */
+        }
     </style>
 </head>
 <body>
@@ -94,7 +113,7 @@
         <div class="welcome">Hi, @username</div>
         <div class="row g-3 stats-cards mt-3">
             <div class="col-md-3">
-                <div class="card text-white bg-primary p-3 d-flex flex-row align-items-center" onclick="navigateToDashboard()">
+                <div class="card text-white bg-info p-3 d-flex flex-row align-items-center" onclick="navigateToDashboard()">
                     <div class="icon-circle bg-white text-primary me-3">
                         <i class="ph ph-shopping-cart"></i>
                     </div>
@@ -230,7 +249,6 @@
         $.get("/Dashboard/GetOrders", { month: month, searchUser: searchUser, page: page, pageSize: pageSize }, function (response) {
             var ordersTable = $("#ordersTable");
             ordersTable.empty(); // Clear previous data
-            console.log("1111111",response.data);
             if (response.data.length === 0) {
                 ordersTable.append(`<tr><td colspan="5" class="text-center">No records found</td></tr>`);
             } else {

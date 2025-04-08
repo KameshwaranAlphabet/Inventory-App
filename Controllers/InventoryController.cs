@@ -20,6 +20,7 @@ using SixLabors.ImageSharp.Formats.Png;
 using Image = iTextSharp.text.Image;
 using Document = iTextSharp.text.Document;
 using OfficeOpenXml;
+using static iTextSharp.text.pdf.AcroFields;
 
 
 namespace Inventree_App.Controllers
@@ -81,13 +82,13 @@ namespace Inventree_App.Controllers
 
             // Apply stock level filtering
             if (filter == "red")
-                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
+                stocksQuery = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 < 30);
             else if (filter == "orange")
-                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 30 && (s.Quantity / (float)s.MaxQuantity) * 100 < 70);
+                stocksQuery = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 >= 30 && ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 < 70);
             else if (filter == "green")
-                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 70);
+                stocksQuery = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 >= 70);
             else if (filter == "Available")
-                stocksQuery = stocksQuery.Where(s => s.Quantity != 0);
+                stocksQuery = stocksQuery.Where(s => (s.UnitCapacity * s.UnitQuantity + s.Quantity) != 0);
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
@@ -253,6 +254,7 @@ namespace Inventree_App.Controllers
         public IActionResult Create(Stocks stock)
         {
             var userName = GetCurrentUser();
+            stock.MaxQuantity = (stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity;
 
             if (ModelState.IsValid)
             {
@@ -569,7 +571,14 @@ namespace Inventree_App.Controllers
                 return File(ms.ToArray(), "application/pdf", "StockBarcodes.pdf");
             }
         }
-
+        private int? ParseNullableInt(string? input)
+        {
+            if (int.TryParse(input?.Trim(), out int result))
+            {
+                return result;
+            }
+            return null; // Leave it null if parsing fails
+        }
 
         [HttpPost]
         public async Task<IActionResult> UploadCsv(IFormFile file)
@@ -608,21 +617,26 @@ namespace Inventree_App.Controllers
 
                         var values = line.Split(',');
 
-                        if (values.Length == 10) // Ensure correct columns count
+                        if (values.Length == 14) // Ensure correct columns count
                         {
                             var stationery = new Stocks
                             {
                                 Name = values[0].Trim(),
                                 SerialNumber = values[1].Trim(),
-                                Quantity = int.Parse(values[2]),
-                                MaxQuantity = int.Parse(values[3]),
-                                CreatedOn = DateTime.Now,
+                                Quantity = ParseNullableInt(values[2]),
+                                MaxQuantity = ParseNullableInt(values[3]),
                                 Email = userName.Email,
-                                Barcode = values[6].Trim(),
+                                Barcode = values[5].Trim(),
+                                CategoryId = ParseNullableInt(values[6]),
+                                CreatedOn = DateTime.Now,
+                                LocationId = ParseNullableInt(values[8]),
                                 UpdatedOn = DateTime.Now,
-                                LocationId = int.Parse(values[8]),
-                                CategoryId = int.Parse(values[9]),
+                                SubUnitType = values[10].Trim(),
+                                UnitCapacity = ParseNullableInt(values[10]),
+                                UnitQuantity = ParseNullableInt(values[12]),
+                                UnitType = values[13].Trim()
                             };
+
                             stationeryList.Add(stationery);
                         }
                     }
@@ -637,6 +651,7 @@ namespace Inventree_App.Controllers
                         {
                             stock.SerialNumber = $"STK{stock.Id:D6}"; // Format: STK000123
                             stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
+                            stock.MaxQuantity = (stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity;
                         });
 
                         _context.Stocks.UpdateRange(stationeryList); // Bulk update

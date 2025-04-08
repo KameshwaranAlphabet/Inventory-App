@@ -332,6 +332,8 @@ namespace Inventree_App.Controllers
                         if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
                         if (stock1.Quantity < 0) stock1.Quantity = 0;
                     }
+                    _context.Stocks.Update(stock1);
+                    _context.SaveChanges();
                 }
                 var newPurchase = new Logs
                 {
@@ -352,6 +354,133 @@ namespace Inventree_App.Controllers
         public IActionResult CreateManual()
         {
             return View("ManualEntry");
+        }
+        public IActionResult UnitTypes(int pageNumber = 1, int pageSize = 5, string search = "")
+        {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
+            // Start with base query
+            var query = _context.UnitTypes.AsQueryable();
+
+            // Apply search filter if searchTerm is provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(s => s.UnitName.Contains(search));
+            }
+
+            // Get total count after filtering
+            int totalRecords = query.Count();
+
+            // Apply pagination
+            var categories = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Pass data to View
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.SearchTerm = search; // To retain search value in input field
+
+            return View("AddUnits", categories);
+        }
+
+        [HttpPost]
+        public IActionResult CreateOrUpdateUnitTypes(UnitTypes model)
+        {
+
+            if (model.Id == 0) // Create new category
+            {
+                _context.UnitTypes.Add(model);
+            }
+            else // Update existing category
+            {
+                var existingCategory = _context.UnitTypes.Find(model.Id);
+                if (existingCategory != null)
+                {
+                    existingCategory.UnitName = model.UnitName;
+                    _context.UnitTypes.Update(existingCategory);
+                }
+            }
+            _context.SaveChanges();
+            return RedirectToAction("UnitTypes");
+        }
+        [HttpGet]
+        public IActionResult DeleteUnits(int id)
+        {
+            var category = _context.UnitTypes.FirstOrDefault(c => c.Id == id);
+            if (category != null)
+            {
+                _context.UnitTypes.Remove(category);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("UnitTypes");
+        }
+        public IActionResult SubUnitTypes(int pageNumber = 1, int pageSize = 5, string search = "")
+        {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
+            // Start with base query
+            var query = _context.SubUnitTypes.AsQueryable();
+
+            // Apply search filter if searchTerm is provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(s => s.SubUnitName.Contains(search));
+            }
+
+            // Get total count after filtering
+            int totalRecords = query.Count();
+
+            // Apply pagination
+            var categories = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Pass data to View
+            ViewBag.TotalRecords = totalRecords;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.PageSize = pageSize;
+            ViewBag.SearchTerm = search; // To retain search value in input field
+
+            return View("AddSubUnits", categories);
+        }
+
+
+        [HttpPost]
+        public IActionResult CreateOrUpdateSubUnitTypes(SubUnitTypes model)
+        {
+
+            if (model.Id == 0) // Create new category
+            {
+                _context.SubUnitTypes.Add(model);
+            }
+            else // Update existing category
+            {
+                var existingCategory = _context.SubUnitTypes.Find(model.Id);
+                if (existingCategory != null)
+                {
+                    existingCategory.SubUnitName = model.SubUnitName;
+                    _context.SubUnitTypes.Update(existingCategory);
+                }
+            }
+            _context.SaveChanges();
+            return RedirectToAction("SubUnitTypes");
+        }
+        [HttpGet]
+        public IActionResult DeleteSubUnits(int id)
+        {
+            var category = _context.SubUnitTypes.FirstOrDefault(c => c.Id == id);
+            if (category != null)
+            {
+                _context.SubUnitTypes.Remove(category);
+                _context.SaveChanges();
+            }
+            return RedirectToAction("SubUnitTypes");
         }
     }
 }

@@ -49,7 +49,7 @@ public class DashboardController : Controller
         ViewBag.UserName = user.UserName;
 
         var stocks = _context.Stocks.AsQueryable();
-        var lowstocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
+        var lowstocks = stocks.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 < 30);
         var order = _context.Order.Where(x => x.Status == OrderStatus.Approved.ToString()).ToList();
         var orderPending = _context.Order.Where(x => x.Status == OrderStatus.Pending.ToString()).ToList();
 

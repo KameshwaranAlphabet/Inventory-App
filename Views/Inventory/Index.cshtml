@@ -57,6 +57,13 @@
             <form id="csvUploadForm" method="post" enctype="multipart/form-data" action="@Url.Action("UploadCsv", "Inventory")" style="display: none;">
                 <input type="file" id="csvUploadInput" name="file" accept=".csv" onchange="document.getElementById('csvUploadForm').submit();">
             </form>
+            @if (TempData["Message"] != null)
+            {
+                <script>
+                    alert('@TempData["Message"]');
+                </script>
+            }
+
             <form method="post" action="@Url.Action("TriggerExport", "Inventory")">
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-file-export"></i> Export Current Data

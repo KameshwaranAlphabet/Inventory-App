@@ -76,7 +76,7 @@
             background: #007bff;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 5px;
             cursor: pointer;
             transition: left 0.3s;
             z-index: 1050;
@@ -109,9 +109,10 @@
             cursor: pointer;
         }
 
-            button:hover {
-                background: #0056b3;
-            }
+        button:hover {
+            background: #0056b3;
+        }
+
         @@media (max-width: 768px) {
             #sidebar
 
@@ -148,70 +149,77 @@
                     <span class="navbar-toggler-icon"></span>
                 </div>
             </li>
-            <li class="nav-item">
+          @*   <li class="nav-item">
                 <a href="#" onclick="loadPage('Discuss')">
                     <img src="@Url.Content("~/Images/download.png")" class="sidebar-icon" alt="Discuss">
                     <span class="sidebar-text">Discuss</span>
                 </a>
-            </li>
+            </li> *@
             <li class="nav-item">
                 <a href="@Url.Action("Index", "StoreKeeper")">
-                    <img src="@Url.Content("~/Images/dashboard.png")" class="sidebar-icon" alt="Dashboards">
-                    <span class="sidebar-text">Dashboards</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <path d="M1 1h6v6H1V1zm0 8h6v6H1V9zm8-8h6v6H9V1zm0 8h6v6H9V9z" />
+                    </svg>
+                    <span class="sidebar-text ms-4">Dashboards</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("Inventory", "StoreKeeper")">
-                    <img src="@Url.Content("~/Images/Inventory.png")" class="sidebar-icon" alt="Inventory">
-                    <span class="sidebar-text">Inventory</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <path d="M2 2h12v10H2V2zm1 1v8h10V3H3zm11 10H2v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1zM5 5h6v1H5V5zm0 2h6v1H5V7z" />
+                    </svg>
+                    <span class="sidebar-text ms-4">Inventory</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("ScannerIndex", "StoreKeeper")">
-                    <img src="@Url.Content("~/Images/barcode.png")" class="sidebar-icon" alt="Barcode">
-                    <span class="sidebar-text">Barcode</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <path d="M1 2h1v12H1V2zm2 0h2v12H3V2zm3 0h1v12H6V2zm2 0h2v12H8V2zm3 0h1v12h-1V2zm2 0h2v12h-2V2z" />
+                    </svg>
+                    <span class="sidebar-text ms-4">Barcode</span>
                 </a>
 
             <li class="nav-item">
                 <a href="@Url.Action("ApproveList", "StoreKeeper")">
-                    <img src="@Url.Content("~/Images/approve-list.png")" class="sidebar-icon" alt="LogOut">
-                    <span class="sidebar-text">ApproveList</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <path d="M2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-.5.5H2.5a.5.5 0 0 1-.5-.5v-11zm11 0H2v11h11v-11zm-6 2a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0v-5A.5.5 0 0 1 7 4.5zm-2 2a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0v-3A.5.5 0 0 1 5 6.5zm4-1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4A.5.5 0 0 1 9 5.5zm2 2a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 11 7.5z" />
+                        <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708l1.146 1.147 2.646-2.647a.5.5 0 0 1 .708 0z" />
+                    </svg>                   
+                    <span class="sidebar-text ms-4">ApproveList</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("StationeryCategories", "StoreKeeper")">
-                    <img src="@Url.Content("~/Images/category.png")" class="sidebar-icon" alt="Category">
-                    <span class="sidebar-text">Categories</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <path d="M3 1.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3zm1 1v1h1v-1h-1zm5.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm.5 1h2v2h-2v-2zm-6 5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm.5 1h2v2h-2v-2zm5.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm.5 1h2v2h-2v-2z" />
+                    </svg>                 
+                    <span class="sidebar-text ms-4">Categories</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("StationeryLocation", "StoreKeeper")">
-                    <img src="@Url.Content("~/Images/category.png")" class="sidebar-icon" alt="Location">
-                    <span class="sidebar-text">Location</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#985184" viewBox="0 0 16 16" class="sidebar-icon">
+                        <path d="M8 0a6 6 0 0 1 6 6c0 3.2-2.6 7.3-5.3 9.4-.3.3-.7.3-1 0C4.6 13.3 2 9.2 2 6a6 6 0 0 1 6-6zM8 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" />
+                    </svg>                 
+                    <span class="sidebar-text ms-2">Location</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("CreateManual", "StoreKeeper")">
-                    <img src="@Url.Content("~/Images/category.png")" class="sidebar-icon" alt="ManualComplete">
-                    <span class="sidebar-text">ManualComplete</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <path d="M4 1.5A1.5 1.5 0 0 1 5.5 0h5A1.5 1.5 0 0 1 12 1.5V3h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h1V1.5zM5 1.5V3h6V1.5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5zM4.854 7.146a.5.5 0 1 0-.708.708l2 2a.5.5 0 0 0 .708 0l4-4a.5.5 0 1 0-.708-.708L7 9.293 4.854 7.146z" />
+                    </svg>                   
+                    <span class="sidebar-text ms-4">ManualComplete</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="@Url.Action("UnitTypes", "StoreKeeper")">
-                    <img src="@Url.Content("~/Images/category.png")" class="sidebar-icon" alt="UnitTypes">
-                    <span class="sidebar-text">Units</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="@Url.Action("SubUnitTypes", "StoreKeeper")">
-                    <img src="@Url.Content("~/Images/category.png")" class="sidebar-icon" alt="UnitTypes">
-                    <span class="sidebar-text">Sub Units</span>
-                </a>
-            </li>
+    
             <li class="nav-item">
                 <a href="@Url.Action("Logout", "Home")">
-                    <img src="@Url.Content("~/Images/logout.png")" class="sidebar-icon" alt="LogOut">
-                    <span class="sidebar-text">LogOut</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <circle cx="8" cy="8" r="7" stroke="white" stroke-width="1" fill="#985184" />
+                        <path d="M6 11l3-3-3-3" stroke="white" stroke-width="1" fill="none" />
+                    </svg>                   
+                    <span class="sidebar-text ms-4">LogOut</span>
                 </a>
             </li>
 

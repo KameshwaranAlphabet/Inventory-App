@@ -77,7 +77,7 @@
             background: #007bff;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 5px;
             cursor: pointer;
             transition: left 0.3s;
             z-index: 1050;
@@ -157,14 +157,18 @@
             </li> *@
             <li class="nav-item">
                 <a href="@Url.Action("OrderList", "Order")">
-                    <img src="@Url.Content("~/Images/dashboard.png")" class="sidebar-icon" alt="Dashboards">
-                    <span class="sidebar-text">Dashboards</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <path d="M1 1h6v6H1V1zm0 8h6v6H1V9zm8-8h6v6H9V1zm0 8h6v6H9V9z" />
+                    </svg>
+                    <span class="sidebar-text ms-4">Dashboards</span>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("CartItem", "Order")">
-                    <img src="@Url.Content("~/Images/cart image.png")" class="sidebar-icon" alt="Cart">
-                    <span class="sidebar-text">Cart</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <path d="M0 1h2l2 6h9l2-4H4.5m0 1h8.8l-1.4 3H4.9l-.8-2M5 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0m8 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8h7V7H6v1m0 1h7v-1H6v1" />
+                    </svg>
+                    <span class="sidebar-text ms-4">Cart</span>
                 </a>
             </li>
         @*     <li class="nav-item">
@@ -180,8 +184,11 @@
                 </a> *@
             <li class="nav-item mt-auto">
                 <a href="@Url.Action("Logout", "Home")">
-                    <img src="@Url.Content("~/Images/logout.png")" class="sidebar-icon" alt="LogOut">
-                    <span class="sidebar-text">LogOut</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
+                        <circle cx="8" cy="8" r="7" stroke="white" stroke-width="1" fill="#985184" />
+                        <path d="M6 11l3-3-3-3" stroke="white" stroke-width="1" fill="none" />
+                    </svg>                   
+                    <span class="sidebar-text ms-4">LogOut</span>
                 </a>
             </li>
         </ul>
