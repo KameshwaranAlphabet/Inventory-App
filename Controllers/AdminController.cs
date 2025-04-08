@@ -292,13 +292,15 @@ namespace Inventree_App.Controllers
         public IActionResult CreateManual(ManualStockPage model)
         {
             var user = GetCurrentUser();
+
             if (ModelState.IsValid)
             {
                 // Find the stock entry for the item
                 var stock1 = _context.Stocks.FirstOrDefault(s => s.Name == model.StockName);
+
                 if (stock1 != null)
                 {
-                    var totalStockQuantity = (stock1.UnitCapacity * stock1.UnitQuantity) + stock1.Quantity; // Total available stock
+                    var totalStockQuantity = (stock1.UnitCapacity * stock1.UnitQuantity) + stock1.Quantity; // Total available in pieces
 
                     if (model.Quantity > totalStockQuantity)
                     {
@@ -306,53 +308,88 @@ namespace Inventree_App.Controllers
                         return RedirectToAction("CreateManual");
                     }
 
-                    if (model.Quantity <= totalStockQuantity)
+                    int? requestedQty = model.Quantity;
+                    int? remainingQty = requestedQty;
+
+                    // First use available loose pieces
+                    if (stock1.Quantity >= remainingQty)
                     {
-                        // Calculate how many full packs to deduct
-                        int? fullPacksToDeduct = model.Quantity / stock1.UnitCapacity; // Full packs
-                        int? remainingPieces = model.Quantity % stock1.UnitCapacity;   // Leftover pieces
-
-                        // Deduct from packs
-                        stock1.UnitQuantity -= fullPacksToDeduct;
-
-                        // Deduct from loose pieces
-                        stock1.Quantity -= remainingPieces;
-
-                        // Ensure we don't have negative pack counts
-                        if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
-
-                        // Ensure loose pieces are correctly adjusted
-                        if (stock1.Quantity < 0)
-                        {
-                            stock1.UnitQuantity--; // Deduct 1 more pack
-                            stock1.Quantity += stock1.UnitCapacity; // Convert a pack into pieces
-                        }
-
-                        // Ensure stock is not negative
-                        if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
-                        if (stock1.Quantity < 0) stock1.Quantity = 0;
+                        stock1.Quantity -= remainingQty;
+                        remainingQty = 0;
                     }
+                    else
+                    {
+                        remainingQty -= stock1.Quantity;
+                        stock1.Quantity = 0;
+
+                        // Use full packs (converted to pieces)
+                        int? totalPiecesFromPacks = stock1.UnitQuantity * stock1.UnitCapacity;
+
+                        if (remainingQty <= totalPiecesFromPacks)
+                        {
+                            int? fullPacksNeeded = remainingQty / stock1.UnitCapacity;
+                            int? leftoverPieces = remainingQty % stock1.UnitCapacity;
+
+                            stock1.UnitQuantity -= fullPacksNeeded;
+                            stock1.Quantity -= leftoverPieces;
+
+                            // If not enough loose pieces, convert one more pack
+                            if (stock1.Quantity < 0)
+                            {
+                                if (stock1.UnitQuantity > 0)
+                                {
+                                    stock1.UnitQuantity -= 1;
+                                    stock1.Quantity += stock1.UnitCapacity;
+                                }
+                                else
+                                {
+                                    stock1.Quantity = 0;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            TempData["ErrorMessage"] = "Insufficient stock available!";
+                            return RedirectToAction("CreateManual");
+                        }
+                    }
+
+                    // Final safety checks
+                    if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
+                    if (stock1.Quantity < 0) stock1.Quantity = 0;
+
                     _context.Stocks.Update(stock1);
                     _context.SaveChanges();
+
+                    // Log the transaction
+                    var newPurchase = new Logs
+                    {
+                        UserID = user.Id,
+                        UserName = model.CustomerName,
+                        CreatedDate = DateTime.Now,
+                        Description = $"{model.StockName} qty {model.Quantity} as Picked by {model.CustomerName} Given by {user.UserName}",
+                        Type = "Completed",
+                    };
+
+                    _context.Logs.Add(newPurchase);
+                    _context.SaveChanges();
+
+                    TempData["SuccessMessage"] = "Stock successfully deducted!";
+                    return RedirectToAction("CreateManual");
                 }
-                var newPurchase = new Logs
-                {
-                    UserID = user.Id,
-                    UserName = model.CustomerName,
-                    CreatedDate = DateTime.Now,
-                    Description = $"{model.StockName} qty {model.Quantity} as Picked by {model.CustomerName} Given by {user.UserName} ",
-                    Type = "Completed",
-                };
-                TempData["SuccessMessage"] = "Stock successfully deducted!";
-                _context.Logs.Add(newPurchase);
-                _context.SaveChanges();
+
+                TempData["ErrorMessage"] = "Stock item not found!";
                 return RedirectToAction("CreateManual");
             }
+
             TempData["ErrorMessage"] = "Invalid request!";
             return View(model);
         }
+
         public IActionResult CreateManual()
         {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;   
             return View("ManualEntry");
         }
         public IActionResult UnitTypes(int pageNumber = 1, int pageSize = 5, string search = "")

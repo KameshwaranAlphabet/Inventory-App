@@ -97,7 +97,7 @@ public class DashboardController : Controller
         ViewBag.StocksCount = stocks.Count();
         ViewBag.ApprovedCount = order.Count();
         ViewBag.LowStocksCount = lowstocks.Count();
-        ViewBag.AvailableStocks = stocks.Where(s => s.Quantity > 0).Count();
+        ViewBag.AvailableStocks = stocks.Where(s => (s.UnitCapacity * s.UnitQuantity + s.Quantity) > 0).Count();
         ViewBag.Pending = orderPending.Count();
 
         return View(logs);
