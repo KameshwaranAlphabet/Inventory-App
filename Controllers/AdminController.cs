@@ -199,17 +199,24 @@ namespace Inventree_App.Controllers
         //    return View("Location", model);
         //}
 
-        public IActionResult StationeryLocation(int pageNumber = 1, int pageSize = 5)
+        public IActionResult StationeryLocation(int pageNumber = 1, int pageSize = 5, string search = "")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
 
+            // Base query to get categories and stock counts
             var categoriesQuery = _context.Location.Select(category => new LocationViewModel
             {
                 Id = category.Id,
                 Name = category.LocationName,
                 Count = _context.Stocks.Count(x => x.LocationId == category.Id)
             });
+
+            // Apply search filter if provided
+            if (!string.IsNullOrEmpty(search))
+            {
+                categoriesQuery = categoriesQuery.Where(s => s.Name.Contains(search));
+            }
 
             // Get total count for pagination
             int totalRecords = categoriesQuery.Count();
@@ -220,18 +227,19 @@ namespace Inventree_App.Controllers
                 .Take(pageSize)
                 .ToList();
 
+            // Pass pagination info and data to the view
             ViewBag.TotalRecords = totalRecords;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
 
+            // Return the view with paginated categories
             return View("Location", categories);
         }
 
         [HttpPost]
         public IActionResult CreateOrUpdateLocation(Location model)
         {
-            if (ModelState.IsValid)
-            {
+            
                 if (model.Id == 0) // Create new category
                 {
                     _context.Location.Add(model);
@@ -246,9 +254,6 @@ namespace Inventree_App.Controllers
                     }
                 }
                 _context.SaveChanges();
-                return RedirectToAction("StationeryLocation");
-            }
-
             return RedirectToAction("StationeryLocation");
         }
         [HttpGet]
@@ -257,7 +262,7 @@ namespace Inventree_App.Controllers
             var category = _context.Location.FirstOrDefault(c => c.Id == id);
             if (category != null)
             {
-                _context.Location.Remove(category);
+                _context.Remove(category);
                 _context.SaveChanges();
             }
             return RedirectToAction("StationeryLocation");
