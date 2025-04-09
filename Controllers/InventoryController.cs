@@ -617,24 +617,24 @@ namespace Inventree_App.Controllers
 
                         var values = line.Split(',');
 
-                        if (values.Length == 14) // Ensure correct columns count
+                        if (values.Length == 15) // Ensure correct columns count
                         {
                             var stationery = new Stocks
                             {
-                                Name = values[0].Trim(),
-                                SerialNumber = values[1].Trim(),
-                                Quantity = ParseNullableInt(values[2]),
-                                MaxQuantity = ParseNullableInt(values[3]),
+                                Name = values[1].Trim(),
+                                SerialNumber = values[2].Trim(),
+                                Quantity = ParseNullableInt(values[3]),
+                                MaxQuantity = ParseNullableInt(values[4]),
                                 Email = userName.Email,
-                                Barcode = values[5].Trim(),
-                                CategoryId = ParseNullableInt(values[6]),
+                                Barcode = values[7].Trim(),
+                                CategoryId = ParseNullableInt(values[10]),
                                 CreatedOn = DateTime.Now,
-                                LocationId = ParseNullableInt(values[8]),
+                                LocationId = ParseNullableInt(values[9]),
                                 UpdatedOn = DateTime.Now,
-                                SubUnitType = values[10].Trim(),
-                                UnitCapacity = ParseNullableInt(values[10]),
+                                SubUnitType = values[14].Trim(),
+                                UnitCapacity = ParseNullableInt(values[13]),
                                 UnitQuantity = ParseNullableInt(values[12]),
-                                UnitType = values[13].Trim()
+                                UnitType = values[11].Trim()
                             };
 
                             stationeryList.Add(stationery);
@@ -651,7 +651,8 @@ namespace Inventree_App.Controllers
                         {
                             stock.SerialNumber = $"STK{stock.Id:D6}"; // Format: STK000123
                             stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
-                            stock.MaxQuantity = (stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity;
+                            var test = ((stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity);
+                            stock.MaxQuantity = (test == null || test <= 0) ? stock.UnitQuantity : stock.Quantity;
                         });
 
                         _context.Stocks.UpdateRange(stationeryList); // Bulk update

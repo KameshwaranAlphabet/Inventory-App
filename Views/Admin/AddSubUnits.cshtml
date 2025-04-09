@@ -18,7 +18,7 @@
     <div class="row">
         <div class="col-md-4">
             <h5 id="formTitle">Add New UnitTypes</h5>
-                <form method="post" enctype="multipart/form-data" asp-action="CreateOrUpdateSubUnitTypes" asp-controller="StoreKeeper">
+                <form method="post" enctype="multipart/form-data" asp-action="CreateOrUpdateSubUnitTypes" asp-controller="Admin">
                 <input type="hidden" name="Id" id="categoryId" />
                 <div class="mb-3">
                     <label class="form-label">Name</label>
@@ -73,7 +73,7 @@
                             <td>@category.SubUnitName</td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.SubUnitName')">Edit</button>
-                                <a href="/StoreKeeper/DeleteSubUnits/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                                <a href="/Admin/DeleteSubUnits/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                             </td>
                         </tr>
                     }
@@ -123,7 +123,7 @@
     function searchCategories() {
         let searchTerm = document.getElementById("searchInput").value.trim();
 
-        let url = `/StoreKeeper/SubUnitTypes?page=1&pageSize=5&search=${searchTerm}`;
+        let url = `/Admin/SubUnitTypes?page=1&pageSize=5&search=${searchTerm}`;
         window.location.href = url;
     }
 
