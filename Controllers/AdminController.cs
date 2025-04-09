@@ -129,25 +129,21 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult CreateOrUpdate(Categories model)
         {
-            if (ModelState.IsValid)
+            if (model.Id == 0) // Create new category
             {
-                if (model.Id == 0) // Create new category
-                {
-                    model.CreatedOn = DateTime.Now;
-                    _context.Categories.Add(model);
-                }
-                else // Update existing category
-                {
-                    var existingCategory = _context.Categories.Find(model.Id);
-                    if (existingCategory != null)
-                    {
-                        existingCategory.CategoryName = model.CategoryName;
-                        _context.Categories.Update(existingCategory);
-                    }
-                }
-                _context.SaveChanges();
-                return RedirectToAction("StationeryCategories");
+                model.CreatedOn = DateTime.Now;
+                _context.Categories.Add(model);
             }
+            else // Update existing category
+            {
+                var existingCategory = _context.Categories.Find(model.Id);
+                if (existingCategory != null)
+                {
+                    existingCategory.CategoryName = model.CategoryName;
+                    _context.Categories.Update(existingCategory);
+                }
+            }
+            _context.SaveChanges();
 
             return RedirectToAction("StationeryCategories");
         }
