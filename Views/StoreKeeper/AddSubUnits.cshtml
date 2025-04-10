@@ -51,19 +51,16 @@
 
         <div class="col-md-8">
             <div class="d-flex justify-content-between mb-3">
-                <div>
-                    <select class="form-select w-auto d-inline-block">
-                        <option>Bulk actions</option>
-                        <option>Delete</option>
-                    </select>
-                    <button class="btn btn-secondary">Apply</button>
-                </div>
-                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search SubUnits" onkeyup="searchCategories()" />
+              
+                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search SubUnits" />
+                    <div>
+                        <button class="btn btn-secondary" onclick="searchCategories()">Apply</button>
+                    </div>
             </div>
             <table class="table table-bordered" id="categoryTable">
                 <thead>
                     <tr>
-                        <th><input type="checkbox" /></th>
+                        <th>Id/th>
                         <th>Name</th>
                         <th>Actions</th>
                     </tr>
@@ -72,7 +69,7 @@
                     @foreach (var category in Model)
                     {
                         <tr>
-                            <td><input type="checkbox" /></td>
+                            <td>@category.Id</td>
                             <td>@category.SubUnitName</td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.SubUnitName')">Edit</button>
@@ -126,7 +123,7 @@
     function searchCategories() {
         let searchTerm = document.getElementById("searchInput").value.trim();
 
-        let url = `/StoreKeeper/SubUnitTypes?page=1&pageSize=5&search=${searchTerm}`;
+        let url = `/StoreKeeper/SubUnitTypes?PageNumber=1&pageSize=5&search=${searchTerm}`;
         window.location.href = url;
     }
 

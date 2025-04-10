@@ -96,24 +96,24 @@ namespace Inventree_App.Controllers
 
             return View(orderList);
         }
-        public IActionResult StationeryCategories(int pageNumber = 1, int pageSize = 5)
+        public IActionResult StationeryCategories( int pageNumber = 1, int pageSize = 5,string search ="")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
 
-            var categoriesQuery = _context.Categories.Select(category => new CategoryViewModel
-            {
-                Id = category.Id,
-                Name = category.CategoryName,
-                CreatedOn = category.CreatedOn,
-                ParentId = category.ParentCategoryId,
-                Count = _context.Stocks.Count(x => x.CategoryId == category.Id)
-            });
+            var categoriesQuery = _context.Categories
+                .Where(category => string.IsNullOrEmpty(search) || category.CategoryName.Contains(search))
+                .Select(category => new CategoryViewModel
+                {
+                    Id = category.Id,
+                    Name = category.CategoryName,
+                    CreatedOn = category.CreatedOn,
+                    ParentId = category.ParentCategoryId,
+                    Count = _context.Stocks.Count(x => x.CategoryId == category.Id)
+                });
 
-            // Get total count for pagination
             int totalRecords = categoriesQuery.Count();
 
-            // Apply pagination
             var categories = categoriesQuery
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -122,9 +122,11 @@ namespace Inventree_App.Controllers
             ViewBag.TotalRecords = totalRecords;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
+            ViewBag.Search = search; // To preserve the search term in the view
 
             return View("StationeryCategories", categories);
         }
+
 
         [HttpPost]
         public IActionResult CreateOrUpdate(Categories model)

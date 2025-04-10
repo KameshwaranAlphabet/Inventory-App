@@ -178,7 +178,7 @@ namespace Inventree_App.Controllers
             switch (user.UserRoles)
             {
                 case "Faculty":
-                    return RedirectToAction("OrderList", "Order");
+                    return RedirectToAction("Index", "Order");
                 case "Storekeeper":
                     return RedirectToAction("Index", "Storekeeper");
                 case "Lab Supervisor":

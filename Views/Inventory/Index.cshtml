@@ -86,7 +86,7 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    var percentage = (((item.UnitCapacity * item.UnitQuantity + item.Quantity) == null || (item.UnitCapacity * item.UnitQuantity + item.Quantity) <= 0) ? item.UnitQuantity : item.Quantity / (float)item.MaxQuantity) * 100;
+                    var percentage = (((item.UnitCapacity * item.UnitQuantity + item.Quantity) == null || (item.UnitCapacity * item.UnitQuantity + item.Quantity) <= 0) ? item.UnitQuantity : (item.UnitCapacity * item.UnitQuantity + item.Quantity) / (float)item.MaxQuantity) * 100;
                     var colorClass = percentage < 30 ? "bg-danger" : (percentage < 70 ? "bg-warning" : "bg-success");
 
                     <tr>
@@ -97,7 +97,7 @@
                         <td>
                             @((((item.UnitCapacity ?? 0) * (item.UnitQuantity ?? 0) + (item.Quantity ?? 0)) <= 0)
                                 ? (item.UnitQuantity ?? 0)
-                                : item.Quantity) / @(item.MaxQuantity ?? 0)
+                                : (item.UnitCapacity ?? 0) * (item.UnitQuantity ?? 0) + (item.Quantity ?? 0)) / @(item.MaxQuantity ?? 0)
                         </td>
                         <td>
                             <div class="progress" style="height: 10px; min-width: 100px;">

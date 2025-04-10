@@ -56,9 +56,8 @@
                 <table class="table table-bordered" id="categoryTable">
                     <thead>
                         <tr>
-                            <th>Image</th>
+                            <th>Id</th>
                             <th>Name</th>
-                            <th>Description</th>
                             <th>Parent Category</th>
                             <th>Count</th>
                             <th>Actions</th>
@@ -68,9 +67,8 @@
                         @foreach (var category in Model)
                         {
                             <tr>
-                                <td><img src="@category.ImageUrl" width="50" height="50" class="img-thumbnail" /></td>
+                                <td>@category.Id</td>
                                 <td>@category.Name</td>
-                                <td>@category.Description</td>
                                 <td>@category.ParentId</td>
                                 <td>@category.Count</td>
                                 <td>
@@ -127,7 +125,7 @@
      function searchCategories() {
         let searchTerm = document.getElementById("searchInput").value.trim();
 
-        let url = `/StoreKeeper/StationeryCategories?page=1&pageSize=5&search=${searchTerm}`;
+        let url = `/StoreKeeper/StationeryCategories?pageNumber=1&pageSize=5&search=${searchTerm}`;
         window.location.href = url;
     }
 

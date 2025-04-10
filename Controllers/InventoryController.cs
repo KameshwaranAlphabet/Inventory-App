@@ -407,55 +407,109 @@ namespace Inventree_App.Controllers
                     stock.UnitCapacity,
                     stock.SubUnitType,
                 };
-          
-                // Update stock properties dynamically
-                stock.Name = updatedStock.Name;
-                stock.LocationId = updatedStock.LocationId;
-                stock.CategoryId = updatedStock.CategoryId;
-             
-                if (updatedStock.UnitCapacity != stock.UnitCapacity ||
-      updatedStock.UnitQuantity != stock.UnitQuantity ||
-      updatedStock.Quantity != stock.Quantity)
-                {
-                    stock.MaxQuantity = (updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity;
-                }
-                stock.UnitQuantity = updatedStock.UnitQuantity;
-                stock.UnitCapacity = updatedStock.UnitCapacity;
-                stock.SubUnitType = updatedStock.SubUnitType;
-                stock.Quantity = updatedStock.Quantity;
-                stock.UnitType = updatedStock.UnitType;
 
-                _context.Stocks.Update(stock);
-                _context.SaveChanges();
-
-                // Log changes
+                bool changesMade = false;
                 var logDetails = $"Stock {stock.SerialNumber} updated by {user.Email}. Changes: ";
 
-                if (oldStockData.Name != stock.Name) logDetails += $"Name: {oldStockData.Name} → {stock.Name}, ";
-                if (oldStockData.LocationId != stock.LocationId) logDetails += $"LocationId: {oldStockData.LocationId} → {stock.LocationId}, ";
-                if (oldStockData.CategoryId != stock.CategoryId) logDetails += $"CategoryId: {oldStockData.CategoryId} → {stock.CategoryId}, ";
-                if (oldStockData.Quantity != stock.Quantity) logDetails += $"Quantity: {oldStockData.Quantity} → {stock.Quantity}, ";
-                if (oldStockData.MaxQuantity != stock.MaxQuantity) logDetails += $"MaxQuantity: {oldStockData.MaxQuantity} → {stock.MaxQuantity}, ";
-
-                logDetails = logDetails.TrimEnd(',', ' '); // Remove trailing comma
-
-                var log = new Logs
+                if (oldStockData.Name != updatedStock.Name)
                 {
-                    UserID = user.Id,
-                    Type = "Updated",
-                    Description = logDetails,
-                    UserName = user.UserName,
-                    CreatedDate = DateTime.Now
-                };
+                    logDetails += $"Name: {oldStockData.Name} → {updatedStock.Name}, ";
+                    stock.Name = updatedStock.Name;
+                    changesMade = true;
+                }
 
-                _context.Logs.Add(log);
-                _context.SaveChanges();
+                if (oldStockData.LocationId != updatedStock.LocationId)
+                {
+                    logDetails += $"LocationId: {oldStockData.LocationId} → {updatedStock.LocationId}, ";
+                    stock.LocationId = updatedStock.LocationId;
+                    changesMade = true;
+                }
+
+                if (oldStockData.CategoryId != updatedStock.CategoryId)
+                {
+                    logDetails += $"CategoryId: {oldStockData.CategoryId} → {updatedStock.CategoryId}, ";
+                    stock.CategoryId = updatedStock.CategoryId;
+                    changesMade = true;
+                }
+
+                if (oldStockData.UnitQuantity != updatedStock.UnitQuantity ||
+                    oldStockData.UnitCapacity != updatedStock.UnitCapacity ||
+                    oldStockData.Quantity != updatedStock.Quantity)
+                {
+
+                    var newMax = ((updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity);
+                    
+                    //var newMax = (updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity;
+                    if (oldStockData.MaxQuantity != newMax)
+                    {
+
+                        logDetails += $"MaxQuantity: {oldStockData.MaxQuantity} → {newMax}, ";
+                        stock.MaxQuantity = updatedStock.MaxQuantity = (newMax == null || newMax <= 0) ? updatedStock.UnitQuantity : (updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity ;
+                        changesMade = true;
+                    }
+                }
+
+                if (oldStockData.UnitQuantity != updatedStock.UnitQuantity)
+                {
+                    logDetails += $"UnitQuantity: {oldStockData.UnitQuantity} → {updatedStock.UnitQuantity}, ";
+                    stock.UnitQuantity = updatedStock.UnitQuantity;
+                    changesMade = true;
+                }
+
+                if (oldStockData.UnitCapacity != updatedStock.UnitCapacity)
+                {
+                    logDetails += $"UnitCapacity: {oldStockData.UnitCapacity} → {updatedStock.UnitCapacity}, ";
+                    stock.UnitCapacity = updatedStock.UnitCapacity;
+                    changesMade = true;
+                }
+
+                if (oldStockData.SubUnitType != updatedStock.SubUnitType)
+                {
+                    logDetails += $"SubUnitType: {oldStockData.SubUnitType} → {updatedStock.SubUnitType}, ";
+                    stock.SubUnitType = updatedStock.SubUnitType;
+                    changesMade = true;
+                }
+
+                if (oldStockData.Quantity != updatedStock.Quantity)
+                {
+                    logDetails += $"Quantity: {oldStockData.Quantity} → {updatedStock.Quantity}, ";
+                    stock.Quantity = updatedStock.Quantity;
+                    changesMade = true;
+                }
+
+                if (oldStockData.UnitType != updatedStock.UnitType)
+                {
+                    logDetails += $"UnitType: {oldStockData.UnitType} → {updatedStock.UnitType}, ";
+                    stock.UnitType = updatedStock.UnitType;
+                    changesMade = true;
+                }
+
+                if (changesMade)
+                {
+                    logDetails = logDetails.TrimEnd(',', ' '); // Clean up trailing comma
+
+                    _context.Stocks.Update(stock);
+                    _context.SaveChanges();
+
+                    var log = new Logs
+                    {
+                        UserID = user.Id,
+                        Type = "Updated",
+                        Description = logDetails,
+                        UserName = user.UserName,
+                        CreatedDate = DateTime.Now
+                    };
+
+                    _context.Logs.Add(log);
+                    _context.SaveChanges();
+                }
 
                 return RedirectToAction("Index");
             }
 
             return View(updatedStock);
         }
+
 
         // Delete method
         //The Delete method removes a record based on the provided id.
@@ -481,6 +535,9 @@ namespace Inventree_App.Controllers
         [HttpGet]
         public IActionResult GetStockById(int? id)
         {
+            var userName = GetCurrentUser();
+            ViewBag.UserName = userName.UserName;
+
             using (var connection = new MySqlConnection(_connectionString))
             {
                 List<string> columnNames = connection.Query<string>("SHOW COLUMNS FROM stocks").ToList();

@@ -150,7 +150,7 @@ public class DashboardController : Controller
 
                 result.Add(new DashBoardOrder
                 {
-                    Profile = firstInitial + lastInitial,
+                    Profile = user.UserName[0].ToString().ToUpper(),
                     Name = user.UserName,
                     Date = order.OrderDate,
                     ItemCount = order.ItemCount,

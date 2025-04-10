@@ -28,6 +28,7 @@
                         <th>First Name</th>
                         <th>Last Name</th>
                         <th>Created Date</th>
+                        <th>Roles</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -41,6 +42,7 @@
                             <td class="editable">@customer.FirstName</td>
                             <td class="editable">@customer.LastName</td>
                             <td>@customer.CreatedOn.ToString()</td>
+                            <td>@customer.UserRoles</td>
                             <td>
                                 <button class="edit-btn btn btn-warning btn-sm">
                                     <i class="fas fa-edit"></i>

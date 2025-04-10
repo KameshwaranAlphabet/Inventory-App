@@ -35,37 +35,26 @@ namespace Inventree_App.Controllers
 
         public List<StockViewModel> GetFilteredProducts(string search, int? locationId, int page, int pageSize)
         {
-            var user = GetCurrentUser();
-            ViewBag.UserName = user.UserName;
+            var query = from stock in _context.Stocks
+                        join category in _context.Categories on stock.CategoryId equals category.Id
+                        select new StockViewModel
+                        {
+                            ID = stock.Id,
+                            Name = stock.Name,
+                            StockQuantity = (stock.UnitCapacity * stock.UnitQuantity + stock.Quantity),
+                            LocationId = stock.CategoryId,
+                            StockLocation = category.CategoryName
+                        };
 
-            var query = _context.Stocks
-      .Join(_context.Categories, p => p.CategoryId, l => l.Id,
-            (p, l) => new { p, l })
-      .GroupJoin(_context.CartItem.Where(c => c.UserId == user.Id),
-                 stock => stock.p.Id,
-                 cart => cart.StockId,
-                 (stock, cart) => new StockViewModel
-                 {
-                     ID = stock.p.Id,
-                     Name = stock.p.Name,
-                     StockQuantity = (stock.p.UnitCapacity * stock.p.UnitQuantity + stock.p.Quantity),
-                     LocationId = stock.p.LocationId,
-                     StockLocation = stock.l.CategoryName,
-                     CartQuantity = cart.Sum(c => (int?)c.Quantity) ?? 0  // Handle null cases
-                 })
-      .AsQueryable();
-            if (!string.IsNullOrEmpty(search))
-            {
+            if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(p => p.Name.Contains(search));
-            }
 
             if (locationId.HasValue)
-            {
-                query = query.Where(p => p.LocationId == locationId.Value);
-            }
+                query = query.Where(p => p.LocationId == locationId);
 
-            return query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            return query.ToList();
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -77,14 +66,47 @@ namespace Inventree_App.Controllers
         //    var stocks = _context.Stocks.ToList();
         //    return View(stocks);
         //}
+        //public IActionResult Index(string search, int? locationId, int page = 1, int pageSize = 10)
+        //{
+        //    var user = GetCurrentUser();
+        //    ViewBag.UserName = user.UserName;
+        //    ViewData["Locations"] = new SelectList(_context.Categories, "Id", "CategoryName");
+        //    var products = GetFilteredProducts(search, locationId, page, pageSize);
+        //    int totalRecords = products.Count();
+        //    int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+        //    ViewBag.TotalPages = totalPages;
+
+        //    return View(products);
+        //}
+
         public IActionResult Index(string search, int? locationId, int page = 1, int pageSize = 10)
         {
             var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             ViewBag.UserName = user.UserName;
             ViewData["Locations"] = new SelectList(_context.Categories, "Id", "CategoryName");
-            var products = GetFilteredProducts(search, locationId, page, pageSize);
-            return View(products);
+
+            var productsQuery = GetFilteredProducts(search, locationId, page, pageSize);
+            int totalRecords = productsQuery.Count();
+            int totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            var paginatedProducts = productsQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.TotalPages = totalPages;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalItems = totalRecords;
+            ViewBag.PageSize = pageSize;
+            ViewBag.CurrentSearch = search;
+
+            return View(paginatedProducts);
         }
+
         /// <summary>
         /// get the current user cart item 
         /// </summary>
@@ -92,6 +114,10 @@ namespace Inventree_App.Controllers
         public IActionResult CartItem()
         {
             var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             ViewBag.UserName = user.UserName;
             var stocks = _context.CartItem.Where(x=>x.UserId == user.Id && x.Quantity > 0).ToList();
 
@@ -114,6 +140,10 @@ namespace Inventree_App.Controllers
         public IActionResult RemoveFromCart([FromBody] CartRemoveRequest request)
         {
             var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             ViewBag.UserName = user.UserName;
             var cart = _context.CartItem.FirstOrDefault(x => x.UserId == user.Id && x.StockId == request.StockId && x.Quantity > 0);
             if (cart!=null)
@@ -128,6 +158,10 @@ namespace Inventree_App.Controllers
         public IActionResult PlaceOrder()
         {
             var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             if (user == null)
             {
                 return Json(new { success = false, message = "User not found" });
@@ -181,6 +215,10 @@ namespace Inventree_App.Controllers
         public IActionResult AddToCart([FromBody] CartRequest request)
         {
             var user = GetCurrentUser();
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
             var test =   int.TryParse(request.StockId, out int stockId);
             //custom stock
             if (request != null && !test && request.Quantity > 0)
@@ -320,6 +358,9 @@ namespace Inventree_App.Controllers
         public async Task<IActionResult> OrderDetail(int orderId)
         {
             var user = GetCurrentUser();
+            if(user == null)
+                return RedirectToAction("Index", "Home");
+
             ViewBag.UserName = user.UserName;
             var orderItem =  _context.OrderItem.Where(x=>x.OrderId == orderId).ToList();
 
@@ -355,7 +396,7 @@ namespace Inventree_App.Controllers
             var user = GetCurrentUser();
             if (user == null)
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
             ViewBag.UserName = user.UserName;
 
@@ -413,7 +454,7 @@ namespace Inventree_App.Controllers
             var user = GetCurrentUser();
             if (user == null)
             {
-                return RedirectToAction("Login", "Account");
+                return RedirectToAction("Index", "Home");
             }
             ViewBag.UserName = user.UserName;
             if ((request.OrderIds == null || request.OrderIds.Count == 0) &&

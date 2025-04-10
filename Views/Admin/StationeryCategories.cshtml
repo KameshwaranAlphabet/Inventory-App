@@ -49,14 +49,17 @@
 
             <div class="col-md-8">
                 <div class="d-flex justify-content-between mb-3">
-                    <input type="text" id="searchInput" class="form-control w-25" placeholder="Search Categories" onkeyup="searchCategories()" />
+                    <input type="text" id="searchInput" class="form-control w-25" placeholder="Search Categories" />
+                    <div>
+                        <button class="btn btn-secondary" onclick="searchCategories()">Apply</button>
+                    </div>
                 </div>
+
                 <table class="table table-bordered" id="categoryTable">
                     <thead>
                         <tr>
-                            <th>Image</th>
+                            <th>Id</th>
                             <th>Name</th>
-                            <th>Description</th>
                             <th>Parent Category</th>
                             <th>Count</th>
                             <th>Actions</th>
@@ -66,9 +69,8 @@
                         @foreach (var category in Model)
                         {
                             <tr>
-                                <td><img src="@category.ImageUrl" width="50" height="50" class="img-thumbnail" /></td>
+                                <td>@category.Id</td>
                                 <td>@category.Name</td>
-                                <td>@category.Description</td>
                                 <td>@category.ParentId</td>
                                 <td>@category.Count</td>
                                 <td>
@@ -122,20 +124,25 @@
         document.getElementById("submitButton").textContent = "Update Category";
     }
 
-     function searchCategories() {
-        var input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("searchInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("categoryTable");
-        tr = table.getElementsByTagName("tr");
+    //  function searchCategories() {
+    //     var input, filter, table, tr, td, i, txtValue;
+    //     input = document.getElementById("searchInput");
+    //     filter = input.value.toUpperCase();
+    //     table = document.getElementById("categoryTable");
+    //     tr = table.getElementsByTagName("tr");
 
-        for (i = 1; i < tr.length; i++) { // Skip header row
-            td = tr[i].getElementsByTagName("td")[1]; // Name column
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
-            }
-        }
+    //     for (i = 1; i < tr.length; i++) { // Skip header row
+    //         td = tr[i].getElementsByTagName("td")[1]; // Name column
+    //         if (td) {
+    //             txtValue = td.textContent || td.innerText;
+    //             tr[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+    //         }
+    //     }
+    // }
+        function searchCategories() {
+        let searchTerm = document.getElementById("searchInput").value.trim();
+        let url = `/Admin/StationeryCategories?pageNumber=1&pageSize=5&search=${encodeURIComponent(searchTerm)}`;
+        window.location.href = url; // This line redirects to the new URL
     }
 </script>
 <style>

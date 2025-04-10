@@ -49,21 +49,16 @@
         </div>
 
         <div class="col-md-8">
-            <div class="d-flex justify-content-between mb-3">
-                <div>
-                    <select class="form-select w-auto d-inline-block">
-                        <option>Bulk actions</option>
-                        <option>Delete</option>
-                    </select>
-                    <button class="btn btn-secondary">Apply</button>
-                </div>
-                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search Categories" onkeyup="searchCategories()" />
+            <div class="d-flex justify-content-between mb-3">        
+                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search Location"  />
+                    <div>
+                        <button class="btn btn-secondary" onclick="searchCategories()">Apply</button>
+                    </div>
             </div>
             <table class="table table-bordered" id="categoryTable">
                 <thead>
                     <tr>
-                        <th><input type="checkbox" /></th>
-                        <th>Image</th>
+                        <th>Id</th>
                         <th>Name</th>
                         <th>Count</th>
                         <th>Actions</th>
@@ -73,8 +68,7 @@
                     @foreach (var category in Model)
                     {
                         <tr>
-                            <td><input type="checkbox" /></td>
-                            <td><img src="@category.ImageUrl" width="50" height="50" class="img-thumbnail" /></td>
+                            <td>@category.Id</td>
                             <td>@category.Name</td>
                             <td>@category.Count</td>
                             <td>
@@ -85,28 +79,27 @@
                     }
                 </tbody>
             </table>
-        </div>
-
-            <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center">
-                <span>@(((ViewBag.PageNumber - 1) * ViewBag.PageSize) + 1)-@((ViewBag.PageNumber * ViewBag.PageSize) > ViewBag.TotalRecords ? ViewBag.TotalRecords : (ViewBag.PageNumber * ViewBag.PageSize)) of @ViewBag.TotalRecords</span>
-                <nav>
-                    <ul class="pagination">
-                        <li class="page-item @(ViewBag.PageNumber == 1 ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("StationeryLocation", new { pageNumber = ViewBag.PageNumber - 1, pageSize = ViewBag.PageSize })">&laquo;</a>
-                        </li>
-                        @for (int i = 1; i <= Math.Ceiling((double)ViewBag.TotalRecords / ViewBag.PageSize); i++)
-                        {
-                            <li class="page-item @(ViewBag.PageNumber == i ? "active" : "")">
-                                <a class="page-link" href="@Url.Action("StationeryLocation", new { pageNumber = i, pageSize = ViewBag.PageSize })">@i</a>
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>@(((ViewBag.PageNumber - 1) * ViewBag.PageSize) + 1)-@((ViewBag.PageNumber * ViewBag.PageSize) > ViewBag.TotalRecords ? ViewBag.TotalRecords : (ViewBag.PageNumber * ViewBag.PageSize)) of @ViewBag.TotalRecords</span>
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item @(ViewBag.PageNumber == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("StationeryLocation", new { pageNumber = ViewBag.PageNumber - 1, pageSize = ViewBag.PageSize })">&laquo;</a>
                             </li>
-                        }
-                        <li class="page-item @(ViewBag.PageNumber * ViewBag.PageSize >= ViewBag.TotalRecords ? "disabled" : "")">
-                            <a class="page-link" href="@Url.Action("StationeryLocation", new { pageNumber = ViewBag.PageNumber + 1, pageSize = ViewBag.PageSize })">&raquo;</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+                            @for (int i = 1; i <= Math.Ceiling((double)ViewBag.TotalRecords / ViewBag.PageSize); i++)
+                            {
+                                <li class="page-item @(ViewBag.PageNumber == i ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("StationeryLocation", new { pageNumber = i, pageSize = ViewBag.PageSize })">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(ViewBag.PageNumber * ViewBag.PageSize >= ViewBag.TotalRecords ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("StationeryLocation", new { pageNumber = ViewBag.PageNumber + 1, pageSize = ViewBag.PageSize })">&raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+        </div>
     </div>
 </div>
 </body>
@@ -130,7 +123,7 @@
     function searchCategories() {
         let searchTerm = document.getElementById("searchInput").value.trim();
 
-        let url = `/StoreKeeper/StationeryLocation?page=1&pageSize=5&search=${searchTerm}`;
+        let url = `/StoreKeeper/StationeryLocation?pageNumber=1&pageSize=5&search=${searchTerm}`;
         window.location.href = url;
     }
 

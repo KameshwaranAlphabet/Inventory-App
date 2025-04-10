@@ -161,29 +161,30 @@
             </div>
         </div>
         <div class="row mt-4">
+            <!-- Most Indented Section -->
             <div class="col-md-8">
                 <div class="card p-3">
-                    <div class="d-flex justify-content-between">
-                    <h5>Most Indented</h5>
-                        <!-- User Name Search Filter with Smaller Size -->
-                        <input type="text" id="userFilter" class="form-control form-control-sm"
-                               style="width: 180px;" placeholder="Search User">
-
-                        <select id="monthFilter" class="form-select filter-dropdown">
-                            <option value="all">All</option>
-                            <option value="1">January</option>
-                            <option value="2">February</option>
-                            <option value="3">March</option>
-                            <option value="4">April</option>
-                            <option value="5">May</option>
-                            <option value="6">June</option>
-                            <option value="7">July</option>
-                            <option value="8">August</option>
-                            <option value="9">September</option>
-                            <option value="10">October</option>
-                            <option value="11">November</option>
-                            <option value="12">December</option>
-                        </select>
+                    <div class="d-flex justify-content-between align-items-center flex-column flex-md-row gap-2">
+                        <h5 class="mb-0">Most Indented</h5>
+                        <div class="d-flex flex-column flex-sm-row gap-2">
+                            <input type="text" id="userFilter" class="form-control form-control-sm"
+                                   placeholder="Search User">
+                            <select id="monthFilter" class="form-select form-select-sm">
+                                <option value="all">All</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
                     </div>
                     <table class="table table-striped mt-3">
                         <thead>
@@ -202,30 +203,31 @@
                     </nav>
                 </div>
             </div>
-            <div class="col-md-4">
+
+            <!-- Logs Section -->
+            <div class="col-md-4 mt-4 mt-md-0">
                 <div class="card p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5>Logs</h5>
-
-                        <!-- User Name Search Filter with Smaller Size -->
-                        <input type="text" id="userFilterlog" class="form-control form-control-sm"
-                               style="width: 180px;" placeholder="Search User">
-
-                        <select id="updateFilter" class="form-select filter-dropdown">
-                            <option value="all">All</option>
-                            <option value="01">January</option>
-                            <option value="02">February</option>
-                            <option value="03">March</option>
-                            <option value="04">April</option>
-                            <option value="05">May</option>
-                            <option value="06">June</option>
-                            <option value="07">July</option>
-                            <option value="08">August</option>
-                            <option value="09">September</option>
-                            <option value="10">October</option>
-                            <option value="11">November</option>
-                            <option value="12">December</option>
-                        </select>
+                    <div class="d-flex justify-content-between align-items-center flex-column flex-md-row gap-2">
+                        <h5 class="mb-0">Logs</h5>
+                        <div class="d-flex flex-column flex-sm-row gap-2">
+                            <input type="text" id="userFilterlog" class="form-control form-control-sm"
+                                   placeholder="Search User">
+                            <select id="updateFilter" class="form-select form-select-sm">
+                                <option value="all">All</option>
+                                <option value="01">January</option>
+                                <option value="02">February</option>
+                                <option value="03">March</option>
+                                <option value="04">April</option>
+                                <option value="05">May</option>
+                                <option value="06">June</option>
+                                <option value="07">July</option>
+                                <option value="08">August</option>
+                                <option value="09">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
                     </div>
                     <ul class="list-unstyled mt-3" id="updatesList"></ul>
                     <nav>
