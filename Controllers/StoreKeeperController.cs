@@ -57,7 +57,30 @@ namespace Inventree_App.Controllers
             ViewBag.UserName = user.UserName;
 
             var stocks = _context.Stocks.AsQueryable();
-            var lowstocks = stocks.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
+            var lowstocks = new List<Stocks>(); // Assuming Stock is your model class
+
+            foreach (var s in stocks)
+            {
+                int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+                float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity) * 100;
+
+                if (percentage < 30)
+                {
+                    lowstocks.Add(s);
+                }
+            }
+            var AvailableStocks = new List<Stocks>(); // Assuming Stock is your model class
+
+            foreach (var s in stocks)
+            {
+                int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+                float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity);
+
+                if (percentage > 0)
+                {
+                    AvailableStocks.Add(s);
+                }
+            }
             var order = _context.Order.Where(x => x.Status == OrderStatus.Approved.ToString()).ToList();
             var orderPending = _context.Order.Where(x => x.Status == OrderStatus.Pending.ToString()).Count();
             var orderApproved = _context.Order.Where(x => x.Status == OrderStatus.Approved.ToString()).Count();
@@ -92,7 +115,7 @@ namespace Inventree_App.Controllers
             ViewBag.StocksCount = stocks.Count();
             ViewBag.ApprovedCount = order.Count();
             ViewBag.LowStocksCount = lowstocks.Count();
-            ViewBag.AvailableStocks = stocks.Where(s => s.Quantity > 0).Count();
+            ViewBag.AvailableStocks = AvailableStocks.Count();
             ViewBag.Pending = orderPending;
             ViewBag.Approved = orderApproved;
             ViewBag.TodayCount = orderApprovedCount;
@@ -186,35 +209,75 @@ namespace Inventree_App.Controllers
             ViewBag.PageSize = pageSize;
 
             var stocksQuery = _context.Stocks.AsQueryable();
-
-            //// Apply stock level filtering
-            //if (filter == "red")
-            //    stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
-            //else if (filter == "orange")
-            //    stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 30 && (s.Quantity / (float)s.MaxQuantity) * 100 < 70);
-            //else if (filter == "green")
-            //    stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 70);
-            //else if (filter == "Available")
-            //    stocksQuery = stocksQuery.Where(s => s.Quantity != 0);
+            var AvailableStocks = new List<Stocks>(); // Assuming Stock is your model class
 
             // Apply stock level filtering
             if (filter == "red")
-                stocksQuery = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 < 30);
-            else if (filter == "orange")
-                stocksQuery = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 >= 30 && ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 < 70);
-            else if (filter == "green")
-                stocksQuery = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 >= 70);
-            else if (filter == "Available")
-                stocksQuery = stocksQuery.Where(s => (s.UnitCapacity * s.UnitQuantity + s.Quantity) != 0);
+            {
+                foreach (var s in stocksQuery)
+                {
+                    int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+                    float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity) * 100;
 
-            // Apply search filter
+                    if (percentage < 30)
+                    {
+                        AvailableStocks.Add(s);
+                    }
+                }
+            }
+            else if (filter == "orange")
+            {
+                foreach (var s in stocksQuery)
+                {
+                    int? currentStock = (s.UnitCapacity > 0)
+                        ? (s.UnitCapacity * s.UnitQuantity + s.Quantity)
+                        : s.Quantity;
+
+                    // Protect against null MaxQuantity using null-coalescing operator
+                    float percentage = (float)((currentStock / (float)(s.MaxQuantity ?? 1)) * 100);
+
+                    if (percentage >= 30 && percentage < 70)
+                    {
+                        AvailableStocks.Add(s);
+                    }
+                }
+            }
+
+            else if (filter == "green")
+            {
+                //AvailableStocks = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 >= 70).ToList();
+
+                foreach (var s in stocksQuery)
+                {
+                    int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+                    float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity) * 100;
+
+                    if (percentage >= 70)
+                    {
+                        AvailableStocks.Add(s);
+                    }
+                }
+            }
+            else if (filter == "Available")
+            {
+                foreach (var s in stocksQuery)
+                {
+                    int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+                    float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity);
+
+                    if (percentage > 0)
+                    {
+                        AvailableStocks.Add(s);
+                    }
+                }
+            }
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
-                stocksQuery = stocksQuery.Where(s => s.Name.Contains(search));
+                AvailableStocks = stocksQuery.Where(s => s.Name.Contains(search)).ToList();
 
-            int totalItems = stocksQuery.Count();
+            int totalItems = AvailableStocks.Count();
 
-            var paginatedStocks = stocksQuery
+            var paginatedStocks = AvailableStocks
                 .OrderBy(s => s.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -646,26 +709,21 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult CreateOrUpdate(Categories model)
         {
-            if (ModelState.IsValid)
+            if (model.Id == 0) // Create new category
             {
-                if (model.Id == 0) // Create new category
-                {
-                    model.CreatedOn = DateTime.Now;
-                    _context.Categories.Add(model);
-                }
-                else // Update existing category
-                {
-                    var existingCategory = _context.Categories.Find(model.Id);
-                    if (existingCategory != null)
-                    {
-                        existingCategory.CategoryName = model.CategoryName;
-                        _context.Categories.Update(existingCategory);
-                    }
-                }
-                _context.SaveChanges();
-                return RedirectToAction("StationeryCategories");
+                model.CreatedOn = DateTime.Now;
+                _context.Categories.Add(model);
             }
-
+            else // Update existing category
+            {
+                var existingCategory = _context.Categories.Find(model.Id);
+                if (existingCategory != null)
+                {
+                    existingCategory.CategoryName = model.CategoryName;
+                    _context.Categories.Update(existingCategory);
+                }
+            }
+            _context.SaveChanges();
             return RedirectToAction("StationeryCategories");
         }
 
@@ -756,25 +814,20 @@ namespace Inventree_App.Controllers
         [HttpPost]
         public IActionResult CreateOrUpdateLocation(Location model)
         {
-            if (ModelState.IsValid)
+            if (model.Id == 0) // Create new category
             {
-                if (model.Id == 0) // Create new category
-                {
-                    _context.Location.Add(model);
-                }
-                else // Update existing category
-                {
-                    var existingCategory = _context.Location.Find(model.Id);
-                    if (existingCategory != null)
-                    {
-                        existingCategory.LocationName = model.LocationName;
-                        _context.Location.Update(existingCategory);
-                    }
-                }
-                _context.SaveChanges();
-                return RedirectToAction("StationeryLocation");
+                _context.Location.Add(model);
             }
-
+            else // Update existing category
+            {
+                var existingCategory = _context.Location.Find(model.Id);
+                if (existingCategory != null)
+                {
+                    existingCategory.LocationName = model.LocationName;
+                    _context.Location.Update(existingCategory);
+                }
+            }
+            _context.SaveChanges();
             return RedirectToAction("StationeryLocation");
         }
         [HttpGet]

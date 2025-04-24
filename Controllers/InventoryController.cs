@@ -79,24 +79,75 @@ namespace Inventree_App.Controllers
             ViewBag.PageSize = pageSize;
 
             var stocksQuery = _context.Stocks.AsQueryable();
+            var AvailableStocks = new List<Stocks>(); // Assuming Stock is your model class
 
             // Apply stock level filtering
             if (filter == "red")
-                stocksQuery = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 < 30);
-            else if (filter == "orange")
-                stocksQuery = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 >= 30 && ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 < 70);
-            else if (filter == "green")
-                stocksQuery = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 >= 70);
-            else if (filter == "Available")
-                stocksQuery = stocksQuery.Where(s => (s.UnitCapacity * s.UnitQuantity + s.Quantity) != 0);
+            {
+                foreach (var s in stocksQuery)
+                {
+                    int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+                    float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity) * 100;
 
+                    if (percentage < 30)
+                    {
+                        AvailableStocks.Add(s);
+                    }
+                }
+            }
+            else if (filter == "orange")
+            {
+                foreach (var s in stocksQuery)
+                {
+                    int? currentStock = (s.UnitCapacity > 0)
+                        ? (s.UnitCapacity * s.UnitQuantity + s.Quantity)
+                        : s.Quantity;
+
+                    // Protect against null MaxQuantity using null-coalescing operator
+                    float percentage = (float)((currentStock / (float)(s.MaxQuantity ?? 1)) * 100);
+
+                    if (percentage >= 30 && percentage < 70)
+                    {
+                        AvailableStocks.Add(s);
+                    }
+                }
+            }
+
+            else if (filter == "green")
+            {
+                //AvailableStocks = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 >= 70).ToList();
+
+                foreach (var s in stocksQuery)
+                {
+                    int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+                    float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity) * 100;
+
+                    if (percentage >= 70)
+                    {
+                        AvailableStocks.Add(s);
+                    }
+                }
+            }
+            else if (filter == "Available")
+            {
+                foreach (var s in stocksQuery)
+                {
+                    int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+                    float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity);
+
+                    if (percentage > 0)
+                    {
+                        AvailableStocks.Add(s);
+                    }
+                }
+            }
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
-                stocksQuery = stocksQuery.Where(s => s.Name.Contains(search));
+                AvailableStocks = stocksQuery.Where(s => s.Name.Contains(search)).ToList();
 
-            int totalItems = await stocksQuery.CountAsync();
+            int totalItems =  AvailableStocks.Count();
 
-            var paginatedStocks = await stocksQuery
+            var paginatedStocks = AvailableStocks
                 .OrderBy(s => s.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -112,7 +163,7 @@ namespace Inventree_App.Controllers
                     UnitType = _context.UnitTypes.Where(x => x.Id.ToString() == a.UnitType).Select(x => x.UnitName).FirstOrDefault(),
                     SubUnitType = _context.SubUnitTypes.Where(x => x.Id.ToString() == a.SubUnitType).Select(x => x.SubUnitName).FirstOrDefault()
                 })
-                .ToListAsync();
+                .ToList();
 
             // Convert anonymous type to a proper model (if needed)
             var stockList = paginatedStocks.Select(a => new Stocks

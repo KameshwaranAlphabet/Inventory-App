@@ -49,7 +49,35 @@ public class DashboardController : Controller
         ViewBag.UserName = user.UserName;
 
         var stocks = _context.Stocks.AsQueryable();
-        var lowstocks = stocks.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 < 30);
+        var lowstocks = new List<Stocks>(); // Assuming Stock is your model class
+
+        foreach (var s in stocks)
+        {
+            int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+            float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity) * 100;
+
+            if (percentage < 30)
+            {
+                lowstocks.Add(s);
+            }
+        }
+        var AvailableStocks = new List<Stocks>(); // Assuming Stock is your model class
+
+        foreach (var s in stocks)
+        {
+            int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
+            float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity);
+
+            if (percentage > 0)
+            {
+                AvailableStocks.Add(s);
+            }
+        }
+        //stocks.ForEachAsync(stock =>
+        //{
+        //    var test = ((stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity);
+        //    var test1 = (test == null || test <= 0) ? stock.UnitQuantity : stock.Quantity / (float)stock.MaxQuantity * 100 < 30;
+        //});
         var order = _context.Order.Where(x => x.Status == OrderStatus.Approved.ToString()).ToList();
         var orderPending = _context.Order.Where(x => x.Status == OrderStatus.Pending.ToString()).ToList();
 
@@ -97,7 +125,7 @@ public class DashboardController : Controller
         ViewBag.StocksCount = stocks.Count();
         ViewBag.ApprovedCount = order.Count();
         ViewBag.LowStocksCount = lowstocks.Count();
-        ViewBag.AvailableStocks = stocks.Where(s => (s.UnitCapacity * s.UnitQuantity + s.Quantity) > 0).Count();
+        ViewBag.AvailableStocks = AvailableStocks.Count();
         ViewBag.Pending = orderPending.Count();
 
         return View(logs);
