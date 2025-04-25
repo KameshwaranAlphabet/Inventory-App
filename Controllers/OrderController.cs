@@ -41,7 +41,11 @@ namespace Inventree_App.Controllers
                         {
                             ID = stock.Id,
                             Name = stock.Name,
-                            StockQuantity = (stock.UnitCapacity * stock.UnitQuantity + stock.Quantity),
+                            // Null-safe Percentage calculation
+                            StockQuantity = (((((stock.UnitCapacity ?? 0) * (stock.UnitQuantity ?? 0) + (stock.Quantity ?? 0)) <= 0)
+                                ? (stock.UnitQuantity ?? 0)
+                                : (((stock.UnitCapacity ?? 0) * (stock.UnitQuantity ?? 0) + (stock.Quantity ?? 0))))),
+                            //StockQuantity = (stock.UnitCapacity * stock.UnitQuantity + stock.Quantity),
                             LocationId = stock.CategoryId,
                             StockLocation = category.CategoryName
                         };
@@ -126,7 +130,7 @@ namespace Inventree_App.Controllers
             {
                 var units = _context.Stocks.FirstOrDefault(x => x.Id == item.StockId);
                 var subUnits = _context.SubUnitTypes.FirstOrDefault(x => x.Id == int.Parse(units.SubUnitType));
-                item.Units = subUnits.SubUnitName;
+                item.Units = subUnits?.SubUnitName ?? string.Empty;
             }
 
             return View("Cart", test);
@@ -252,7 +256,11 @@ namespace Inventree_App.Controllers
 
             var stock = _context.Stocks.FirstOrDefault(s => s.Id == stockIdInt);
 
-            var stockQuantity = (stock.UnitCapacity * stock.UnitQuantity + stock.Quantity); // max quantity is t
+            int? currentStock = (stock.UnitCapacity * stock.UnitQuantity + stock.Quantity);
+            float? percentage = ((currentStock == null || currentStock <= 0) ? stock.UnitQuantity : stock.Quantity );
+
+
+            var stockQuantity = percentage; // max quantity is t
 
             if (stock != null && stockQuantity >= request.Quantity)
             {

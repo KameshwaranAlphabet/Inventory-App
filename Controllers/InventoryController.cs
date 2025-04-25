@@ -141,9 +141,13 @@ namespace Inventree_App.Controllers
                     }
                 }
             }
+            else if (filter == "all")
+            {
+                AvailableStocks = stocksQuery.ToList();
+            }
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
-                AvailableStocks = stocksQuery.Where(s => s.Name.Contains(search)).ToList();
+            AvailableStocks = stocksQuery.Where(s => s.Name.Contains(search)).ToList();
 
             int totalItems =  AvailableStocks.Count();
 
