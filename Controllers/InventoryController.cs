@@ -325,7 +325,7 @@ namespace Inventree_App.Controllers
 
                 // Generate Barcode based on ID
                 stock.SerialNumber = $"STK{stock.Id:D6}";  // Example: STK000123
-                stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
+                //stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
 
                 // Update stock with barcode details
                 _context.Stocks.Update(stock);
@@ -762,7 +762,7 @@ namespace Inventree_App.Controllers
                         stationeryList.ForEach(stock =>
                         {
                             stock.SerialNumber = $"STK{stock.Id:D6}"; // Format: STK000123
-                            stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
+                            //stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
                             var test = ((stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity);
                             stock.MaxQuantity = (test == null || test <= 0) ? stock.UnitQuantity : stock.Quantity;
                         });

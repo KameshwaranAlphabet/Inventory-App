@@ -36,11 +36,11 @@
                     </select>
                 </div> *@
 
-                <div class="mb-3">
+               @*  <div class="mb-3">
                     <label class="form-label">Thumbnail</label>
                     <input type="file" class="form-control" name="ImageFile" id="imageFile" />
                     <img id="categoryImagePreview" src="" width="50" height="50" class="img-thumbnail mt-2" style="display:none;" />
-                </div>
+                </div> *@
 
                 <button type="submit" class="btn btn-primary" id="unitSubmitButton">Add New Units</button>
             </form>
@@ -69,8 +69,8 @@
                             <td>@category.UnitName</td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.UnitName')">Edit</button>
-                                <a href="/Admin/DeleteUnits/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
-                            </td>
+@*                                 <a href="/Admin/DeleteUnits/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+ *@                            </td>
                         </tr>
                     }
                 </tbody>        

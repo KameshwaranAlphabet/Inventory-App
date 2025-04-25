@@ -46,7 +46,7 @@
             </select>
             <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
             <button class="btn btn-success" onclick="window.location.href='@Url.Action("Create", "Inventory")'">Add New</button>
-            <button class="btn btn-secondary" onclick="window.location.href='@Url.Action("DownloadPdf", "Inventory")'">
+            <button class="btn btn-secondary" @* onclick="window.location.href='@Url.Action("DownloadPdf", "Inventory")'" *@>
                 📄 Download Barcode PDF
             </button>
 

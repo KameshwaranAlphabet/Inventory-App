@@ -14,7 +14,7 @@
         <div class="card p-4 shadow-sm">
             <h2 class="text-center">@(Model?.Id > 0 ? "Edit Stock" : "Add New Stock")</h2>
 
-            <form method="post" asp-action="@(Model?.Id > 0 ? "Edit" : "Create")" asp-controller="StoreKeeper">
+            <form method="post" asp-action="@(Model?.Id > 0 ? "Edit" : "Create")" asp-controller="Inventory">
                 @if (Model?.Id > 0)
                 {
                     <input type="hidden" asp-for="Id" />
