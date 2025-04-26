@@ -128,9 +128,28 @@ namespace Inventree_App.Controllers
             var test = _mapper.Map<List<CartItemDto>>(stocks);
             foreach (var item in test)
             {
+                // Find the stock by ID
                 var units = _context.Stocks.FirstOrDefault(x => x.Id == item.StockId);
-                var subUnits = _context.SubUnitTypes.FirstOrDefault(x => x.Id == int.Parse(units.SubUnitType));
-                item.Units = subUnits?.SubUnitName ?? string.Empty;
+
+                if (units != null)
+                {
+                    string unitName = string.Empty;
+
+                    if (!string.IsNullOrEmpty(units.SubUnitType) && uint.TryParse(units.SubUnitType, out uint subUnitTypeId))
+                    {
+                        var subUnits = _context.SubUnitTypes.FirstOrDefault(x => x.Id == subUnitTypeId);
+                        unitName = subUnits?.SubUnitName;
+                    }
+
+                    if (string.IsNullOrEmpty(unitName) && uint.TryParse(units.UnitType, out uint unitTypeId))
+                    {
+                        var unitType = _context.UnitTypes.FirstOrDefault(x => x.Id == unitTypeId);
+                        unitName = unitType?.UnitName ?? string.Empty;
+                    }
+
+                    item.Units = unitName;
+                }
+
             }
 
             return View("Cart", test);

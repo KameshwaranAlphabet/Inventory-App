@@ -303,7 +303,8 @@ namespace Inventree_App.Controllers
 
                 if (stock1 != null)
                 {
-                    var totalStockQuantity = (stock1.UnitCapacity * stock1.UnitQuantity) + stock1.Quantity; // Total available in pieces
+                    var test = (stock1.UnitCapacity * stock1.UnitQuantity) + stock1.Quantity;
+                    var totalStockQuantity = (test == null || test <= 0) ? stock1.UnitQuantity : stock1.Quantity;  // Total available in pieces
 
                     if (model.Quantity > totalStockQuantity)
                     {
