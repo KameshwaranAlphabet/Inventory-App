@@ -275,8 +275,8 @@ namespace Inventree_App.Controllers
 
             var stock = _context.Stocks.FirstOrDefault(s => s.Id == stockIdInt);
 
-            int? currentStock = (stock.UnitCapacity * stock.UnitQuantity + stock.Quantity);
-            float? percentage = ((currentStock == null || currentStock <= 0) ? stock.UnitQuantity : stock.Quantity );
+            int? currentStock =  stock.Quantity;
+            float? percentage =  stock.Quantity ;
 
 
             var stockQuantity = percentage; // max quantity is t
@@ -475,13 +475,14 @@ namespace Inventree_App.Controllers
             return Json(new { success = true, message = $"Selected orders and items marked as {request.Status}." });
         }
 
+
         [HttpPost]
         public IActionResult UpdateOrderAndItemsStorekeeper([FromBody] OrderAndItemsUpdateRequest request)
         {
             var user = GetCurrentUser();
             if (user == null)
             {
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Login", "Account");
             }
             ViewBag.UserName = user.UserName;
             if ((request.OrderIds == null || request.OrderIds.Count == 0) &&
@@ -500,52 +501,26 @@ namespace Inventree_App.Controllers
                 {
                     item.State = request.Status;
 
-                  var order = _context.Order.FirstOrDefault(x => x.Id == item.OrderId);
-                    var userName = _context.Customer.FirstOrDefault(x => x.Id == order.UserId); 
+                    var order = _context.Order.FirstOrDefault(x => x.Id == item.OrderId);
+                    var userName = _context.Customer.FirstOrDefault(x => x.Id == order.UserId);
                     // If status is "Completed", log it
                     if (request.Status == "Completed")
                     {
                         // Find the stock entry for the item
-                        var stock1 = _context.Stocks.FirstOrDefault(s => s.Id == item.StockId);
-                        if (stock1 != null)
+                        var stock = _context.Stocks.FirstOrDefault(s => s.Id == item.StockId);
+                        if (stock != null)
                         {
-                            var totalStockQuantity = (stock1.UnitCapacity * stock1.UnitQuantity) + stock1.Quantity; // Total available stock
-
-                            if (item.Quantity <= totalStockQuantity)
-                            {
-                                // Calculate how many full packs to deduct
-                                int? fullPacksToDeduct = item.Quantity / stock1.UnitCapacity; // Full packs
-                                int? remainingPieces = item.Quantity % stock1.UnitCapacity;   // Leftover pieces
-
-                                // Deduct from packs
-                                stock1.UnitQuantity -= fullPacksToDeduct;
-
-                                // Deduct from loose pieces
-                                stock1.Quantity -= remainingPieces;
-
-                                // Ensure we don't have negative pack counts
-                                if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
-
-                                // Ensure loose pieces are correctly adjusted
-                                if (stock1.Quantity < 0)
-                                {
-                                    stock1.UnitQuantity--; // Deduct 1 more pack
-                                    stock1.Quantity += stock1.UnitCapacity; // Convert a pack into pieces
-                                }
-
-                                // Ensure stock is not negative
-                                if (stock1.UnitQuantity < 0) stock1.UnitQuantity = 0;
-                                if (stock1.Quantity < 0) stock1.Quantity = 0;
-                            }
+                            stock.Quantity -= item.Quantity; // Reduce stock quantity
+                            if (stock.Quantity < 0)
+                                stock.Quantity = 0; // Ensure quantity does not go negative
                         }
-
 
                         logs.Add(new Logs
                         {
                             UserID = user.Id,
                             UserName = user.UserName,
-                            Description = $"{item.StockName} qty {item.Quantity} as Picked by {userName.UserName} Given by {user.UserName} ",
-                            CreatedDate = DateTime.Now,
+                            Description = $"{item.StockName} qty {item.Quantity} as Pickuped by {userName.UserName} Given by {user.UserName} ",
+                            CreatedDate = DateTime.UtcNow,
                             Type = "Completed"
                         });
                     }

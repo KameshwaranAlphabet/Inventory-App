@@ -437,14 +437,14 @@ namespace Inventree_App.Controllers
                     oldStockData.Quantity != updatedStock.Quantity)
                 {
 
-                    var newMax = ((updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity);
+                    var newMax = (updatedStock.Quantity);
                     
                     //var newMax = (updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity;
                     if (oldStockData.MaxQuantity != newMax)
                     {
 
                         logDetails += $"MaxQuantity: {oldStockData.MaxQuantity} → {newMax}, ";
-                        stock.MaxQuantity = updatedStock.MaxQuantity = (newMax == null || newMax <= 0) ? updatedStock.UnitQuantity : (updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity ;
+                        stock.MaxQuantity = updatedStock.Quantity ;
                         changesMade = true;
                     }
                 }
@@ -683,15 +683,15 @@ namespace Inventree_App.Controllers
                                 Quantity = ParseNullableInt(values[3]),
                                 MaxQuantity = ParseNullableInt(values[4]),
                                 Email = userName.Email,
-                                Barcode = values[7].Trim(),
-                                CategoryId = ParseNullableInt(values[10]),
+                                Barcode = values[6].Trim(),
+                                CategoryId = ParseNullableInt(values[7]),
                                 CreatedOn = DateTime.Now,
                                 LocationId = ParseNullableInt(values[9]),
                                 UpdatedOn = DateTime.Now,
-                                SubUnitType = values[14].Trim(),
-                                UnitCapacity = ParseNullableInt(values[13]),
-                                UnitQuantity = ParseNullableInt(values[12]),
-                                UnitType = values[11].Trim()
+                                SubUnitType = values[11].Trim(),
+                                UnitCapacity = ParseNullableInt(values[12]),
+                                UnitQuantity = ParseNullableInt(values[13]),
+                                UnitType = values[14].Trim()
                             };
 
                             stationeryList.Add(stationery);
@@ -708,8 +708,7 @@ namespace Inventree_App.Controllers
                         {
                             stock.SerialNumber = $"STK{stock.Id:D6}"; // Format: STK000123
                             //stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
-                            var test = ((stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity);
-                            stock.MaxQuantity = (test == null || test <= 0) ? stock.UnitQuantity : stock.Quantity;
+                            stock.MaxQuantity = stock.Quantity;
                         });
 
                         _context.Stocks.UpdateRange(stationeryList); // Bulk update

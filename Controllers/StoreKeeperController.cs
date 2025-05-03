@@ -61,8 +61,8 @@ namespace Inventree_App.Controllers
 
             foreach (var s in stocks)
             {
-                int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
-                float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity) * 100;
+                int? currentStock = (s.Quantity);
+                float? percentage = (s.Quantity / (float)s.MaxQuantity) * 100;
 
                 if (percentage < 30)
                 {
@@ -213,71 +213,20 @@ namespace Inventree_App.Controllers
 
             // Apply stock level filtering
             if (filter == "red")
-            {
-                foreach (var s in stocksQuery)
-                {
-                    int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
-                    float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity) * 100;
-
-                    if (percentage < 30)
-                    {
-                        AvailableStocks.Add(s);
-                    }
-                }
-            }
+                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 < 30);
             else if (filter == "orange")
-            {
-                foreach (var s in stocksQuery)
-                {
-                    int? currentStock = (s.UnitCapacity > 0)
-                        ? (s.UnitCapacity * s.UnitQuantity + s.Quantity)
-                        : s.Quantity;
-
-                    // Protect against null MaxQuantity using null-coalescing operator
-                    float percentage = (float)((currentStock / (float)(s.MaxQuantity ?? 1)) * 100);
-
-                    if (percentage >= 30 && percentage < 70)
-                    {
-                        AvailableStocks.Add(s);
-                    }
-                }
-            }
-
+                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 30 && (s.Quantity / (float)s.MaxQuantity) * 100 < 70);
             else if (filter == "green")
-            {
-                //AvailableStocks = stocksQuery.Where(s => ((s.UnitCapacity * s.UnitQuantity + s.Quantity) / (float)s.MaxQuantity) * 100 >= 70).ToList();
-
-                foreach (var s in stocksQuery)
-                {
-                    int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
-                    float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity) * 100;
-
-                    if (percentage >= 70)
-                    {
-                        AvailableStocks.Add(s);
-                    }
-                }
-            }
+                stocksQuery = stocksQuery.Where(s => (s.Quantity / (float)s.MaxQuantity) * 100 >= 70);
             else if (filter == "Available")
-            {
-                foreach (var s in stocksQuery)
-                {
-                    int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
-                    float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity);
-
-                    if (percentage > 0)
-                    {
-                        AvailableStocks.Add(s);
-                    }
-                }
-            }
+                stocksQuery = stocksQuery.Where(s => (s.Quantity != 0));
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
-                AvailableStocks = stocksQuery.Where(s => s.Name.Contains(search)).ToList();
+                stocksQuery = stocksQuery.Where(s => s.Name.Contains(search));
 
-            int totalItems = AvailableStocks.Count();
+            int totalItems = stocksQuery.Count();
 
-            var paginatedStocks = AvailableStocks
+            var paginatedStocks = stocksQuery
                 .OrderBy(s => s.Name)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -407,7 +356,7 @@ namespace Inventree_App.Controllers
                 stock.Email = userName.Email;
                 //stock.UnitType = _context.UnitTypes.Where(x => x.Id == int.Parse(stock.UnitType)).Select(x => x.UnitName).First();
                 //stock.SubUnitType = _context.SubUnitTypes.Where(x => x.Id == int.Parse(stock.SubUnitType)).Select(x => x.SubUnitName).First();
-                stock.MaxQuantity = (stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity;
+                stock.MaxQuantity = stock.Quantity;
 
                 // Add stock to database
                 _context.Stocks.Add(stock);
@@ -589,7 +538,7 @@ namespace Inventree_App.Controllers
                     {
 
                         logDetails += $"MaxQuantity: {oldStockData.MaxQuantity} ? {newMax}, ";
-                        stock.MaxQuantity = updatedStock.MaxQuantity = (newMax == null || newMax <= 0) ? updatedStock.UnitQuantity : (updatedStock.UnitCapacity * updatedStock.UnitQuantity) + updatedStock.Quantity;
+                        stock.MaxQuantity =  updatedStock.Quantity;
                         changesMade = true;
                     }
                 }
@@ -879,7 +828,7 @@ namespace Inventree_App.Controllers
 
                 if (stock1 != null)
                 {
-                    var totalStockQuantity = (stock1.UnitCapacity * stock1.UnitQuantity) + stock1.Quantity; // Total available in pieces
+                    var totalStockQuantity = stock1.Quantity; // Total available in pieces
 
                     if (model.Quantity > totalStockQuantity)
                     {
