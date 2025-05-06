@@ -73,8 +73,8 @@ namespace Inventree_App.Controllers
 
             foreach (var s in stocks)
             {
-                int? currentStock = (s.UnitCapacity * s.UnitQuantity + s.Quantity);
-                float? percentage = ((currentStock == null || currentStock <= 0) ? s.UnitQuantity : s.Quantity / (float)s.MaxQuantity);
+                int? currentStock = (s.Quantity);
+                float? percentage = (s.Quantity / (float)s.MaxQuantity);
 
                 if (percentage > 0)
                 {

@@ -449,26 +449,26 @@ namespace Inventree_App.Controllers
                     }
                 }
 
-                if (oldStockData.UnitQuantity != updatedStock.UnitQuantity)
-                {
-                    logDetails += $"UnitQuantity: {oldStockData.UnitQuantity} → {updatedStock.UnitQuantity}, ";
-                    stock.UnitQuantity = updatedStock.UnitQuantity;
-                    changesMade = true;
-                }
+                //if (oldStockData.UnitQuantity != updatedStock.UnitQuantity)
+                //{
+                //    logDetails += $"UnitQuantity: {oldStockData.UnitQuantity} → {updatedStock.UnitQuantity}, ";
+                //    stock.UnitQuantity = updatedStock.UnitQuantity;
+                //    changesMade = true;
+                //}
 
-                if (oldStockData.UnitCapacity != updatedStock.UnitCapacity)
-                {
-                    logDetails += $"UnitCapacity: {oldStockData.UnitCapacity} → {updatedStock.UnitCapacity}, ";
-                    stock.UnitCapacity = updatedStock.UnitCapacity;
-                    changesMade = true;
-                }
+                //if (oldStockData.UnitCapacity != updatedStock.UnitCapacity)
+                //{
+                //    logDetails += $"UnitCapacity: {oldStockData.UnitCapacity} → {updatedStock.UnitCapacity}, ";
+                //    stock.UnitCapacity = updatedStock.UnitCapacity;
+                //    changesMade = true;
+                //}
 
-                if (oldStockData.SubUnitType != updatedStock.SubUnitType)
-                {
-                    logDetails += $"SubUnitType: {oldStockData.SubUnitType} → {updatedStock.SubUnitType}, ";
-                    stock.SubUnitType = updatedStock.SubUnitType;
-                    changesMade = true;
-                }
+                //if (oldStockData.SubUnitType != updatedStock.SubUnitType)
+                //{
+                //    logDetails += $"SubUnitType: {oldStockData.SubUnitType} → {updatedStock.SubUnitType}, ";
+                //    stock.SubUnitType = updatedStock.SubUnitType;
+                //    changesMade = true;
+                //}
 
                 if (oldStockData.Quantity != updatedStock.Quantity)
                 {

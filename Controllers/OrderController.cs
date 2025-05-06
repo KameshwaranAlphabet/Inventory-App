@@ -520,7 +520,7 @@ namespace Inventree_App.Controllers
                             UserID = user.Id,
                             UserName = user.UserName,
                             Description = $"{item.StockName} qty {item.Quantity} as Pickuped by {userName.UserName} Given by {user.UserName} ",
-                            CreatedDate = DateTime.UtcNow,
+                            CreatedDate = DateTime.Now,
                             Type = "Completed"
                         });
                     }
