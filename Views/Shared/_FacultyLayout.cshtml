@@ -245,6 +245,25 @@
                 sidebar.classList.toggle("show");
             }
         }
+             // Hover-based toggle from toggle button
+       const toggleBtn = document.querySelector(".toggle-btn");
+    const sidebar = document.getElementById("sidebar");
+
+    // Expand on hover
+    toggleBtn.addEventListener("mouseenter", () => {
+        if (sidebar.classList.contains("collapsed")) {
+            sidebar.classList.remove("collapsed");
+            sidebar.classList.add("hovered");
+        }
+    });
+
+    // Collapse on mouse leave
+    toggleBtn.addEventListener("mouseleave", () => {
+        if (sidebar.classList.contains("hovered")) {
+            sidebar.classList.remove("hovered");
+            sidebar.classList.add("collapsed");
+        }
+    });
     </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

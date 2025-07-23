@@ -37,14 +37,73 @@ namespace Inventree_App.Controllers
         //    var stocks = _context.Order.ToList();
         //    return View(stocks);
         //}
-        public IActionResult Index(int orderId,int page = 1, int pageSize = 10, string search = "", string orderDate = "", string filter ="")
+        //public IActionResult Index(int orderId,int page = 1, int pageSize = 10, string search = "", string orderDate = "", string filter ="")
+        //{
+        //    var user = GetCurrentUser();
+        //    ViewBag.UserName = user.UserName;
+
+        //    var query = _context.Order.AsQueryable();
+
+        //    // Search Filter (By Customer Name or Order ID)
+        //    if (!string.IsNullOrEmpty(search))
+        //    {
+        //        var customerIds = _context.Customer
+        //            .Where(x => x.UserName.Contains(search))
+        //            .Select(x => x.Id)
+        //            .ToList();
+
+        //        query = query.Where(x => customerIds.Contains(x.UserId));
+        //    }
+
+        //    if(filter == "Pending")
+        //        query = query.Where(o => o.Status == "Pending");
+
+        //    // Order Date Sorting
+        //    if (orderDate == "asc")
+        //    {
+        //        query = query.OrderBy(o => o.OrderDate);
+        //    }
+        //    else if (orderDate == "desc")
+        //    {
+        //        query = query.OrderByDescending(o => o.OrderDate);
+        //    }
+
+        //    if(orderId > 0)
+        //        query = query.Where(o => o.Id == orderId);
+
+        //    var totalOrders = query.Count();
+
+        //    // Pagination
+        //    var orders = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        //    var orderList = orders.Select(order => new OrderDetailsModel
+        //    {
+        //        OrderId = order.Id,
+        //        OrderedDate = order.OrderDate,
+        //        CustomerName = _context.Customer.FirstOrDefault(c => c.Id == order.UserId)?.UserName,
+        //        ItemsCount = order.ItemsCount,
+        //        Status = order.Status,
+        //        Items = _context.OrderItem.Where(x => x.OrderId == order.Id).ToList()
+        //    }).ToList();
+
+        //    // Storing Pagination Data in ViewBag
+        //    ViewBag.TotalItems = totalOrders;
+        //    ViewBag.CurrentPage = page;
+        //    ViewBag.PageSize = pageSize;
+        //    ViewBag.TotalPages = (int)Math.Ceiling((double)totalOrders / pageSize);
+        //    ViewBag.Search = search;
+        //    ViewBag.OrderDate = orderDate;
+
+        //    return View(orderList);
+        //}
+        public IActionResult Index(int orderId, int page = 1, int pageSize = 10, string search = "", string orderDate = "", string filter = "")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
 
             var query = _context.Order.AsQueryable();
 
-            // Search Filter (By Customer Name or Order ID)
+            // Search by customer username
             if (!string.IsNullOrEmpty(search))
             {
                 var customerIds = _context.Customer
@@ -58,41 +117,40 @@ namespace Inventree_App.Controllers
             if(filter == "Pending")
                 query = query.Where(o => o.Status == "Pending");
 
-            // Order Date Sorting
-            if (orderDate == "asc")
-            {
-                query = query.OrderBy(o => o.OrderDate);
-            }
-            else if (orderDate == "desc")
-            {
-                query = query.OrderByDescending(o => o.OrderDate);
-            }
-
-            if(orderId > 0)
+            if (orderId > 0)
                 query = query.Where(o => o.Id == orderId);
+
+            // Default sort: descending
+            query = orderDate == "asc"
+                ? query.OrderBy(o => o.OrderDate)
+                : query.OrderByDescending(o => o.OrderDate);
 
             var totalOrders = query.Count();
 
-            // Pagination
-            var orders = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var orders = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var customers = _context.Customer.ToDictionary(c => c.Id, c => c.UserName);
 
             var orderList = orders.Select(order => new OrderDetailsModel
             {
                 OrderId = order.Id,
                 OrderedDate = order.OrderDate,
-                CustomerName = _context.Customer.FirstOrDefault(c => c.Id == order.UserId)?.UserName,
+                CustomerName = customers.ContainsKey(order.UserId) ? customers[order.UserId] : "Unknown",
                 ItemsCount = order.ItemsCount,
                 Status = order.Status,
                 Items = _context.OrderItem.Where(x => x.OrderId == order.Id).ToList()
             }).ToList();
 
-            // Storing Pagination Data in ViewBag
             ViewBag.TotalItems = totalOrders;
             ViewBag.CurrentPage = page;
             ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalOrders / pageSize);
             ViewBag.Search = search;
-            ViewBag.OrderDate = orderDate;
+            ViewBag.OrderDate = string.IsNullOrEmpty(orderDate) ? "desc" : orderDate;
+            ViewBag.Filter = filter;
 
             return View(orderList);
         }

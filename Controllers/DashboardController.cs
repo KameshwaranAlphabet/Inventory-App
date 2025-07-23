@@ -49,30 +49,47 @@ public class DashboardController : Controller
         ViewBag.UserName = user.UserName;
 
         var stocks = _context.Stocks.AsQueryable();
-        var lowstocks = new List<Stocks>(); // Assuming Stock is your model class
+        //foreach (var s in stocks)
+        //{
+        //    int? currentStock = (s.Quantity);
+        //    float? percentage = ( s.Quantity / (float)s.MaxQuantity) * 100;
 
-        foreach (var s in stocks)
+        //    if (percentage <= 30)
+        //    {
+        //        lowstocks.Add(s);
+        //    }
+        //}
+        //var AvailableStocks = new List<Stocks>(); // Assuming Stock is your model class
+
+        //foreach (var s in stocks)
+        //{
+        //    int? currentStock = (s.Quantity);
+        //    float? percentage = (currentStock / (float)s.MaxQuantity);
+
+        //    if (percentage > 0)
+        //    {
+        //        AvailableStocks.Add(s);
+        //    }
+        //}
+        var lowstocks = new List<Stocks>();
+        var AvailableStocks = new List<Stocks>();
+        var allstocks = stocks.ToList(); // Force evaluation once
+
+        foreach (var s in allstocks)
         {
-            int? currentStock = (s.Quantity);
-            float? percentage = ( s.Quantity / (float)s.MaxQuantity) * 100;
+            float? percentage = (s.Quantity / (float)s.MaxQuantity) * 100;
 
             if (percentage < 30)
             {
-                lowstocks.Add(s);
+                lowstocks.Add(s); // Only low stock that is also available
             }
-        }
-        var AvailableStocks = new List<Stocks>(); // Assuming Stock is your model class
-
-        foreach (var s in stocks)
-        {
-            int? currentStock = (s.Quantity);
-            float? percentage = ( s.Quantity / (float)s.MaxQuantity);
-
-            if (percentage > 0)
+            else
             {
-                AvailableStocks.Add(s);
+                AvailableStocks.Add(s); // Available but not low
             }
         }
+
+
         //stocks.ForEachAsync(stock =>
         //{
         //    var test = ((stock.UnitCapacity * stock.UnitQuantity) + stock.Quantity);

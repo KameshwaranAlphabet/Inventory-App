@@ -58,29 +58,22 @@ namespace Inventree_App.Controllers
 
             var stocks = _context.Stocks.AsQueryable();
             var lowstocks = new List<Stocks>(); // Assuming Stock is your model class
-
-            foreach (var s in stocks)
-            {
-                int? currentStock = (s.Quantity);
-                float? percentage = (s.Quantity / (float)s.MaxQuantity) * 100;
-
-                if (percentage < 30)
-                {
-                    lowstocks.Add(s);
-                }
-            }
             var AvailableStocks = new List<Stocks>(); // Assuming Stock is your model class
 
             foreach (var s in stocks)
             {
-                int? currentStock = (s.Quantity);
-                float? percentage = (s.Quantity / (float)s.MaxQuantity);
+                float? percentage = (s.Quantity / (float)s.MaxQuantity) * 100;
 
-                if (percentage > 0)
+                if (percentage <= 30)
                 {
-                    AvailableStocks.Add(s);
+                    lowstocks.Add(s); // Only low stock that is also available
+                }
+                else
+                {
+                    AvailableStocks.Add(s); // Available but not low
                 }
             }
+
             var order = _context.Order.Where(x => x.Status == OrderStatus.Approved.ToString()).ToList();
             var orderPending = _context.Order.Where(x => x.Status == OrderStatus.Pending.ToString()).Count();
             var orderApproved = _context.Order.Where(x => x.Status == OrderStatus.Approved.ToString()).Count();
@@ -123,7 +116,7 @@ namespace Inventree_App.Controllers
             return View(logs.ToList());
         }
 
-        public IActionResult ApproveList(int page = 1, int pageSize = 10, string search = "", string orderDate = "", DateTime? fromDate = null, DateTime? toDate = null, string filter = "")
+        public IActionResult ApproveList(int page = 1, int pageSize = 10, string search = "", string orderDate = "desc", DateTime? fromDate = null, DateTime? toDate = null, string filter = "Approved")
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
