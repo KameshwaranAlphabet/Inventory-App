@@ -70,10 +70,23 @@
                             <td>@category.Id</td>
                             <td>@category.Name</td>
                             <td>@category.Count</td>
-                            <td>
+                            @* <td>
                                 <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.Name', '@category.ImageUrl')">Edit</button>
                                 <a href="/Admin/DeleteLocation/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
-                            </td>
+                            </td> *@
+                                <td>
+                                    <div class="d-flex flex-column flex-md-row gap-2">
+                                        <button type="button" class="btn btn-sm btn-warning"
+                                                onclick="editCategory('@category.Id', '@category.Name', '@category.ImageUrl')">
+                                            Edit
+                                        </button>
+                                        <a href="/Admin/DeleteLocation/@category.Id"
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('Are you sure?')">
+                                            Delete
+                                        </a>
+                                    </div>
+                                </td>
                         </tr>
                     }
                 </tbody>

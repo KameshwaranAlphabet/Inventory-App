@@ -57,6 +57,7 @@
         }
 
         #sidebar.collapsed .sidebar-text {
+            font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue","Noto Sans","Liberation Sans",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
             display: none;
         }
 
@@ -137,7 +138,7 @@
     </style>
 </head>
 <body class="layoutbody">
-    <button class="toggle-btn" onclick="toggleSidebar()">&#9776;</button>
+    <button class="toggle-btn" onmouseover="toggleSidebar()">&#9776;</button>
     <div id="sidebar">
         <ul class="nav flex-column">
             <li class="nav-item">
@@ -172,6 +173,9 @@
                     <span class="sidebar-text ms-4">My Orders</span>
                 </a>
             </li>
+
+
+
             <li class="nav-item">
                 <a href="@Url.Action("CartItem", "Order")">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">

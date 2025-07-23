@@ -44,6 +44,7 @@
                             <td>@customer.CreatedOn.ToString()</td>
                             <td>@customer.UserRoles</td>
                             <td>
+                                <div class="d-flex flex-column flex-md-row gap-2">
                                 <button class="edit-btn btn btn-warning btn-sm">
                                     <i class="fas fa-edit"></i>
                                 </button>
@@ -55,6 +56,7 @@
                                    onclick="return confirm('Are you sure?');">
                                     <i class="fas fa-trash-alt"></i>
                                 </a>
+                                </div>
                             </td>
                         </tr>
                     }

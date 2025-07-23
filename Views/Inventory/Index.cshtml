@@ -102,14 +102,26 @@
                                 <div class="progress-bar @colorClass" role="progressbar" data-percentage="@percentage"></div>
                             </div>
                         </td>
-                        <td>
+                        @* <td>
                             <button class="btn btn-primary btn-sm" onclick="window.location.href='@Url.Action("GetStockById", "Inventory", new { id = item.Id })'">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button class="btn btn-danger btn-sm" onclick="deleteStock(@item.Id)">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
+                        </td> *@
+
+                        <td>
+                            <div class="d-flex flex-column flex-md-row gap-2">
+                                <button class="btn btn-primary btn-sm" onclick="window.location.href='@Url.Action("GetStockById", "Inventory", new { id = item.Id })'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteStock(@item.Id)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
                         </td>
+
                     </tr>
                 }
             </tbody>

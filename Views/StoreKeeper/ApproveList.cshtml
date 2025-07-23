@@ -15,7 +15,7 @@
     <h2>Indent Request</h2>
 
     <!-- Filters -->
-    <div class="d-flex justify-content-between mb-3">
+    <div class="d-flex justify-content-between mb-3 gap-2">
         <div class="d-flex">
             <input type="text" id="searchBox" class="form-control me-2" placeholder="Filter by name" value="@ViewBag.Search">
             <input type="date" id="fromDate" class="form-control me-2" value="@ViewBag.FromDate">
@@ -26,6 +26,8 @@
                 <option value="desc" selected="@(ViewBag.OrderDate == "desc" ? "selected" : null)">Newest First</option>
             </select>
         </div>
+
+
         <button class="btn btn-primary" id="filterButton" onclick="applyFilters()">Apply</button>
     </div>
 
