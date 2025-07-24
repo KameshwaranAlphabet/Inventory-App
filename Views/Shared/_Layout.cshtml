@@ -119,7 +119,8 @@
 
         {
             left: -250px;
-            position: absolute;
+            position: fixed;
+
         }
 
         #sidebar.show {
@@ -145,7 +146,7 @@
                     <img src="@Url.Content("~/Images/download.png")" class="sidebar-icon" alt="Discuss">
                     <span class="sidebar-text">Discuss</span>
                 </a> *@
-                <div class="toggle-btn" onclick="toggleSidebar()">&#9776;</div>
+                <div class="toggle-btn" onmouseover="toggleSidebar()">&#9776;</div>
 
                 <div class="navbar-toggler sidebar-icon" data-bs-toggle="collapse" >
                     <span class="navbar-toggler-icon"></span>
