@@ -154,6 +154,67 @@ namespace Inventree_App.Controllers
 
             return View(orderList);
         }
+        public IActionResult ApprovedList(int orderId, int page = 1, int pageSize = 10, string search = "", string orderDate = "", string filter = "Approved")
+        {
+            var user = GetCurrentUser();
+            ViewBag.UserName = user.UserName;
+
+            var query = _context.Order.AsQueryable();
+
+            // Search by customer username
+            if (!string.IsNullOrEmpty(search))
+            {
+                var customerIds = _context.Customer
+                    .Where(x => x.UserName.Contains(search))
+                    .Select(x => x.Id)
+                    .ToList();
+
+                query = query.Where(x => customerIds.Contains(x.UserId));
+            }
+
+            if (filter == "Pending")
+                query = query.Where(o => o.Status == "Pending");
+
+            if (filter == "Approved")
+                query = query.Where(o => o.Status == "Approved");
+
+            if (orderId > 0)
+                query = query.Where(o => o.Id == orderId);
+
+            // Default sort: descending
+            query = orderDate == "asc"
+                ? query.OrderBy(o => o.OrderDate)
+                : query.OrderByDescending(o => o.OrderDate);
+
+            var totalOrders = query.Count();
+
+            var orders = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var customers = _context.Customer.ToDictionary(c => c.Id, c => c.UserName);
+
+            var orderList = orders.Select(order => new OrderDetailsModel
+            {
+                OrderId = order.Id,
+                OrderedDate = order.OrderDate,
+                CustomerName = customers.ContainsKey(order.UserId) ? customers[order.UserId] : "Unknown",
+                ItemsCount = order.ItemsCount,
+                Status = order.Status,
+                Items = _context.OrderItem.Where(x => x.OrderId == order.Id).ToList()
+            }).ToList();
+
+            ViewBag.TotalItems = totalOrders;
+            ViewBag.CurrentPage = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalOrders / pageSize);
+            ViewBag.Search = search;
+            ViewBag.OrderDate = string.IsNullOrEmpty(orderDate) ? "desc" : orderDate;
+            ViewBag.Filter = filter;
+
+            return View(orderList);
+        }
         public IActionResult StationeryCategories( int pageNumber = 1, int pageSize = 5,string search ="")
         {
             var user = GetCurrentUser();
