@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿@* <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebApplication1.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <style>
         body.layoutbody {
             display: flex;
@@ -83,7 +83,7 @@
             transition: left 0.3s;
             z-index: 1050;
         }
-      
+
         #sidebar.collapsed ~ .toggle-btn {
             left: 70px;
         }
@@ -133,7 +133,7 @@
         .toggle-btn {
             left: 10px;
         }
-    
+
         }
     </style>
 </head>
@@ -146,17 +146,17 @@
                     <img src="@Url.Content("~/Images/download.png")" class="sidebar-icon" alt="Discuss">
                     <span class="sidebar-text">Discuss</span>
                 </a> *@
-                <div class="navbar-toggler sidebar-icon" data-bs-toggle="collapse" >
+@*   <div class="navbar-toggler sidebar-icon" data-bs-toggle="collapse" >
                     <span class="navbar-toggler-icon"></span>
                 </div>
-            </li>
-           @*  <li class="nav-item">
+            </li> *@
+@*  <li class="nav-item">
                 <a href="#" onclick="loadPage('Discuss')">
                     <img src="@Url.Content("~/Images/download.png")" class="sidebar-icon" alt="Discuss">
                     <span class="sidebar-text">Discuss</span>
                 </a>
             </li> *@
-            <li class="nav-item">
+@*  <li class="nav-item">
                 <a href="@Url.Action("Index", "Order")">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
                         <path d="M1 1h6v6H1V1zm0 8h6v6H1V9zm8-8h6v6H9V1zm0 8h6v6H9V9z" />
@@ -173,18 +173,18 @@
                     <span class="sidebar-text ms-4">My Orders</span>
                 </a>
             </li>
+ *@
 
 
-
-            <li class="nav-item">
+@*  <li class="nav-item">
                 <a href="@Url.Action("CartItem", "Order")">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
                         <path d="M0 1h2l2 6h9l2-4H4.5m0 1h8.8l-1.4 3H4.9l-.8-2M5 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0m8 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8h7V7H6v1m0 1h7v-1H6v1" />
                     </svg>
                     <span class="sidebar-text ms-4">Cart</span>
                 </a>
-            </li>
-        @*     <li class="nav-item">
+            </li> *@
+@*     <li class="nav-item">
                 <a href="@Url.Action("Index", "Inventory")">
                     <img src="@Url.Content("~/Images/Inventory.png")" class="sidebar-icon" alt="Inventory">
                     <span class="sidebar-text">Inventory</span>
@@ -195,7 +195,7 @@
                     <img src="@Url.Content("~/Images/barcode.png")" class="sidebar-icon" alt="Barcode">
                     <span class="sidebar-text">Barcode</span>
                 </a> *@
-            <li class="nav-item mt-auto">
+@*   <li class="nav-item mt-auto">
                 <a href="@Url.Action("Logout", "Home")">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#985184" viewBox="0 0 16 16">
                         <circle cx="8" cy="8" r="7" stroke="white" stroke-width="1" fill="#985184" />
@@ -212,17 +212,17 @@
             <nav class="navbar navbar-expand-lg navbar-light border-bottom box-shadow mb-3">
                 <div class="container-fluid d-flex align-items-center">
                     <img src="@Url.Content("~/Images/alphabet-logo.png")" alt="Logo" class="logo">
-                   
+
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item">
                                 <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image" class="logo-default-img">
                                 <span>@ViewBag.UserName</span>
-                            </li>
-                         @*    <li class="nav-item">
+                            </li> *@
+@*    <li class="nav-item">
                                 <button onclick="window.location.href='@Url.Action("Register", "Home")'">Create User</button>
                             </li> *@
-                        </ul>
+@*     </ul>
                     </div>
                 </div>
             </nav>
@@ -232,14 +232,14 @@
             <main role="main" class="pb-3">
                 @RenderBody()
             </main>
-        </div>
+        </div> *@
 @* 
         <footer class="border-top footer text-muted">
             <div class="container">
                 &copy; 2025 - WebApplication1 - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
             </div>
         </footer> *@
-    </div>
+@* </div>
 
     <script>
         function toggleSidebar() {
@@ -271,6 +271,235 @@
     </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html> *@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - myaLphabet</title>
+    <link rel="icon" type="image/x-icon" href="~/Images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- MODERN RESPONSIVE SIDEBAR STYLES --- */
+        :root {
+            --sidebar-width-collapsed: 80px;
+            --header-height: 60px;
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-y: hidden; /* Prevents the entire page from scrolling */
+        }
+
+        /* Mobile-first sidebar width */
+        .offcanvas-start {
+            width: 220px;
+        }
+
+        .offcanvas-lg.offcanvas-start {
+            transition: width var(--transition-speed) ease-in-out;
+            border-right: none;
+        }
+
+        /* Layout for fixed header/sidebar and scrollable content */
+        #main-content {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        main[role="main"] {
+            flex-grow: 1;
+            overflow-y: auto; /* Makes only the main content scrollable */
+        }
+
+        /* Collapsed state for desktop */
+        body.sidebar-collapsed .offcanvas-lg.offcanvas-start {
+            width: var(--sidebar-width-collapsed);
+        }
+
+        body.sidebar-collapsed .sidebar-text {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        body.sidebar-collapsed .sidebar-icon {
+            margin-right: 0;
+        }
+
+        /* Subtle hover effect for collapsed icons */
+        body.sidebar-collapsed .sidebar-nav .nav-link:hover {
+            background-color: #343a40;
+            border-left: none;
+            padding-left: 20px;
+        }
+
+        /* General nav link styles */
+        .sidebar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #adb5bd;
+            text-decoration: none;
+            transition: background-color 0.2s, color 0.2s, padding-left 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+            /* Full-width hover for expanded sidebar */
+            .sidebar-nav .nav-link:hover {
+                background-color: #343a40;
+                color: #ffffff;
+                border-left: 3px solid #0d6efd;
+                padding-left: 17px;
+            }
+
+        .sidebar-icon {
+            width: 24px;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-right: 1.2rem;
+            flex-shrink: 0;
+            transition: margin-right var(--transition-speed) ease-in-out;
+        }
+
+        .sidebar-text {
+            transition: opacity calc(var(--transition-speed) - 0.1s) ease-in-out, visibility 0s linear calc(var(--transition-speed) - 0.1s);
+        }
+
+        .main-header {
+            height: var(--header-height);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            z-index: 1020;
+            flex-shrink: 0;
+        }
+
+        .user-image {
+            height: 40px;
+            width: 40px;
+            object-fit: cover;
+        }
+
+        .toggle-btn {
+            color: #343a40;
+        }
+
+        /* Sidebar Logo Styles */
+        .sidebar-logo-area {
+            padding: 1.5rem;
+            transition: padding var(--transition-speed) ease-in-out;
+        }
+
+        .sidebar-logo {
+            height: 40px;
+            width: auto;
+            transition: all var(--transition-speed) ease-in-out;
+        }
+
+        body.sidebar-collapsed .sidebar-logo {
+            height: 30px;
+        }
+
+        body.sidebar-collapsed .sidebar-logo-area {
+            padding: 1rem;
+        }
+
+        /* Desktop-specific overrides */
+        @@media (min-width: 992px) {
+            .offcanvas-lg.offcanvas-start {
+                width: 280px;
+            }
+        }
+
+    </style>
+</head>
+<body class="bg-light">
+    <div class="d-flex">
+        <div class="offcanvas-lg offcanvas-start text-bg-dark vh-100 flex-shrink-0" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="sidebarLabel">Menu</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close"></button>
+            </div>
+
+            <div class="offcanvas-body d-flex flex-column p-0">
+                <div class="sidebar-logo-area text-center">
+                    <a href="@Url.Action("Index", "Order")">
+                        <img src="@Url.Content("~/Images/alphabet-logo.png")" alt="Logo" class="sidebar-logo">
+                    </a>
+                </div>
+
+                <ul class="nav flex-column sidebar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Index", "Order")">
+                            <i class="fa-solid fa-table-cells sidebar-icon"></i>
+                            <span class="sidebar-text">Dashboards</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("CartItem", "Order")">
+                            <i class="fa-solid fa-cart-shopping sidebar-icon"></i>
+                            <span class="sidebar-text">Cart</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("OrderList", "Order")">
+                            <i class="fa-solid fa-clipboard-list sidebar-icon"></i>
+                            <span class="sidebar-text">My Orders</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <ul class="nav flex-column sidebar-nav mt-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="@Url.Action("Logout", "Home")">
+                            <i class="fa-solid fa-arrow-right-from-bracket sidebar-icon"></i>
+                            <span class="sidebar-text">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="main-content" class="flex-grow-1">
+            <header class="main-header bg-white px-3 d-flex align-items-center">
+                <button class="btn d-lg-none me-2 toggle-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <button class="btn d-none d-lg-block me-2 toggle-btn" type="button" id="desktop-toggle-btn">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+
+                <div class="ms-auto d-flex align-items-center user-info">
+                    <img src="@Url.Content("~/Images/default image.jpg")" alt="User Image" class="user-image rounded-circle me-2">
+                    <span class="fw-bold">@ViewBag.UserName</span>
+                </div>
+            </header>
+
+            <main role="main" class="container-fluid p-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const desktopToggleButton = document.getElementById('desktop-toggle-btn');
+        if (desktopToggleButton) {
+            desktopToggleButton.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-collapsed');
+            });
+        }
+    </script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

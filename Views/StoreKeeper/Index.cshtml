@@ -1,4 +1,4 @@
-﻿@model List<Logs>
+﻿@* @model List<Logs>
 @{
     Layout = "_ShopKeeperLayout";
 }
@@ -459,3 +459,2023 @@
     }
 
 </script>
+ *@
+@* 
+@model List<Logs>
+@{
+    Layout = "_ShopKeeperLayout";
+}
+@{
+    int totalStocks = ViewBag.StocksCount;
+    int lowStocks = ViewBag.LowStocksCount;
+    int availableStocks = ViewBag.AvailableStocks;
+    int approveList = ViewBag.Approved;
+    int pending = ViewBag.Pending;
+    int todayRequest = ViewBag.TodayCount;
+    string username = ViewBag.UserName;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - aLphabet-Connect</title>
+    <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/@@phosphor-icons/web"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --accent-blue-bg: #e7f1ff;
+            --accent-green-bg: #e6f8f0;
+            --accent-red-bg: #fdeeee;
+            --accent-yellow-bg: #fff8e1;
+            --accent-blue-text: #0d6efd;
+            --accent-green-text: #198754;
+            --accent-red-text: #dc3545;
+            --accent-yellow-text: #ffc107;
+        }
+
+        /* Animations */
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes skeleton-loading {
+            0% {
+                background-color: hsl(200, 20%, 80%);
+            }
+
+            100% {
+                background-color: hsl(200, 20%, 95%);
+            }
+        }
+
+        /* Handshake wave animation */
+        @@keyframes wave {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            15% {
+                transform: rotate(14deg);
+            }
+
+            30% {
+                transform: rotate(-8deg);
+            }
+
+            45% {
+                transform: rotate(14deg);
+            }
+
+            60% {
+                transform: rotate(-4deg);
+            }
+
+            75% {
+                transform: rotate(10deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .main-container {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        /* Welcome Banner */
+        .welcome-banner {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+            .welcome-banner h2 {
+                font-weight: 700;
+            }
+
+            .welcome-banner .date {
+                color: var(--text-muted);
+            }
+
+        /* Apply wave animation to the handshake emoji */
+        .wave-emoji {
+            animation: wave 2s infinite;
+            transform-origin: 70% 70%; /* Adjust as needed for better pivot */
+            display: inline-block; /* Essential for transform to work correctly */
+        }
+
+        /* Stats Cards */
+        .stats-cards .card {
+            border: none;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+            .stats-cards .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            }
+
+        .stats-cards .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stats-cards .card-title {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .stats-cards .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .bg-info-soft {
+            background-color: var(--accent-blue-bg);
+            color: var(--accent-blue-text);
+        }
+
+        .bg-success-soft {
+            background-color: var(--accent-green-bg);
+            color: var(--accent-green-text);
+        }
+
+        .bg-danger-soft {
+            background-color: var(--accent-red-bg);
+            color: var(--accent-red-text);
+        }
+
+        .bg-warning-soft {
+            background-color: var(--accent-yellow-bg);
+            color: var(--accent-yellow-text);
+        }
+
+        /* Main Content Cards */
+        .main-content-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .card-header-custom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        /* Table & Lists */
+        .table {
+            vertical-align: middle;
+        }
+
+            .table th {
+                font-weight: 600;
+                color: var(--text-muted);
+                border: none;
+            }
+
+            .table td {
+                border-top: 1px solid #dee2e6;
+            }
+
+        .profile-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .log-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .log-item:last-child {
+                border-bottom: none;
+            }
+
+            .log-item i {
+                font-size: 1.25rem;
+                color: var(--text-muted);
+                margin-top: 4px;
+            }
+
+        /* ✨ Skeleton Loader for Tables */
+        .skeleton-row td div {
+            opacity: 0.7;
+            animation: skeleton-loading 1s linear infinite alternate;
+            height: 20px;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+        }
+
+        .skeleton-row td:first-child div {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+
+        /* ✨ Skeleton Loader for Logs */
+        .skeleton-log {
+            opacity: 0.7;
+            animation: skeleton-loading 1s linear infinite alternate;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4 main-container">
+        <div class="welcome-banner mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>Hi, @username <span class="wave-emoji">👋</span></h2>
+                    <p class="mb-0 date">Today is @DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 stats-cards mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-info-soft" onclick="navigateToDashboard()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Total Stocks</p>
+                            <p class="card-value">@totalStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-blue-text); color: white;"><i class="ph-bold ph-shopping-cart"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-success-soft" onclick="navigateToAvailabe()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Available Stocks</p>
+                            <p class="card-value">@availableStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-green-text); color: white;"><i class="ph-bold ph-wallet"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-danger-soft" onclick="navigateToLowStock()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Low Stocks</p>
+                            <p class="card-value">@lowStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-red-text); color: white;"><i class="ph-bold ph-trend-down"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-warning-soft" onclick="navigateToPending()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Pending Requests</p>
+                            <p class="card-value">@pending</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: #fab005; color: white;"><i class="ph-bold ph-hourglass"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card bg-info bg-opacity-25 shadow-sm" role="button" onclick="navigateToApproved()">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 fw-semibold text-dark">Approved</p>
+                            <h5 class="mb-0 fw-bold text-dark">@approveList</h5>
+                        </div>
+                        <div class="d-flex justify-content-center align-items-center bg-info text-white rounded-circle" style="width: 45px; height: 45px;">
+                            <i class="ph-bold ph-list-checks fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card bg-secondary bg-opacity-25 shadow-sm" role="button" onclick="navigateToTodayRequest()">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 fw-semibold text-dark">Today List</p>
+                            <h5 class="mb-0 fw-bold text-dark">@todayRequest</h5>
+                        </div>
+                        <div class="d-flex justify-content-center align-items-center bg-secondary text-white rounded-circle" style="width: 45px; height: 45px;">
+                            <i class="ph-bold ph-calendar-check fs-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                @* Changed from col-lg-8 to col-lg-7 *@
+@*   <div class="main-content-card">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Most Indents</h5>
+                        <div class="d-flex flex-wrap gap-2">
+@*                             <input type="text" id="userFilter" class="form-control form-control-sm" placeholder="Search User..." style="width: 180px;">
+ *@                        @*     <select id="monthFilter" class="form-select form-select-sm" style="width: 150px;">
+                                <option value="all">All Months</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Profile</th>
+                                    <th>Name</th>
+                                    <th>Item Count</th>
+                                    <th>Date</th>
+                                    <th>Total Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable"></tbody>
+                        </table>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="pagination"></ul></nav>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5"> *@
+@* Changed from col-lg-4 to col-lg-5 *@
+@*     <div class="main-content-card"> 
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Activity Logs</h5>
+                        <div class="d-flex flex-wrap gap-2"> *@
+@*                             <input type="text" id="userFilterlog" class="form-control form-control-sm" placeholder="Search User..." style="width: 180px;">
+ *@                           @*  <select id="monthFilterLog" class="form-select form-select-sm" style="width: 150px;">
+                                <option value="all">All Months</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="px-4 py-2">
+                        <ul class="list-unstyled mb-0" id="updatesList"></ul>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="logPagination"></ul></nav>
+                    </div>
+                </div>
+            </div>
+        </div>  *@
+@* 
+    <script>
+        var currentPage = 1;
+        var pageSize = 7;
+        var logPage = 1;
+        var logPageSize = 5;
+
+        function renderTableSkeleton() {
+            let skeletonHTML = '';
+            for (let i = 0; i < pageSize; i++) {
+                skeletonHTML += `<tr class="skeleton-row">
+                    <td><div></div></td>
+                    <td><div style="width: 80%;"></div></td>
+                    <td><div style="width: 50%;"></div></td>
+                    <td><div style="width: 90%;"></div></td>
+                    <td><div style="width: 60%;"></div></td>
+                </tr>`;
+            }
+            $("#ordersTable").html(skeletonHTML);
+        }
+
+        function renderLogsSkeleton() {
+            let skeletonHTML = '';
+            for (let i = 0; i < logPageSize; i++) {
+                skeletonHTML += `<li class="log-item">
+                    <i class="ph ph-circle-notch"></i>
+                    <div>
+                        <div class="skeleton-log" style="height: 16px; width: 120px;"></div>
+                        <div class="skeleton-log" style="height: 14px; width: 200px; margin-top: 8px;"></div>
+                        <div class="skeleton-log" style="height: 12px; width: 80px; margin-top: 8px;"></div>
+                    </div>
+                </li>`;
+            }
+            $("#updatesList").html(skeletonHTML);
+        }
+
+        function fetchOrders(page = 1) {
+            renderTableSkeleton(); // ✨ Show skeleton loader
+            var month = $("#monthFilter").val();
+            var searchUser = $("#userFilter").val().trim();
+            currentPage = page;
+
+            $.get("/Dashboard/GetOrders", { month: month, searchUser: searchUser, page: page, pageSize: pageSize }, function (response) {
+                var ordersTable = $("#ordersTable");
+                ordersTable.empty();
+                if (response.data.length === 0) {
+                    ordersTable.append(`<tr><td colspan="5" class="text-center py-4">No records found</td></tr>`);
+                } else {
+                    ordersTable.html(response.data.map(o =>
+                        `<tr>
+                            <td><div onclick="redirectToApproveList('${o.orderId}')" class="profile-avatar" style="background-color: ${getColor(o.name)};">${o.profile}</div></td>
+                            <td>${o.name}</td>
+                            <td>${o.itemCount}</td>
+                            <td>${new Date(o.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                            <td>${o.quantity}</td>
+                        </tr>`
+                    ).join(""));
+                }
+                setupPagination(response.totalRecords, page, pageSize, 'pagination', fetchOrders);
+            }).fail(function () {
+                $("#ordersTable").html(`<tr><td colspan="5" class="text-center text-danger py-4">Error loading data</td></tr>`);
+            });
+        }
+
+        function fetchLogs(page = 1) {
+            renderLogsSkeleton(); // ✨ Show skeleton loader
+            var searchUser = $("#userFilterlog").val() || "";
+            var month = $("#monthFilterLog").val(); // Added month filter for logs
+            logPage = page;
+
+            $.get("/Dashboard/GetLogs", { searchUser: searchUser, month: month, page: page, pageSize: logPageSize }, function (response) {
+                var updatesList = $("#updatesList");
+                updatesList.empty();
+                if (response.data.length === 0) {
+                    updatesList.append(`<li class="text-center py-4">No logs found</li>`);
+                } else {
+                    updatesList.html(response.data.map(log =>
+                        `<li class="log-item">
+                            <i class="ph ph-info"></i>
+                            <div>
+                                <strong>${log.userName}</strong> ${log.description}<br>
+                                <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
+                            </div>
+                        </li>`
+                    ).join(""));
+                }
+                setupPagination(response.totalRecords, page, logPageSize, 'logPagination', fetchLogs);
+            });
+        }
+
+        // Generic Pagination Setup
+        function setupPagination(totalRecords, currentPage, pageSize, elementId, fetchFunction) {
+            var totalPages = Math.ceil(totalRecords / pageSize);
+            var paginationHtml = "";
+            if (totalPages <= 1) {
+                $("#" + elementId).html("");
+                return;
+            }
+            // Previous Button
+            paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="${fetchFunction.name}(${currentPage - 1})">Previous</a></li>`;
+            // Page Numbers
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, currentPage + 1);
+            if (currentPage === 1) endPage = Math.min(totalPages, 3);
+            if (currentPage === totalPages) startPage = Math.max(1, totalPages - 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="${fetchFunction.name}(${i})">${i}</a></li>`;
+            }
+            // Next Button
+            paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="${fetchFunction.name}(${currentPage + 1})">Next</a></li>`;
+            $("#" + elementId).html(paginationHtml);
+        }
+
+        // --- Utility and Event Handlers (Unchanged but included for completeness) ---
+        function getColor(name) {
+            const colors = ["#0d6efd", "#198754", "#dc3545", "#ffc107", "#6f42c1"];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash); }
+            return colors[Math.abs(hash) % colors.length];
+        }
+        function formatTimeAgo(dateString) {
+            let date = new Date(dateString); let now = new Date(); let seconds = Math.floor((now - date) / 1000); let minutes = Math.floor(seconds / 60); let hours = Math.floor(minutes / 60); let days = Math.floor(hours / 24);
+            if (seconds < 60) return "Just now"; if (minutes < 60) return `${minutes} min ago`; if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`; if (days === 1) return "Yesterday"; return `${days} days ago`;
+        }
+        function navigateToDashboard() { window.location.href = `/Inventory/Index?page=1&pageSize=10&filter=all&search=`; }
+        function navigateToAvailabe() { window.location.href = `/Inventory/Index?page=1&pageSize=10&filter=Available&search=`; }
+        function navigateToLowStock() { window.location.href = `/Inventory/Index?page=1&pageSize=10&filter=red&search=`; }
+        function navigateToPending() { window.location.href = `/Admin/Index?page=1&pageSize=10&search=&orderDate=&filter=Pending`; }
+        function redirectToApproveList(orderId) { window.location.href = `/Admin/Index?page=1&pageSize=10&search=&orderDate=des&filter=&orderId=${orderId}`; }
+        function navigateToApproved(){
+        const url = `/StoreKeeper/ApproveList?page=${1}&pageSize=${10}&search=${""}&orderDate=${""}&filter=${"Approved"}`;
+
+            window.location.href = url;
+        }
+        function navigateToTodayRequest() {
+        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            const url = `/StoreKeeper/ApproveList?page=${1}&pageSize=${10}&search=${""}&orderDate=${""}&filter=${"Today"}`;
+
+            window.location.href = url;
+        }
+        $(document).ready(function() {
+            fetchOrders(1);
+            fetchLogs(1);
+
+            $("#monthFilter, #userFilter").on("change keyup", function () { fetchOrders(1); });
+            $("#userFilterlog, #monthFilterLog").on("change keyup", function () { fetchLogs(1); });
+        });
+    </script> *@
+@* <script>
+         var currentPage = 1;
+        var pageSize = 7;
+
+        function fetchOrders(page = 1) {
+            var month = $("#monthFilter").val();
+            $.get("/Dashboard/GetOrders", { month: month, page: page, pageSize: pageSize }, function (response) {
+                   $("#ordersTable").html(response.data.map(o =>
+                    `<tr>
+                        <td>
+                            <div style="width: 25px; height: 25px; border-radius: 50%; background-color: ${getColor(o.name)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                ${o.profile}
+                            </div>
+                        </td>
+                        <td>${o.name}</td>
+                         <td>${o.itemCount}</td>
+                        <td>${new Date(o.date).toLocaleDateString()}</td>
+                        <td>${o.quantity}</td>
+                    </tr>`
+                ).join(""));
+
+                // Pagination
+                setupPagination(response.totalRecords, page);
+            });
+        }
+            function getInitials(name) {
+            let initials = name.split(" ").map(word => word[0]).join("").toUpperCase();
+            return initials.substring(0, 2); // Keep it at 2 characters max
+        }
+
+        function getColor(name) {
+            const colors = ["#4A90E2", "#50E3C2", "#F5A623", "#D0021B", "#BD10E0"];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return colors[Math.abs(hash) % colors.length]; // Pick color based on name hash
+        }
+            function setupPagination(totalRecords, currentPage) {
+            var totalPages = Math.ceil(totalRecords / pageSize);
+            var paginationHtml = "";
+
+            if (totalPages > 1) {
+                paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="fetchOrders(1)">&laquo;</a>
+                </li>`;
+
+                if (currentPage > 2) {
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(1)">1</a></li>`;
+                    if (currentPage > 3) {
+                        paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    }
+                }
+
+                let startPage = Math.max(1, currentPage - 1);
+                let endPage = Math.min(totalPages, currentPage + 1);
+
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="fetchOrders(${i})">${i}</a>
+                    </li>`;
+                }
+
+                if (currentPage < totalPages - 1) {
+                    if (currentPage < totalPages - 2) {
+                        paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    }
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(${totalPages})">${totalPages}</a></li>`;
+                }
+
+                paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="fetchOrders(${totalPages})">&raquo;</a>
+                </li>`;
+            }
+
+            $("#pagination").html(paginationHtml);
+        }
+
+        $("#monthFilter").change(function () {
+            currentPage = 1;
+            fetchOrders(currentPage);
+        });
+
+        fetchOrders(currentPage);
+
+        var logPage = 1;
+          var logPageSize = 4; // Number of logs per page
+
+          function fetchLogs(page = 1) {
+              var month = $("#updateFilter").val();
+              $.get("/Dashboard/GetLogs", { month: month, page: page, pageSize: logPageSize }, function (response) {
+                  $("#updatesList").html(response.data.map(log =>
+                      `<li class="mb-2">
+                          <strong>${log.userName}</strong><br>
+                          ${log.description}<br>
+                          <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
+                      </li>`
+                  ).join(""));
+
+                  setupLogPagination(response.totalRecords, page);
+              });
+          }
+
+          function formatTimeAgo(dateString) {
+              let date = new Date(dateString);
+              let now = new Date();
+              let seconds = Math.floor((now - date) / 1000);
+              let minutes = Math.floor(seconds / 60);
+              let hours = Math.floor(minutes / 60);
+              let days = Math.floor(hours / 24);
+
+              if (seconds < 60) return "Just now";
+              if (minutes < 60) return `${minutes} min ago`;
+              if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+              if (days === 1) return "Yesterday";
+              return `${days} days ago`;
+          }
+        function setupLogPagination(totalRecords, currentPage) {
+            var totalPages = Math.ceil(totalRecords / logPageSize);
+            var paginationHtml = "";
+
+            if (totalPages > 1) {
+                paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="fetchLogs(1)">&laquo;</a>
+                </li>`;
+
+                if (currentPage > 2) {
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(1)">1</a></li>`;
+                    if (currentPage > 3) {
+                        paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    }
+                }
+
+                let startPage = Math.max(1, currentPage - 1);
+                let endPage = Math.min(totalPages, currentPage + 1);
+
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="fetchLogs(${i})">${i}</a>
+                    </li>`;
+                }
+
+                if (currentPage < totalPages - 1) {
+                    if (currentPage < totalPages - 2) {
+                        paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    }
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(${totalPages})">${totalPages}</a></li>`;
+                }
+
+                paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="fetchLogs(${totalPages})">&raquo;</a>
+                </li>`;
+            }
+
+            $("#logPagination").html(paginationHtml);
+        }
+          $("#updateFilter").change(function () {
+              logPage = 1;
+              fetchLogs(logPage);
+          });
+
+          fetchLogs(logPage);
+
+          function navigateToDashboard() {
+            const url = `/StoreKeeper/Inventory?page=${1}&pageSize=${10}&filter=${"All"}&search=${""}`;
+
+            window.location.href = url;
+        }
+        function navigateToAvailable() {
+            const url = `/StoreKeeper/Inventory?page=${1}&pageSize=${10}&filter=${"Available"}&search=${""}`;
+
+            window.location.href = url;
+        }
+        function navigateToLowStock(){
+            const url = `/StoreKeeper/Inventory?page=${1}&pageSize=${10}&filter=${"red"}&search=${""}`;
+            window.location.href = url;
+        }
+        function navigateToPending(){
+           const url = `/StoreKeeper/ApproveList?page=${1}&pageSize=${10}&search=${""}&orderDate=${""}&filter=${"Pending"}`;
+
+           window.location.href = url;
+        }
+         function navigateToApproved(){
+           const url = `/StoreKeeper/ApproveList?page=${1}&pageSize=${10}&search=${""}&orderDate=${""}&filter=${"Approved"}`;
+
+            window.location.href = url;
+        }
+           function navigateToTodayRequest() {
+           const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+           const url = `/StoreKeeper/ApproveList?page=${1}&pageSize=${10}&search=${""}&orderDate=${""}&filter=${"Today"}`;
+
+           window.location.href = url;
+        }
+    </script>
+</body>
+</html> *@
+
+@*         @model List<Logs>
+@{
+    Layout = "_ShopKeeperLayout";
+}
+@{
+    int totalStocks = ViewBag.StocksCount;
+    int lowStocks = ViewBag.LowStocksCount;
+    int availableStocks = ViewBag.AvailableStocks;
+    int approveList = ViewBag.Approved;
+    int pending = ViewBag.Pending;
+    int todayRequest = ViewBag.TodayCount;
+    string username = ViewBag.UserName;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - aLphabet-Connect</title>
+    <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/@@phosphor-icons/web"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --accent-blue-bg: #e7f1ff;
+            --accent-green-bg: #e6f8f0;
+            --accent-red-bg: #fdeeee;
+            --accent-yellow-bg: #fff8e1;
+            --accent-purple-bg: #f3e8ff;
+            --accent-blue-text: #0d6efd;
+            --accent-green-text: #198754;
+            --accent-red-text: #dc3545;
+            --accent-yellow-text: #ffc107;
+            --accent-purple-text: #845ef7;
+        }
+
+        /* Animations */
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes skeleton-loading {
+            0% {
+                background-color: hsl(200, 20%, 80%);
+            }
+
+            100% {
+                background-color: hsl(200, 20%, 95%);
+            }
+        }
+
+        /* Handshake wave animation */
+        @@keyframes wave {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            15% {
+                transform: rotate(14deg);
+            }
+
+            30% {
+                transform: rotate(-8deg);
+            }
+
+            45% {
+                transform: rotate(14deg);
+            }
+
+            60% {
+                transform: rotate(-4deg);
+            }
+
+            75% {
+                transform: rotate(10deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .main-container {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        /* Welcome Banner */
+        .welcome-banner {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+            .welcome-banner h2 {
+                font-weight: 700;
+            }
+
+            .welcome-banner .date {
+                color: var(--text-muted);
+            }
+
+        /* Apply wave animation to the handshake emoji */
+        .wave-emoji {
+            animation: wave 2s infinite;
+            transform-origin: 70% 70%; /* Adjust as needed for better pivot */
+            display: inline-block; /* Essential for transform to work correctly */
+        }
+
+        /* Stats Cards */
+        .stats-cards .card {
+            border: none;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+            .stats-cards .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            }
+
+        .stats-cards .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stats-cards .card-title {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .stats-cards .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .bg-info-soft {
+            background-color: var(--accent-blue-bg);
+            color: var(--accent-blue-text);
+        }
+
+        .bg-success-soft {
+            background-color: var(--accent-green-bg);
+            color: var(--accent-green-text);
+        }
+
+        .bg-danger-soft {
+            background-color: var(--accent-red-bg);
+            color: var(--accent-red-text);
+        }
+
+        .bg-warning-soft {
+            background-color: var(--accent-yellow-bg);
+            color: var(--accent-yellow-text);
+        }
+
+        .bg-purple-soft {
+            background-color: var(--accent-purple-bg);
+            color: var(--accent-purple-text);
+        }
+
+        /* Main Content Cards */
+        .main-content-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .card-header-custom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        /* Table & Lists */
+        .table {
+            vertical-align: middle;
+        }
+
+            .table th {
+                font-weight: 600;
+                color: var(--text-muted);
+                border: none;
+            }
+
+            .table td {
+                border-top: 1px solid #dee2e6;
+            }
+
+        .profile-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Skeleton Loader for Tables */
+        .skeleton-row td div {
+            opacity: 0.7;
+            animation: skeleton-loading 1s linear infinite alternate;
+            height: 20px;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+        }
+
+        .skeleton-row td:first-child div {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+
+        /* Skeleton Loader for Logs */
+        .skeleton-log {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+            .skeleton-log .skeleton-log-content {
+                flex: 1;
+            }
+
+            .skeleton-log .skeleton-log-line {
+                opacity: 0.7;
+                animation: skeleton-loading 1s linear infinite alternate;
+                height: 16px;
+                border-radius: 4px;
+                background-color: #e0e0e0;
+                margin-bottom: 0.5rem;
+            }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4 main-container">
+        <div class="welcome-banner mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>Hi, @username <span class="wave-emoji">👋</span></h2>
+                    <p class="mb-0 date">Today is @DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 stats-cards mb-4">
+            <div class="col-xl col-md-6">
+                <div class="card bg-info-soft" onclick="navigateToDashboard()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Total Stocks</p>
+                            <p class="card-value">@totalStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-blue-text); color: white;"><i class="ph-bold ph-shopping-cart"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-success-soft" onclick="navigateToAvailable()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Available</p>
+                            <p class="card-value">@availableStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-green-text); color: white;"><i class="ph-bold ph-wallet"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-danger-soft" onclick="navigateToLowStock()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Low Stocks</p>
+                            <p class="card-value">@lowStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-red-text); color: white;"><i class="ph-bold ph-trend-down"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-warning-soft" onclick="navigateToPending()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Pending</p>
+                            <p class="card-value">@pending</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: #fab005; color: white;"><i class="ph-bold ph-hourglass"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-purple-soft" onclick="navigateToApproved()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Approved</p>
+                            <p class="card-value">@approveList</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-purple-text); color: white;"><i class="ph-bold ph-list-checks"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-success-soft" onclick="navigateToTodayRequest()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Today's List</p>
+                            <p class="card-value">@todayRequest</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-green-text); color: white;"><i class="ph-bold ph-calendar-check"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="main-content-card">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Most Indents</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <select id="monthFilter" class="form-select form-select-sm" style="width: 150px;">
+                                <option value="all">All Months</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Profile</th>
+                                    <th>Name</th>
+                                    <th>Item Count</th>
+                                    <th>Date</th>
+                                    <th>Total Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable"></tbody>
+                        </table>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="pagination"></ul></nav>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="main-content-card">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Activity Logs</h5>
+                        <select id="monthFilterLog" class="form-select form-select-sm" style="width: 150px;">
+                            <option value="all">All Months</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <div class="px-4 py-2">
+                        <ul class="list-unstyled mb-0" id="updatesList"></ul>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="logPagination"></ul></nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentPage = 1;
+        var pageSize = 5; // Adjusted for better viewing
+
+        function showOrderSkeleton() {
+            let skeletonHtml = '';
+            for (let i = 0; i < pageSize; i++) {
+                skeletonHtml += `
+                    <tr class="skeleton-row">
+                        <td><div></div></td>
+                        <td><div></div></td>
+                        <td><div></div></td>
+                        <td><div></div></td>
+                        <td><div></div></td>
+                    </tr>`;
+            }
+            $("#ordersTable").html(skeletonHtml);
+            $("#pagination").empty();
+        }
+
+        function fetchOrders(page = 1) {
+            showOrderSkeleton();
+            var month = $("#monthFilter").val();
+            $.get("/Dashboard/GetOrders", { month: month, page: page, pageSize: pageSize }, function (response) {
+                $("#ordersTable").html(response.data.map(o =>
+                    `<tr>
+                        <td>
+                            <div class="profile-avatar" style="background-color: ${getColor(o.name)};">
+                                ${o.profile}
+                            </div>
+                        </td>
+                        <td>${o.name}</td>
+                        <td>${o.itemCount}</td>
+                        <td>${new Date(o.date).toLocaleDateString()}</td>
+                        <td>${o.quantity}</td>
+                    </tr>`
+                ).join(""));
+                setupPagination(response.totalRecords, page);
+            });
+        }
+
+        function getColor(name) {
+            const colors = ["#4A90E2", "#50E3C2", "#F5A623", "#D0021B", "#BD10E0", "#7ED321", "#9013FE"];
+            let hash = 0;
+            if (name.length === 0) return colors[0];
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+                hash = hash & hash;
+            }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function setupPagination(totalRecords, currentPage) {
+             // ... [Pagination logic remains the same, no changes needed here]
+             var totalPages = Math.ceil(totalRecords / pageSize);
+            var paginationHtml = "";
+
+            if (totalPages > 1) {
+                // First & Previous
+                paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="fetchOrders(1)">&laquo;</a></li>`;
+
+                // Ellipsis and numbers logic
+                let startPage = Math.max(1, currentPage - 1);
+                let endPage = Math.min(totalPages, currentPage + 1);
+
+                if (currentPage > 2) {
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(1)">1</a></li>`;
+                    if (currentPage > 3) paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="fetchOrders(${i})">${i}</a></li>`;
+                }
+
+                if (currentPage < totalPages - 1) {
+                    if (currentPage < totalPages - 2) paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(${totalPages})">${totalPages}</a></li>`;
+                }
+
+                // Next & Last
+                paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="fetchOrders(${totalPages})">&raquo;</a></li>`;
+            }
+            $("#pagination").html(paginationHtml);
+        }
+
+        $("#monthFilter").change(function () {
+            fetchOrders(1);
+        });
+
+        fetchOrders(1);
+
+        // --- Activity Logs ---
+        var logPage = 1;
+        var logPageSize = 5;
+
+        function showLogSkeleton() {
+            let skeletonHtml = '';
+            for (let i = 0; i < logPageSize; i++) {
+                skeletonHtml += `
+                    <li class="skeleton-log">
+                        <div class="skeleton-log-content">
+                            <div class="skeleton-log-line" style="width: 40%;"></div>
+                            <div class="skeleton-log-line" style="width: 90%;"></div>
+                            <div class="skeleton-log-line" style="width: 60%;"></div>
+                        </div>
+                    </li>`;
+            }
+            $("#updatesList").html(skeletonHtml);
+            $("#logPagination").empty();
+        }
+
+        function fetchLogs(page = 1) {
+            showLogSkeleton();
+            var month = $("#monthFilterLog").val();
+            $.get("/Dashboard/GetLogs", { month: month, page: page, pageSize: logPageSize }, function (response) {
+                $("#updatesList").html(response.data.map(log =>
+                    `<li class="mb-3">
+                        <strong>${log.userName}</strong><br>
+                        ${log.description}<br>
+                        <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
+                    </li>`
+                ).join(""));
+                setupLogPagination(response.totalRecords, page);
+            });
+        }
+
+        function formatTimeAgo(dateString) {
+            // ... [formatTimeAgo logic remains the same]
+            let date = new Date(dateString);
+            let now = new Date();
+            let seconds = Math.floor((now - date) / 1000);
+            let minutes = Math.floor(seconds / 60);
+            let hours = Math.floor(minutes / 60);
+            let days = Math.floor(hours / 24);
+
+            if (seconds < 60) return "Just now";
+            if (minutes < 60) return `${minutes} min ago`;
+            if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            if (days === 1) return "Yesterday";
+            return `${days} days ago`;
+        }
+
+        function setupLogPagination(totalRecords, currentPage) {
+            // ... [Log pagination logic is similar to order pagination]
+            var totalPages = Math.ceil(totalRecords / logPageSize);
+            var paginationHtml = "";
+            if (totalPages > 1) {
+                 paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="fetchLogs(1)">&laquo;</a></li>`;
+
+                let startPage = Math.max(1, currentPage - 1);
+                let endPage = Math.min(totalPages, currentPage + 1);
+
+                 if (currentPage > 2) {
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(1)">1</a></li>`;
+                    if (currentPage > 3) paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="fetchLogs(${i})">${i}</a></li>`;
+                }
+
+                if (currentPage < totalPages - 1) {
+                     if (currentPage < totalPages - 2) paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(${totalPages})">${totalPages}</a></li>`;
+                }
+                paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="fetchLogs(${totalPages})">&raquo;</a></li>`;
+            }
+            $("#logPagination").html(paginationHtml);
+        }
+
+        $("#monthFilterLog").change(function () {
+            fetchLogs(1);
+        });
+
+        fetchLogs(1);
+
+        // --- Navigation Functions ---
+        function navigateToDashboard() {
+            window.location.href = `/StoreKeeper/Inventory?filter=All`;
+        }
+        function navigateToAvailable() {
+            window.location.href = `/StoreKeeper/Inventory?filter=Available`;
+        }
+        function navigateToLowStock() {
+            window.location.href = `/StoreKeeper/Inventory?filter=red`;
+        }
+        function navigateToPending() {
+            window.location.href = `/StoreKeeper/ApproveList?filter=Pending`;
+        }
+        function navigateToApproved() {
+            window.location.href = `/StoreKeeper/ApproveList?filter=Approved`;
+        }
+        function navigateToTodayRequest() {
+            window.location.href = `/StoreKeeper/ApproveList?filter=Today`;
+        }
+    </script>
+</body>
+</html> *@
+
+@model List<Logs>
+@{
+    Layout = "_ShopKeeperLayout";
+}
+@{
+    int totalStocks = ViewBag.StocksCount;
+    int lowStocks = ViewBag.LowStocksCount;
+    int availableStocks = ViewBag.AvailableStocks;
+    int approveList = ViewBag.Approved;
+    int pending = ViewBag.Pending;
+    int todayRequest = ViewBag.TodayCount;
+    string username = ViewBag.UserName;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>myaLphabet</title>
+    <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/@@phosphor-icons/web"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --accent-blue-bg: #e7f1ff;
+            --accent-green-bg: #e6f8f0;
+            --accent-red-bg: #fdeeee;
+            --accent-yellow-bg: #fff8e1;
+            --accent-purple-bg: #f3e8ff;
+            --accent-blue-text: #0d6efd;
+            --accent-green-text: #198754;
+            --accent-red-text: #dc3545;
+            --accent-yellow-text: #ffc107;
+            --accent-purple-text: #845ef7;
+        }
+
+        /* Animations */
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes skeleton-loading {
+            0% {
+                background-color: hsl(200, 20%, 80%);
+            }
+
+            100% {
+                background-color: hsl(200, 20%, 95%);
+            }
+        }
+
+        /* Handshake wave animation */
+        @@keyframes wave {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            15% {
+                transform: rotate(14deg);
+            }
+
+            30% {
+                transform: rotate(-8deg);
+            }
+
+            45% {
+                transform: rotate(14deg);
+            }
+
+            60% {
+                transform: rotate(-4deg);
+            }
+
+            75% {
+                transform: rotate(10deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .main-container {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        /* Welcome Banner */
+        .welcome-banner {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+            .welcome-banner h2 {
+                font-weight: 700;
+            }
+
+            .welcome-banner .date {
+                color: var(--text-muted);
+            }
+
+        /* Apply wave animation to the handshake emoji */
+        .wave-emoji {
+            animation: wave 2s infinite;
+            transform-origin: 70% 70%; /* Adjust as needed for better pivot */
+            display: inline-block; /* Essential for transform to work correctly */
+        }
+
+        /* Stats Cards */
+        .stats-cards .card {
+            border: none;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+            .stats-cards .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            }
+
+        .stats-cards .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stats-cards .card-title {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .stats-cards .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .bg-info-soft {
+            background-color: var(--accent-blue-bg);
+            color: var(--accent-blue-text);
+        }
+
+        .bg-success-soft {
+            background-color: var(--accent-green-bg);
+            color: var(--accent-green-text);
+        }
+
+        .bg-danger-soft {
+            background-color: var(--accent-red-bg);
+            color: var(--accent-red-text);
+        }
+
+        .bg-warning-soft {
+            background-color: var(--accent-yellow-bg);
+            color: var(--accent-yellow-text);
+        }
+
+        .bg-purple-soft {
+            background-color: var(--accent-purple-bg);
+            color: var(--accent-purple-text);
+        }
+
+        /* Main Content Cards */
+        .main-content-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .card-header-custom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        /* Table & Lists */
+        .table {
+            vertical-align: middle;
+        }
+
+            .table th {
+                font-weight: 600;
+                color: var(--text-muted);
+                border: none;
+            }
+
+            .table td {
+                border-top: 1px solid #dee2e6;
+            }
+
+        .profile-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Skeleton Loader for Tables */
+        .skeleton-row td div {
+            opacity: 0.7;
+            animation: skeleton-loading 1s linear infinite alternate;
+            height: 20px;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+        }
+
+        .skeleton-row td:first-child div {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+
+        /* Skeleton Loader for Logs */
+        .skeleton-log {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+            .skeleton-log .skeleton-log-content {
+                flex: 1;
+            }
+
+            .skeleton-log .skeleton-log-line {
+                opacity: 0.7;
+                animation: skeleton-loading 1s linear infinite alternate;
+                height: 16px;
+                border-radius: 4px;
+                background-color: #e0e0e0;
+                margin-bottom: 0.5rem;
+            }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4 main-container">
+        <div class="welcome-banner mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>Hi, @username <span class="wave-emoji">👋</span></h2>
+                    <p class="mb-0 date">Today is @DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 stats-cards mb-4">
+            <div class="col-xl col-md-6">
+                <div class="card bg-info-soft" onclick="navigateToDashboard()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Total Stocks</p>
+                            <p class="card-value">@totalStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-blue-text); color: white;"><i class="ph-bold ph-shopping-cart"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-success-soft" onclick="navigateToAvailable()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Available</p>
+                            <p class="card-value">@availableStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-green-text); color: white;"><i class="ph-bold ph-wallet"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-danger-soft" onclick="navigateToLowStock()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Low Stocks</p>
+                            <p class="card-value">@lowStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-red-text); color: white;"><i class="ph-bold ph-trend-down"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-warning-soft" onclick="navigateToPending()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Pending</p>
+                            <p class="card-value">@pending</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: #fab005; color: white;"><i class="ph-bold ph-hourglass"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-purple-soft" onclick="navigateToApproved()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Approved</p>
+                            <p class="card-value">@approveList</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-purple-text); color: white;"><i class="ph-bold ph-list-checks"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl col-md-6">
+                <div class="card bg-success-soft" onclick="navigateToTodayRequest()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Today's List</p>
+                            <p class="card-value">@todayRequest</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-green-text); color: white;"><i class="ph-bold ph-calendar-check"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="main-content-card h-100 d-flex flex-column">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Most Indents</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <select id="monthFilter" class="form-select form-select-sm" style="width: 150px;">
+                                <option value="all">All Months</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Profile</th>
+                                    <th>Name</th>
+                                    <th>Item Count</th>
+                                    <th>Date</th>
+                                    <th>Total Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable"></tbody>
+                        </table>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="pagination"></ul></nav>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="main-content-card h-100 d-flex flex-column">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Activity Logs</h5>
+                        <select id="monthFilterLog" class="form-select form-select-sm" style="width: 150px;">
+                            <option value="all">All Months</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <div class="px-4 py-2 flex-grow-1">
+                        <ul class="list-unstyled mb-0" id="updatesList"></ul>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="logPagination"></ul></nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentPage = 1;
+        var pageSize = 7; // Adjusted for better viewing
+
+        function showOrderSkeleton() {
+            let skeletonHtml = '';
+            for (let i = 0; i < pageSize; i++) {
+                skeletonHtml += `
+                    <tr class="skeleton-row">
+                        <td><div></div></td>
+                        <td><div></div></td>
+                        <td><div></div></td>
+                        <td><div></div></td>
+                        <td><div></div></td>
+                    </tr>`;
+            }
+            $("#ordersTable").html(skeletonHtml);
+            $("#pagination").empty();
+        }
+
+        function fetchOrders(page = 1) {
+            showOrderSkeleton();
+            var month = $("#monthFilter").val();
+            $.get("/Dashboard/GetOrders", { month: month, page: page, pageSize: pageSize }, function (response) {
+                $("#ordersTable").html(response.data.map(o =>
+                    `<tr>
+                        <td>
+                            <div class="profile-avatar" style="background-color: ${getColor(o.name)};">
+                                ${o.profile}
+                            </div>
+                        </td>
+                        <td>${o.name}</td>
+                        <td>${o.itemCount}</td>
+                        <td>${new Date(o.date).toLocaleDateString()}</td>
+                        <td>${o.quantity}</td>
+                    </tr>`
+                ).join(""));
+                setupPagination(response.totalRecords, page);
+            });
+        }
+
+        function getColor(name) {
+            const colors = ["#4A90E2", "#50E3C2", "#F5A623", "#D0021B", "#BD10E0", "#7ED321", "#9013FE"];
+            let hash = 0;
+            if (name.length === 0) return colors[0];
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+                hash = hash & hash;
+            }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function setupPagination(totalRecords, currentPage) {
+             var totalPages = Math.ceil(totalRecords / pageSize);
+            var paginationHtml = "";
+
+            if (totalPages > 1) {
+                // First & Previous
+                paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="fetchOrders(1)">&laquo;</a></li>`;
+
+                // Ellipsis and numbers logic
+                let startPage = Math.max(1, currentPage - 1);
+                let endPage = Math.min(totalPages, currentPage + 1);
+
+                if (currentPage > 2) {
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(1)">1</a></li>`;
+                    if (currentPage > 3) paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="fetchOrders(${i})">${i}</a></li>`;
+                }
+
+                if (currentPage < totalPages - 1) {
+                    if (currentPage < totalPages - 2) paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(${totalPages})">${totalPages}</a></li>`;
+                }
+
+                // Next & Last
+                paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="fetchOrders(${totalPages})">&raquo;</a></li>`;
+            }
+            $("#pagination").html(paginationHtml);
+        }
+
+        $("#monthFilter").change(function () {
+            fetchOrders(1);
+        });
+
+        fetchOrders(1);
+
+        // --- Activity Logs ---
+        var logPage = 1;
+        var logPageSize = 5;
+
+        function showLogSkeleton() {
+            let skeletonHtml = '';
+            for (let i = 0; i < logPageSize; i++) {
+                skeletonHtml += `
+                    <li class="skeleton-log">
+                        <div class="skeleton-log-content">
+                            <div class="skeleton-log-line" style="width: 40%;"></div>
+                            <div class="skeleton-log-line" style="width: 90%;"></div>
+                            <div class="skeleton-log-line" style="width: 60%;"></div>
+                        </div>
+                    </li>`;
+            }
+            $("#updatesList").html(skeletonHtml);
+            $("#logPagination").empty();
+        }
+
+        function fetchLogs(page = 1) {
+            showLogSkeleton();
+            var month = $("#monthFilterLog").val();
+            $.get("/Dashboard/GetLogs", { month: month, page: page, pageSize: logPageSize }, function (response) {
+                $("#updatesList").html(response.data.map(log =>
+                    `<li class="mb-3">
+                        <strong>${log.userName}</strong><br>
+                        ${log.description}<br>
+                        <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
+                    </li>`
+                ).join(""));
+                setupLogPagination(response.totalRecords, page);
+            });
+        }
+
+        function formatTimeAgo(dateString) {
+            let date = new Date(dateString);
+            let now = new Date();
+            let seconds = Math.floor((now - date) / 1000);
+            let minutes = Math.floor(seconds / 60);
+            let hours = Math.floor(minutes / 60);
+            let days = Math.floor(hours / 24);
+
+            if (seconds < 60) return "Just now";
+            if (minutes < 60) return `${minutes} min ago`;
+            if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+            if (days === 1) return "Yesterday";
+            return `${days} days ago`;
+        }
+
+        function setupLogPagination(totalRecords, currentPage) {
+            var totalPages = Math.ceil(totalRecords / logPageSize);
+            var paginationHtml = "";
+            if (totalPages > 1) {
+                 paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="fetchLogs(1)">&laquo;</a></li>`;
+
+                let startPage = Math.max(1, currentPage - 1);
+                let endPage = Math.min(totalPages, currentPage + 1);
+
+                 if (currentPage > 2) {
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(1)">1</a></li>`;
+                    if (currentPage > 3) paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="fetchLogs(${i})">${i}</a></li>`;
+                }
+
+                if (currentPage < totalPages - 1) {
+                     if (currentPage < totalPages - 2) paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                    paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(${totalPages})">${totalPages}</a></li>`;
+                }
+                paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="fetchLogs(${totalPages})">&raquo;</a></li>`;
+            }
+            $("#logPagination").html(paginationHtml);
+        }
+
+        $("#monthFilterLog").change(function () {
+            fetchLogs(1);
+        });
+
+        fetchLogs(1);
+
+        // --- Navigation Functions ---
+        function navigateToDashboard() {
+            window.location.href = `/StoreKeeper/Inventory?filter=All`;
+        }
+        function navigateToAvailable() {
+            window.location.href = `/StoreKeeper/Inventory?filter=Available`;
+        }
+        function navigateToLowStock() {
+            window.location.href = `/StoreKeeper/Inventory?filter=red`;
+        }
+        function navigateToPending() {
+            window.location.href = `/StoreKeeper/ApproveList?filter=Pending`;
+        }
+        function navigateToApproved() {
+            window.location.href = `/StoreKeeper/ApproveList?filter=Approved`;
+        }
+        function navigateToTodayRequest() {
+            window.location.href = `/StoreKeeper/ApproveList?filter=Today`;
+        }
+    </script>
+</body>
+</html>

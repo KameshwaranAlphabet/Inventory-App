@@ -11,24 +11,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>aLphabet-Connect</title>
+    <title>myaLphabet</title>
     <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
-<div class="container mt-4">
-    <h2>SubUnit Types</h2>
-    <div class="row">
-        <div class="col-md-4">
-            <h5 id="formTitle">Add New UnitTypes</h5>
+    <div class="container mt-4">
+        <h2 class="fw-bold mb-4">SubUnit Types</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <h5 id="formTitle" style="color: #004085;">Add New UnitTypes</h5>
                 <form method="post" enctype="multipart/form-data" asp-action="CreateOrUpdateSubUnitTypes" asp-controller="StoreKeeper">
-                <input type="hidden" name="Id" id="categoryId" />
-                <div class="mb-3">
-                    <label class="form-label">Name</label>
-                    <input type="text" class="form-control" name="SubUnitName" id="locationName" required />
-                </div>
+                    <input type="hidden" name="Id" id="categoryId" />
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" name="SubUnitName" id="locationName" required />
+                    </div>
 
-               @*  <div class="mb-3">
+                    @*  <div class="mb-3">
                     <label class="form-label">Parent Category</label>
                     <select class="form-select" name="ParentId" id="parentId">
                         <option value="">None</option>
@@ -39,70 +39,70 @@
                     </select>
                 </div> *@
 
-             @*    <div class="mb-3">
+                    @*    <div class="mb-3">
                     <label class="form-label">Thumbnail</label>
                     <input type="file" class="form-control" name="ImageFile" id="imageFile" />
                     <img id="categoryImagePreview" src="" width="50" height="50" class="img-thumbnail mt-2" style="display:none;" />
                 </div> *@
 
-                <button type="submit" class="btn btn-primary" id="submitButton">Add New SubUnits</button>
-            </form>
-        </div>
+                    <button type="submit" class="btn btn-primary" id="submitButton">Add New SubUnits</button>
+                </form>
+            </div>
 
-        <div class="col-md-8">
-            <div class="d-flex justify-content-between mb-3">
-              
-                <input type="text" id="searchInput" class="form-control w-25" placeholder="Search SubUnits" />
+            <div class="col-md-8">
+                <div class="d-flex justify-content-between mb-3">
+
+                    <input type="text" id="searchInput" class="form-control w-25" placeholder="Search SubUnits" />
                     <div>
                         <button class="btn btn-secondary" onclick="searchCategories()">Apply</button>
                     </div>
-            </div>
-            <table class="table table-bordered" id="categoryTable">
-                <thead>
-                    <tr>
-                        <th>Id/th>
-                        <th>Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var category in Model)
-                    {
+                </div>
+                <table class="table table-bordered" id="categoryTable">
+                    <thead>
                         <tr>
-                            <td>@category.Id</td>
-                            <td>@category.SubUnitName</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.SubUnitName')">Edit</button>
-@*                                 <a href="/StoreKeeper/DeleteSubUnits/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
- *@                            </td>
+                            <th>Id/th>
+                            <th>Name</th>
+                            <th>Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in Model)
+                        {
+                            <tr>
+                                <td>@category.Id</td>
+                                <td>@category.SubUnitName</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-warning" onclick="editCategory('@category.Id', '@category.SubUnitName')">Edit</button>
+                                    @*                                 <a href="/StoreKeeper/DeleteSubUnits/@category.Id" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+ *@                            </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
-        <!-- Pagination -->
-        <div class="d-flex justify-content-between align-items-center">
-            <span>@(((ViewBag.PageNumber - 1) * ViewBag.PageSize) + 1)-@((ViewBag.PageNumber * ViewBag.PageSize) > ViewBag.TotalRecords ? ViewBag.TotalRecords : (ViewBag.PageNumber * ViewBag.PageSize)) of @ViewBag.TotalRecords</span>
-            <nav>
-                <ul class="pagination">
-                    <li class="page-item @(ViewBag.PageNumber == 1 ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("UnitTypes", new { pageNumber = ViewBag.PageNumber - 1, pageSize = ViewBag.PageSize })">&laquo;</a>
-                    </li>
-                    @for (int i = 1; i <= Math.Ceiling((double)ViewBag.TotalRecords / ViewBag.PageSize); i++)
-                    {
-                        <li class="page-item @(ViewBag.PageNumber == i ? "active" : "")">
-                            <a class="page-link" href="@Url.Action("UnitTypes", new { pageNumber = i, pageSize = ViewBag.PageSize })">@i</a>
+            <!-- Pagination -->
+            <div class="d-flex justify-content-between align-items-center">
+                <span>@(((ViewBag.PageNumber - 1) * ViewBag.PageSize) + 1)-@((ViewBag.PageNumber * ViewBag.PageSize) > ViewBag.TotalRecords ? ViewBag.TotalRecords : (ViewBag.PageNumber * ViewBag.PageSize)) of @ViewBag.TotalRecords</span>
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item @(ViewBag.PageNumber == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("UnitTypes", new { pageNumber = ViewBag.PageNumber - 1, pageSize = ViewBag.PageSize })">&laquo;</a>
                         </li>
-                    }
-                    <li class="page-item @(ViewBag.PageNumber * ViewBag.PageSize >= ViewBag.TotalRecords ? "disabled" : "")">
-                        <a class="page-link" href="@Url.Action("UnitTypes", new { pageNumber = ViewBag.PageNumber + 1, pageSize = ViewBag.PageSize })">&raquo;</a>
-                    </li>
-                </ul>
-            </nav>
+                        @for (int i = 1; i <= Math.Ceiling((double)ViewBag.TotalRecords / ViewBag.PageSize); i++)
+                        {
+                            <li class="page-item @(ViewBag.PageNumber == i ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("UnitTypes", new { pageNumber = i, pageSize = ViewBag.PageSize })">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(ViewBag.PageNumber * ViewBag.PageSize >= ViewBag.TotalRecords ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("UnitTypes", new { pageNumber = ViewBag.PageNumber + 1, pageSize = ViewBag.PageSize })">&raquo;</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
-</div>
 </body>
 </html>
 <script>
@@ -129,9 +129,8 @@
 
 </script>
 <style>
-    .container
-    {
-        max-width:100%;
+    .container {
+        max-width: 100%;
     }
 </style>
 

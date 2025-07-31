@@ -1,4 +1,4 @@
-﻿@model ManualStockPage
+﻿@* @model ManualStockPage
 @{
     Layout = "_ShopKeeperLayout";
 }
@@ -123,3 +123,186 @@
         }
     });
 </script>
+ *@
+@{
+    Layout = "_ShopKeeperLayout";
+}
+@model ManualStockPage
+@{
+    ViewData["Title"] = "New Purchase";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Purchase - Alphabet Connect</title>
+    <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --theme-blue: #0d6efd;
+            --theme-yellow: #ffc107;
+            --light-gray-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--light-gray-bg);
+        }
+
+        .purchase-container {
+            max-width: 800px;
+        }
+
+        .purchase-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .purchase-header {
+            color: var(--theme-blue);
+            font-weight: 700;
+        }
+
+        .form-control:focus {
+            border-color: var(--theme-blue);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--theme-blue);
+            border-color: var(--theme-blue);
+            padding: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+            .btn-primary:hover {
+                background-color: #0b5ed7;
+            }
+
+        .autocomplete-list {
+            z-index: 1050; /* Ensure it appears above other elements */
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container purchase-container my-5">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        <div class="card purchase-card">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="purchase-header text-center mb-4 fw-bold mb-4" style="color: #004085;">Direct Purchase</h2>
+                <form asp-action="CreateManual" method="post" class="row g-4">
+                    <div class="col-md-6 col-12 position-relative">
+                        <label for="customerName" class="form-label">Customer Name</label>
+                        <input id="customerName" name="CustomerName" class="form-control" autocomplete="off" onkeyup="fetchCustomers()" />
+                        <div id="customerList" class="list-group position-absolute autocomplete-list" style="width:100%"></div>
+                        <span asp-validation-for="CustomerName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 col-12 position-relative">
+                        <label for="stockName" class="form-label">Stock Name</label>
+                        <input id="stockName" name="StockName" class="form-control" autocomplete="off" onkeyup="fetchStocks()" />
+                        <div id="stockList" class="list-group position-absolute autocomplete-list" style="width:100%"></div>
+                        <span asp-validation-for="StockName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input asp-for="Quantity" type="number" class="form-control" min="1" required />
+                        <span asp-validation-for="Quantity" class="text-danger d-block mt-2"></span>
+                    </div>
+
+                    <div class="col-12 text-center pt-3">
+                        <button type="submit" class="btn btn-primary w-75 w-md-50">Submit Purchase</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function fetchCustomers() {
+            let query = $("#customerName").val();
+            if (query.length < 2) {
+                $("#customerList").html("").hide();
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("SearchCustomers", "StoreKeeper")',
+                data: { term: query },
+                success: function (data) {
+                    let dropdown = "";
+                    data.forEach(item => {
+                        dropdown += `<a href="#" class="list-group-item list-group-item-action" onclick="selectCustomer('${item.name}')">${item.name}</a>`;
+                    });
+                    $("#customerList").html(dropdown).show();
+                },
+                error: function () {
+                    console.error("Failed to fetch customers.");
+                }
+            });
+        }
+
+        function selectCustomer(name) {
+            $("#customerName").val(name);
+            $("#customerList").hide();
+        }
+
+        function fetchStocks() {
+            let query = $("#stockName").val();
+            if (query.length < 2) {
+                $("#stockList").html("").hide();
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("SearchStocks", "StoreKeeper")',
+                data: { term: query },
+                success: function (data) {
+                    let dropdown = "";
+                    data.forEach(item => {
+                        dropdown += `<a href="#" class="list-group-item list-group-item-action" onclick="selectStock('${item.stockName}')">${item.stockName}</a>`;
+                    });
+                    $("#stockList").html(dropdown).show();
+                },
+                error: function () {
+                    console.error("Failed to fetch stocks.");
+                }
+            });
+        }
+
+        function selectStock(name) {
+            $("#stockName").val(name);
+            $("#stockList").hide();
+        }
+
+        // Hide dropdowns when clicking outside
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest("#customerName, #customerList").length) {
+                $("#customerList").hide();
+            }
+            if (!$(e.target).closest("#stockName, #stockList").length) {
+                $("#stockList").hide();
+            }
+        });
+    </script>
+</body>
+</html>

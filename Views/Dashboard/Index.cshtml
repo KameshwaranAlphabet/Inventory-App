@@ -1,4 +1,4 @@
-﻿@{
+﻿@* @{
     int totalStocks = ViewBag.StocksCount;
     int lowStocks = ViewBag.LowStocksCount;
     int availableStocks = ViewBag.AvailableStocks;
@@ -11,480 +11,1040 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>aLphabet-Connect</title>
+    <title>Dashboard - aLphabet-Connect</title>
     <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/@@phosphor-icons/web"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --accent-blue-bg: #e7f1ff;
+            --accent-green-bg: #e6f8f0;
+            --accent-red-bg: #fdeeee;
+            --accent-yellow-bg: #fff8e1;
+            --accent-blue-text: #0d6efd;
+            --accent-green-text: #198754;
+            --accent-red-text: #dc3545;
+            --accent-yellow-text: #ffc107;
+        }
+
+        /* Animations */
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes skeleton-loading {
+            0% {
+                background-color: hsl(200, 20%, 80%);
+            }
+
+            100% {
+                background-color: hsl(200, 20%, 95%);
+            }
+        }
+
         body {
-            background: #f4f4f4;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
         }
 
-        .welcome {
-            background: linear-gradient(to right, #ffffff, #ffffff);
-            color: #1e1e1e;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 1.5rem;
-            font-weight: bold;
+        .main-container {
+            animation: slideUp 0.5s ease-out forwards;
         }
 
-        .container
-        {
-            max-width:100%;
+        /* Welcome Banner */
+        .welcome-banner {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
         }
+
+            .welcome-banner h2 {
+                font-weight: 700;
+            }
+
+            .welcome-banner .date {
+                color: var(--text-muted);
+            }
+
+        /* Stats Cards */
         .stats-cards .card {
-            color: white;
-            transition: transform 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
         }
 
             .stats-cards .card:hover {
-                transform: scale(1.05);
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.08);
             }
 
-            .stats-cards .card i {
-                font-size: 2rem;
-            }
-
-        .green {
-            background-color: #38a169;
-        }
-
-        .blue {
-            background-color: #3182ce;
-        }
-
-        .red {
-            background-color: #e53e3e;
-        }
-
-        .yellow {
-            background-color: #dd6b20;
-        }
-
-        .filter-dropdown {
-            width: 23%;
-            background: white;
-            border-radius: 5px;
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .icon-circle {
-            width: 40px;
-            height: 40px;
+        .stats-cards .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stats-cards .card-title {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .stats-cards .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .bg-info-soft {
+            background-color: var(--accent-blue-bg);
+            color: var(--accent-blue-text);
+        }
+
+        .bg-success-soft {
+            background-color: var(--accent-green-bg);
+            color: var(--accent-green-text);
+        }
+
+        .bg-danger-soft {
+            background-color: var(--accent-red-bg);
+            color: var(--accent-red-text);
+        }
+
+        .bg-warning-soft {
+            background-color: var(--accent-yellow-bg);
+            color: var(--accent-yellow-text);
+        }
+
+        /* Main Content Cards */
+        .main-content-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .card-header-custom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        /* Table & Lists */
+        .table {
+            vertical-align: middle;
+        }
+
+            .table th {
+                font-weight: 600;
+                color: var(--text-muted);
+                border: none;
+            }
+
+            .table td {
+                border-top: 1px solid #dee2e6;
+            }
+
+        .profile-avatar {
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
-            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
         }
 
-        .bg-info {
-            background-color: #a3c4fd !important; /* Pastel Blue */
-            color: #1a3d7c !important; /* Darker text for contrast */
+        .log-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
         }
 
-        .bg-success {
-            background-color: #A8E6CF !important; /* Soft pastel green */
-            color: #2C5E4E !important; /* Darker text for contrast */
+            .log-item:last-child {
+                border-bottom: none;
+            }
+
+            .log-item i {
+                font-size: 1.25rem;
+                color: var(--text-muted);
+                margin-top: 4px;
+            }
+
+        /* ✨ Skeleton Loader for Tables */
+        .skeleton-row td div {
+            opacity: 0.7;
+            animation: skeleton-loading 1s linear infinite alternate;
+            height: 20px;
+            border-radius: 5px;
+            background-color: #e0e0e0;
         }
 
-        .bg-danger {
-            background-color: #F7A8A8 !important; /* Soft pastel red */
-            color: #702929 !important; /* Darker text for contrast */
+        .skeleton-row td:first-child div {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
         }
 
-        .bg-warning {
-            background-color: #FFF4B2 !important; /* Soft pastel yellow */
-            color: #665B31 !important; /* Darker text for contrast */
+        /* ✨ Skeleton Loader for Logs */
+        .skeleton-log {
+            opacity: 0.7;
+            animation: skeleton-loading 1s linear infinite alternate;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
 <body>
-    <div class="container py-4">
-        <div class="welcome">Hi, @username</div>
-        <div class="row g-3 stats-cards mt-3">
-            <div class="col-md-3">
-                <div class="card text-white bg-info p-3 d-flex flex-row align-items-center" onclick="navigateToDashboard()">
-                    <div class="icon-circle bg-white text-primary me-3">
-                        <i class="ph ph-shopping-cart"></i>
-                    </div>
-                    <div>
-                        <span>Total Stocks</span><br>
-                        <strong class="fs-5">@totalStocks</strong>
+    <div class="container-fluid py-4 main-container">
+        <div class="welcome-banner mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>Hi, @username 👋</h2>
+                    <p class="mb-0 date">Today is @DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 stats-cards mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-info-soft" onclick="navigateToDashboard()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Total Stocks</p>
+                            <p class="card-value">@totalStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-blue-text); color: white;"><i class="ph-bold ph-shopping-cart"></i></div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-3">
-                <div class="card text-white bg-success p-3 d-flex flex-row align-items-center" onclick="navigateToAvailabe()">
-                    <div class="icon-circle bg-white text-success me-3">
-                        <i class="ph ph-wallet"></i>
-                    </div>
-                    <div>
-                        <span>Available Stocks</span><br>
-                        <strong class="fs-5">@availableStocks</strong>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card text-white bg-danger p-3 d-flex flex-row align-items-center" onclick="navigateToLowStock()">
-                    <div class="icon-circle bg-white text-danger me-3">
-                        <i class="ph ph-trend-down"></i>
-                    </div>
-                    <div>
-                        <span>Low Stocks</span><br>
-                        <strong class="fs-5">@lowStocks</strong>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-success-soft" onclick="navigateToAvailabe()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Available Stocks</p>
+                            <p class="card-value">@availableStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-green-text); color: white;"><i class="ph-bold ph-wallet"></i></div>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-3">
-                <div class="card text-white bg-warning p-3 d-flex flex-row align-items-center" onclick="navigateToPending()">
-                    <div class="icon-circle bg-white text-warning me-3">
-                        <i class="ph ph-hourglass-simple-medium"></i>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-danger-soft" onclick="navigateToLowStock()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Low Stocks</p>
+                            <p class="card-value">@lowStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-red-text); color: white;"><i class="ph-bold ph-trend-down"></i></div>
                     </div>
-                    <div>
-                        <span>Pending Request</span><br>
-                        <strong class="fs-5">@pending</strong>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-warning-soft" onclick="navigateToPending()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Pending Requests</p>
+                            <p class="card-value">@pending</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: #fab005; color: white;"><i class="ph-bold ph-hourglass"></i></div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Inside your existing file -->
-        <div class="row mt-4">
-            <!-- Most Indented Section -->
-            <!-- Most Indented Section -->
-            <div class="col-md-8">
-                <div class="card p-3">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                        <h5 class="mb-0">Most Indented</h5>
 
-                        <!-- Responsive Filters -->
-                        <div class="row g-2 w-100 w-md-auto">
-                            <div class="col-12 col-sm-6 col-md-auto">
-                                <input type="text" id="userFilter" class="form-control form-control-sm" placeholder="Search User">
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-auto">
-                                <select id="monthFilter" class="form-select form-select-sm">
-                                    <option value="all">All</option>
-                                    <option value="1">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select>
-                            </div>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="main-content-card">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Recent Indents</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <input type="text" id="userFilter" class="form-control form-control-sm" placeholder="Search User..." style="width: 180px;">
+                            <select id="monthFilter" class="form-select form-select-sm" style="width: 150px;">
+                                <option value="all">All Months</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
                         </div>
                     </div>
-
-                    <table class="table table-striped mt-3">
-                        <thead>
-                            <tr>
-                                <th>Profile</th>
-                                <th>Name</th>
-                                <th>ItemCount</th>
-                                <th>Date</th>
-                                <th>TotalQuantity</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ordersTable"></tbody>
-                    </table>
-                    <nav>
-                        <ul class="pagination justify-content-center" id="pagination"></ul>
-                    </nav>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Profile</th>
+                                    <th>Name</th>
+                                    <th>Item Count</th>
+                                    <th>Date</th>
+                                    <th>Total Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable"></tbody>
+                        </table>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="pagination"></ul></nav>
+                    </div>
                 </div>
             </div>
 
-            <!-- Logs Section -->
-            <div class="col-md-4 mt-4 mt-md-0">
-                <div class="card p-3">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                        <h5 class="mb-0">Logs</h5>
-
-                        <!-- Responsive Filters -->
-                        <div class="row g-2 w-100 w-md-auto">
-                            <div class="col-12 col-sm-6 col-md-auto">
-                                <input type="text" id="userFilterlog" class="form-control form-control-sm" placeholder="Search User">
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-auto">
-                                <select id="updateFilter" class="form-select form-select-sm">
-                                    <option value="all">All</option>
-                                    <option value="01">January</option>
-                                    <option value="02">February</option>
-                                    <option value="03">March</option>
-                                    <option value="04">April</option>
-                                    <option value="05">May</option>
-                                    <option value="06">June</option>
-                                    <option value="06">June</option>
-                                    <option value="07">July</option>
-                                    <option value="08">August</option>
-                                    <option value="09">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select>
-                            </div>
+            <div class="col-lg-4">
+                <div class="main-content-card">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Activity Logs</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <input type="text" id="userFilterlog" class="form-control form-control-sm" placeholder="Search User..." style="width: 180px;">
                         </div>
                     </div>
-
-                    <ul class="list-unstyled mt-3" id="updatesList"></ul>
-                    <nav>
-                        <ul class="pagination justify-content-center" id="logPagination"></ul>
-                    </nav>
+                    <div class="px-4 py-2">
+                        <ul class="list-unstyled mb-0" id="updatesList"></ul>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="logPagination"></ul></nav>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        var currentPage = 1;
+        var pageSize = 7;
+        var logPage = 1;
+        var logPageSize = 5;
+
+        function renderTableSkeleton() {
+            let skeletonHTML = '';
+            for (let i = 0; i < pageSize; i++) {
+                skeletonHTML += `<tr class="skeleton-row">
+                    <td><div></div></td>
+                    <td><div style="width: 80%;"></div></td>
+                    <td><div style="width: 50%;"></div></td>
+                    <td><div style="width: 90%;"></div></td>
+                    <td><div style="width: 60%;"></div></td>
+                </tr>`;
+            }
+            $("#ordersTable").html(skeletonHTML);
+        }
+
+        function renderLogsSkeleton() {
+            let skeletonHTML = '';
+            for (let i = 0; i < logPageSize; i++) {
+                skeletonHTML += `<li class="log-item">
+                    <i class="ph ph-circle-notch"></i>
+                    <div>
+                        <div class="skeleton-log" style="height: 16px; width: 120px;"></div>
+                        <div class="skeleton-log" style="height: 14px; width: 200px; margin-top: 8px;"></div>
+                        <div class="skeleton-log" style="height: 12px; width: 80px; margin-top: 8px;"></div>
+                    </div>
+                </li>`;
+            }
+            $("#updatesList").html(skeletonHTML);
+        }
+
+        function fetchOrders(page = 1) {
+            renderTableSkeleton(); // ✨ Show skeleton loader
+            var month = $("#monthFilter").val();
+            var searchUser = $("#userFilter").val().trim();
+            currentPage = page;
+
+            $.get("/Dashboard/GetOrders", { month: month, searchUser: searchUser, page: page, pageSize: pageSize }, function (response) {
+                var ordersTable = $("#ordersTable");
+                ordersTable.empty();
+                if (response.data.length === 0) {
+                    ordersTable.append(`<tr><td colspan="5" class="text-center py-4">No records found</td></tr>`);
+                } else {
+                    ordersTable.html(response.data.map(o =>
+                        `<tr>
+                            <td><div onclick="redirectToApproveList('${o.orderId}')" class="profile-avatar" style="background-color: ${getColor(o.name)};">${o.profile}</div></td>
+                            <td>${o.name}</td>
+                            <td>${o.itemCount}</td>
+                            <td>${new Date(o.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                            <td>${o.quantity}</td>
+                        </tr>`
+                    ).join(""));
+                }
+                setupPagination(response.totalRecords, page, pageSize, 'pagination', fetchOrders);
+            }).fail(function () {
+                $("#ordersTable").html(`<tr><td colspan="5" class="text-center text-danger py-4">Error loading data</td></tr>`);
+            });
+        }
+
+        function fetchLogs(page = 1) {
+            renderLogsSkeleton(); // ✨ Show skeleton loader
+            var searchUser = $("#userFilterlog").val() || "";
+            logPage = page;
+
+            $.get("/Dashboard/GetLogs", { searchUser: searchUser, page: page, pageSize: logPageSize }, function (response) {
+                var updatesList = $("#updatesList");
+                updatesList.empty();
+                if (response.data.length === 0) {
+                    updatesList.append(`<li class="text-center py-4">No logs found</li>`);
+                } else {
+                    updatesList.html(response.data.map(log =>
+                        `<li class="log-item">
+                            <i class="ph ph-info"></i>
+                            <div>
+                                <strong>${log.userName}</strong> ${log.description}<br>
+                                <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
+                            </div>
+                        </li>`
+                    ).join(""));
+                }
+                setupPagination(response.totalRecords, page, logPageSize, 'logPagination', fetchLogs);
+            });
+        }
+
+        // Generic Pagination Setup
+        function setupPagination(totalRecords, currentPage, pageSize, elementId, fetchFunction) {
+            var totalPages = Math.ceil(totalRecords / pageSize);
+            var paginationHtml = "";
+            if (totalPages <= 1) {
+                $("#" + elementId).html("");
+                return;
+            }
+            // Previous Button
+            paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="${fetchFunction.name}(${currentPage - 1})">Previous</a></li>`;
+            // Page Numbers
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, currentPage + 1);
+            if (currentPage === 1) endPage = Math.min(totalPages, 3);
+            if (currentPage === totalPages) startPage = Math.max(1, totalPages - 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="${fetchFunction.name}(${i})">${i}</a></li>`;
+            }
+            // Next Button
+            paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="${fetchFunction.name}(${currentPage + 1})">Next</a></li>`;
+            $("#" + elementId).html(paginationHtml);
+        }
+
+        // --- Utility and Event Handlers (Unchanged but included for completeness) ---
+        function getColor(name) {
+            const colors = ["#0d6efd", "#198754", "#dc3545", "#ffc107", "#6f42c1"]; 
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash); }
+            return colors[Math.abs(hash) % colors.length];
+        }
+        function formatTimeAgo(dateString) {
+            let date = new Date(dateString); let now = new Date(); let seconds = Math.floor((now - date) / 1000); let minutes = Math.floor(seconds / 60); let hours = Math.floor(minutes / 60); let days = Math.floor(hours / 24);
+            if (seconds < 60) return "Just now"; if (minutes < 60) return `${minutes} min ago`; if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`; if (days === 1) return "Yesterday"; return `${days} days ago`;
+        }
+        function navigateToDashboard() { window.location.href = `/Inventory/Index?page=1&pageSize=10&filter=all&search=`; }
+        function navigateToAvailabe() { window.location.href = `/Inventory/Index?page=1&pageSize=10&filter=Available&search=`; }
+        function navigateToLowStock() { window.location.href = `/Inventory/Index?page=1&pageSize=10&filter=red&search=`; }
+        function navigateToPending() { window.location.href = `/Admin/Index?page=1&pageSize=10&search=&orderDate=&filter=Pending`; }
+        function redirectToApproveList(orderId) { window.location.href = `/Admin/Index?page=1&pageSize=10&search=&orderDate=des&filter=&orderId=${orderId}`; }
+
+        $(document).ready(function() {
+            fetchOrders(1);
+            fetchLogs(1);
+
+            $("#monthFilter, #userFilter").on("change keyup", function () { fetchOrders(1); });
+            $("#userFilterlog").on("keyup", function () { fetchLogs(1); });
+        });
+    </script>
+</body>
+</html> *@
+@model List<Logs>
+@{
+    Layout = "_Layout";
+}
+@{
+    int totalStocks = ViewBag.StocksCount;
+    int lowStocks = ViewBag.LowStocksCount;
+    int availableStocks = ViewBag.AvailableStocks;
+    int approveList = ViewBag.ApprovedCount;
+    int pending = ViewBag.Pending;
+    string username = ViewBag.UserName;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>myaLphabet</title>
+    <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/@@phosphor-icons/web"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --text-muted: #6c757d;
+            --accent-blue-bg: #e7f1ff;
+            --accent-green-bg: #e6f8f0;
+            --accent-red-bg: #fdeeee;
+            --accent-yellow-bg: #fff8e1;
+            --accent-purple-bg: #f3e8ff;
+            --accent-blue-text: #0d6efd;
+            --accent-green-text: #198754;
+            --accent-red-text: #dc3545;
+            --accent-yellow-text: #ffc107;
+            --accent-purple-text: #845ef7;
+        }
+
+        /* Animations */
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes skeleton-loading {
+            0% {
+                background-color: hsl(200, 20%, 80%);
+            }
+
+            100% {
+                background-color: hsl(200, 20%, 95%);
+            }
+        }
+
+        /* Handshake wave animation */
+        @@keyframes wave {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            15% {
+                transform: rotate(14deg);
+            }
+
+            30% {
+                transform: rotate(-8deg);
+            }
+
+            45% {
+                transform: rotate(14deg);
+            }
+
+            60% {
+                transform: rotate(-4deg);
+            }
+
+            75% {
+                transform: rotate(10deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .main-container {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        /* Welcome Banner */
+        .welcome-banner {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+            .welcome-banner h2 {
+                font-weight: 700;
+            }
+
+            .welcome-banner .date {
+                color: var(--text-muted);
+            }
+
+        /* Apply wave animation to the handshake emoji */
+        .wave-emoji {
+            animation: wave 2s infinite;
+            transform-origin: 70% 70%; /* Adjust as needed for better pivot */
+            display: inline-block; /* Essential for transform to work correctly */
+        }
+
+        /* Stats Cards */
+        .stats-cards .card {
+            border: none;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+            .stats-cards .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            }
+
+        .stats-cards .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stats-cards .card-title {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .stats-cards .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .bg-info-soft {
+            background-color: var(--accent-blue-bg);
+            color: var(--accent-blue-text);
+        }
+
+        .bg-success-soft {
+            background-color: var(--accent-green-bg);
+            color: var(--accent-green-text);
+        }
+
+        .bg-danger-soft {
+            background-color: var(--accent-red-bg);
+            color: var(--accent-red-text);
+        }
+
+        .bg-warning-soft {
+            background-color: var(--accent-yellow-bg);
+            color: var(--accent-yellow-text);
+        }
+
+        .bg-purple-soft {
+            background-color: var(--accent-purple-bg);
+            color: var(--accent-purple-text);
+        }
+
+        /* Main Content Cards */
+        .main-content-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .card-header-custom {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        /* Table & Lists */
+        .table {
+            vertical-align: middle;
+        }
+
+            .table th {
+                font-weight: 600;
+                color: var(--text-muted);
+                border: none;
+            }
+
+            .table td {
+                border-top: 1px solid #dee2e6;
+            }
+
+        .profile-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .log-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+            .log-item:last-child {
+                border-bottom: none;
+            }
+
+            .log-item i {
+                font-size: 1.25rem;
+                color: var(--text-muted);
+                margin-top: 4px;
+            }
+
+        /* ✨ Skeleton Loader for Tables */
+        .skeleton-row td div {
+            opacity: 0.7;
+            animation: skeleton-loading 1s linear infinite alternate;
+            height: 20px;
+            border-radius: 5px;
+            background-color: #e0e0e0;
+        }
+
+        .skeleton-row td:first-child div {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+        }
+
+        /* ✨ Skeleton Loader for Logs */
+        .skeleton-log {
+            opacity: 0.7;
+            animation: skeleton-loading 1s linear infinite alternate;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4 main-container">
+        <div class="welcome-banner mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>Hi, @username <span class="wave-emoji">👋</span></h2>
+                    <p class="mb-0 date">Today is @DateTime.Now.ToString("dddd, MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-3 row-cols-xl-5 g-4 stats-cards mb-4">
+            <div class="col">
+                <div class="card bg-info-soft" onclick="navigateToDashboard()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Total Stocks</p>
+                            <p class="card-value">@totalStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-blue-text); color: white;"><i class="ph-bold ph-shopping-cart"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card bg-success-soft" onclick="navigateToAvailabe()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Available</p>
+                            <p class="card-value">@availableStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-green-text); color: white;"><i class="ph-bold ph-wallet"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card bg-danger-soft" onclick="navigateToLowStock()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Low Stocks</p>
+                            <p class="card-value">@lowStocks</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-red-text); color: white;"><i class="ph-bold ph-trend-down"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card bg-warning-soft" onclick="navigateToPending()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Pending</p>
+                            <p class="card-value">@pending</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: #fab005; color: white;"><i class="ph-bold ph-hourglass"></i></div>
+                    </div>
+                </div>
+            </div>
+            @*   <div class="col">
+                <div class="card bg-purple-soft" onclick="navigateToApproved()">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="card-title">Approved</p>
+                            <p class="card-value">@approveList</p>
+                        </div>
+                        <div class="icon-circle" style="background-color: var(--accent-purple-text); color: white;"><i class="ph-bold ph-list-checks"></i></div>
+                    </div>
+                </div>
+            </div> *@
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="main-content-card h-100 d-flex flex-column">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Most Indents</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <input type="text" id="userFilter" class="form-control form-control-sm" placeholder="Search User..." style="width: 180px;">
+                            <select id="monthFilter" class="form-select form-select-sm" style="width: 150px;">
+                                <option value="all">All Months</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive flex-grow-1">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Profile</th>
+                                    <th>Name</th>
+                                    <th>Item Count</th>
+                                    <th>Date</th>
+                                    <th>Total Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable"></tbody>
+                        </table>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="pagination"></ul></nav>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="main-content-card h-100 d-flex flex-column">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold">Activity Logs</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <input type="text" id="userFilterlog" class="form-control form-control-sm" placeholder="Search User..." style="width: 180px;">
+                            <select id="monthFilterLog" class="form-select form-select-sm" style="width: 150px;">
+                                <option value="all">All Months</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="px-4 py-2 flex-grow-1">
+                        <ul class="list-unstyled mb-0" id="updatesList"></ul>
+                    </div>
+                    <div class="p-3">
+                        <nav><ul class="pagination justify-content-center mb-0" id="logPagination"></ul></nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var currentPage = 1;
+        var pageSize = 7;
+        var logPage = 1;
+        var logPageSize = 5;
+
+        function renderTableSkeleton() {
+            let skeletonHTML = '';
+            for (let i = 0; i < pageSize; i++) {
+                skeletonHTML += `<tr class="skeleton-row">
+                    <td><div></div></td>
+                    <td><div style="width: 80%;"></div></td>
+                    <td><div style="width: 50%;"></div></td>
+                    <td><div style="width: 90%;"></div></td>
+                    <td><div style="width: 60%;"></div></td>
+                </tr>`;
+            }
+            $("#ordersTable").html(skeletonHTML);
+        }
+
+        function renderLogsSkeleton() {
+            let skeletonHTML = '';
+            for (let i = 0; i < logPageSize; i++) {
+                skeletonHTML += `<li class="log-item">
+                    <i class="ph ph-circle-notch"></i>
+                    <div>
+                        <div class="skeleton-log" style="height: 16px; width: 120px;"></div>
+                        <div class="skeleton-log" style="height: 14px; width: 200px; margin-top: 8px;"></div>
+                        <div class="skeleton-log" style="height: 12px; width: 80px; margin-top: 8px;"></div>
+                    </div>
+                </li>`;
+            }
+            $("#updatesList").html(skeletonHTML);
+        }
+
+        function fetchOrders(page = 1) {
+            renderTableSkeleton(); // ✨ Show skeleton loader
+            var month = $("#monthFilter").val();
+            var searchUser = $("#userFilter").val().trim();
+            currentPage = page;
+
+            $.get("/Dashboard/GetOrders", { month: month, searchUser: searchUser, page: page, pageSize: pageSize }, function (response) {
+                var ordersTable = $("#ordersTable");
+                ordersTable.empty();
+                if (response.data.length === 0) {
+                    ordersTable.append(`<tr><td colspan="5" class="text-center py-4">No records found</td></tr>`);
+                } else {
+                    ordersTable.html(response.data.map(o =>
+                        `<tr>
+                            <td><div onclick="redirectToApproveList('${o.orderId}')" class="profile-avatar" style="background-color: ${getColor(o.name)};">${o.profile}</div></td>
+                            <td>${o.name}</td>
+                            <td>${o.itemCount}</td>
+                            <td>${new Date(o.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                            <td>${o.quantity}</td>
+                        </tr>`
+                    ).join(""));
+                }
+                setupPagination(response.totalRecords, page, pageSize, 'pagination', fetchOrders);
+            }).fail(function () {
+                $("#ordersTable").html(`<tr><td colspan="5" class="text-center text-danger py-4">Error loading data</td></tr>`);
+            });
+        }
+
+        function fetchLogs(page = 1) {
+            renderLogsSkeleton(); // ✨ Show skeleton loader
+            var searchUser = $("#userFilterlog").val() || "";
+            var month = $("#monthFilterLog").val(); // Added month filter for logs
+            logPage = page;
+
+            $.get("/Dashboard/GetLogs", { searchUser: searchUser, month: month, page: page, pageSize: logPageSize }, function (response) {
+                var updatesList = $("#updatesList");
+                updatesList.empty();
+                if (response.data.length === 0) {
+                    updatesList.append(`<li class="text-center py-4">No logs found</li>`);
+                } else {
+                    updatesList.html(response.data.map(log =>
+                        `<li class="log-item">
+                            <i class="ph ph-info"></i>
+                            <div>
+                                <strong>${log.userName}</strong> ${log.description}<br>
+                                <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
+                            </div>
+                        </li>`
+                    ).join(""));
+                }
+                setupPagination(response.totalRecords, page, logPageSize, 'logPagination', fetchLogs);
+            });
+        }
+
+        // Generic Pagination Setup
+        function setupPagination(totalRecords, currentPage, pageSize, elementId, fetchFunction) {
+            var totalPages = Math.ceil(totalRecords / pageSize);
+            var paginationHtml = "";
+            if (totalPages <= 1) {
+                $("#" + elementId).html("");
+                return;
+            }
+            // Previous Button
+            paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="${fetchFunction.name}(${currentPage - 1}); return false;">Previous</a></li>`;
+            // Page Numbers
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, currentPage + 1);
+            if (currentPage === 1) endPage = Math.min(totalPages, 3);
+            if (currentPage === totalPages) startPage = Math.max(1, totalPages - 2);
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="${fetchFunction.name}(${i}); return false;">${i}</a></li>`;
+            }
+            // Next Button
+            paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="${fetchFunction.name}(${currentPage + 1}); return false;">Next</a></li>`;
+            $("#" + elementId).html(paginationHtml);
+        }
+
+        function getColor(name) {
+            const colors = ["#4A90E2", "#50E3C2", "#F5A623", "#D0021B", "#BD10E0", "#7ED321", "#9013FE"];
+            let hash = 0;
+            if (name.length === 0) return colors[0];
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+                hash = hash & hash;
+            }
+            return colors[Math.abs(hash) % colors.length];
+        }
+        function formatTimeAgo(dateString) {
+            let date = new Date(dateString); let now = new Date(); let seconds = Math.floor((now - date) / 1000); let minutes = Math.floor(seconds / 60); let hours = Math.floor(minutes / 60); let days = Math.floor(hours / 24);
+            if (seconds < 60) return "Just now"; if (minutes < 60) return `${minutes} min ago`; if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`; if (days === 1) return "Yesterday"; return `${days} days ago`;
+        }
+        function navigateToDashboard() { window.location.href = `/Inventory/Index?page=1&pageSize=10&filter=all&search=`; }
+        function navigateToAvailabe() { window.location.href = `/Inventory/Index?page=1&pageSize=10&filter=Available&search=`; }
+        function navigateToLowStock() { window.location.href = `/Inventory/Index?page=1&pageSize=10&filter=red&search=`; }
+        function navigateToPending() { window.location.href = `/Admin/Index?page=1&pageSize=10&search=&orderDate=&filter=Pending`; }
+        function navigateToApproved() { window.location.href = `/Admin/Index?page=1&pageSize=10&search=&orderDate=&filter=Approved`; }
+        function redirectToApproveList(orderId) { window.location.href = `/Admin/Index?page=1&pageSize=10&search=&orderDate=des&filter=&orderId=${orderId}`; }
+
+        $(document).ready(function() {
+            fetchOrders(1);
+            fetchLogs(1);
+
+            $("#monthFilter, #userFilter").on("change keyup", function () { fetchOrders(1); });
+            $("#userFilterlog, #monthFilterLog").on("change keyup", function () { fetchLogs(1); });
+        });
+    </script>
 </body>
 </html>
-<script>
-     var currentPage = 1;
-    var pageSize = 7;
-
-      function fetchOrders(page = 1) {
-        var month = $("#monthFilter").val();
-        var searchUser = $("#userFilter").val().trim(); // Get search input value
-        var pageSize = 7; // Set default page size
-
-        $.get("/Dashboard/GetOrders", { month: month, searchUser: searchUser, page: page, pageSize: pageSize }, function (response) {
-            var ordersTable = $("#ordersTable");
-            ordersTable.empty(); // Clear previous data
-            if (response.data.length === 0) {
-                ordersTable.append(`<tr><td colspan="5" class="text-center">No records found</td></tr>`);
-            } else {
-                ordersTable.html(response.data.map(o =>
-                    `<tr>
-                        <td>
-                        <div onclick="redirectToApproveList('${o.orderId}')" style="width: 25px; height: 25px; border-radius: 50%; background-color: ${getColor(o.name)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; cursor: pointer;">
-                                ${o.profile}
-                            </div>
-                        </td>
-                        <td>${o.name}</td>
-                        <td>${o.itemCount}</td>
-                        <td>
-                            ${new Date(o.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            ${new Date(o.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
-                        </td>                       
-                        <td>${o.quantity}</td>
-                    </tr>`
-                ).join(""));
-            }
-
-            // Update Pagination
-            setupPagination(response.totalRecords, page, pageSize);
-        }).fail(function () {
-            console.error("Error fetching orders");
-            $("#ordersTable").html(`<tr><td colspan="5" class="text-center text-danger">Error loading data</td></tr>`);
-        });
-    }
-
-    // Event Listeners for Filters
-    $("#monthFilter, #userFilter").on("change keyup", function () {
-        fetchOrders(1); // Fetch orders on filter change
-    });
-
-    // Initial Load
-    fetchOrders();
-
-    
-        function getInitials(name) {
-        let initials = name.split(" ").map(word => word[0]).join("").toUpperCase();
-        return initials.substring(0, 2); // Keep it at 2 characters max
-    }
-
-    function getColor(name) {
-        const colors = ["#4A90E2", "#50E3C2", "#F5A623", "#D0021B", "#BD10E0"];
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-            hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return colors[Math.abs(hash) % colors.length]; // Pick color based on name hash
-    }
-        function setupPagination(totalRecords, currentPage) {
-        var totalPages = Math.ceil(totalRecords / pageSize);
-        var paginationHtml = "";
-
-        if (totalPages > 1) {
-            paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="fetchOrders(1)">&laquo;</a>
-            </li>`;
-
-            if (currentPage > 2) {
-                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(1)">1</a></li>`;
-                if (currentPage > 3) {
-                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-                }
-            }
-
-            let startPage = Math.max(1, currentPage - 1);
-            let endPage = Math.min(totalPages, currentPage + 1);
-
-            for (let i = startPage; i <= endPage; i++) {
-                paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="fetchOrders(${i})">${i}</a>
-                </li>`;
-            }
-
-            if (currentPage < totalPages - 1) {
-                if (currentPage < totalPages - 2) {
-                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-                }
-                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchOrders(${totalPages})">${totalPages}</a></li>`;
-            }
-
-            paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="fetchOrders(${totalPages})">&raquo;</a>
-            </li>`;
-        }
-
-        $("#pagination").html(paginationHtml);
-    }
-
-    $("#monthFilter").change(function () {
-        currentPage = 1;
-        fetchOrders(currentPage);
-    });
-
-    fetchOrders(currentPage);
-
-      var logPage = 1;
-    var logPageSize = 4;
-
-      function fetchLogs(page = 1) {
-        var month = $("#updateFilter").val();
-        var searchUser = $("#userFilterlog").val() || "";
-
-        $.get("/Dashboard/GetLogs", { month: month, searchUser: searchUser, page: page, pageSize: logPageSize }, function (response) {
-            var ordersTable = $("#updatesList");
-            ordersTable.empty(); // Clear previous records
-
-            if (response.data.length === 0) {
-                ordersTable.append(`<tr><td colspan="5" class="text-center">No records found</td></tr>`);
-            } else {
-                ordersTable.html(response.data.map(log =>
-                    `<li class="mb-2">
-                        <strong>${log.userName}</strong><br>
-                        ${log.description}<br>
-                        <small class="text-muted">${formatTimeAgo(log.createdDate)}</small>
-                    </li>`
-                ).join(""));
-            }
-
-            setupLogPagination(response.totalRecords, page);
-        });
-    }
-
-    function formatTimeAgo(dateString) {
-        let date = new Date(dateString);
-        let now = new Date();
-        let seconds = Math.floor((now - date) / 1000);
-        let minutes = Math.floor(seconds / 60);
-        let hours = Math.floor(minutes / 60);
-        let days = Math.floor(hours / 24);
-
-        if (seconds < 60) return "Just now";
-        if (minutes < 60) return `${minutes} min ago`;
-        if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-        if (days === 1) return "Yesterday";
-        return `${days} days ago`;
-    }
-
-    function setupLogPagination(totalRecords, currentPage) {
-        var totalPages = Math.ceil(totalRecords / logPageSize);
-        var paginationHtml = "";
-
-        if (totalPages > 1) {
-            paginationHtml += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="fetchLogs(1)">&laquo;</a>
-            </li>`;
-
-            if (currentPage > 2) {
-                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(1)">1</a></li>`;
-                if (currentPage > 3) {
-                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-                }
-            }
-
-            let startPage = Math.max(1, currentPage - 1);
-            let endPage = Math.min(totalPages, currentPage + 1);
-
-            for (let i = startPage; i <= endPage; i++) {
-                paginationHtml += `<li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="fetchLogs(${i})">${i}</a>
-                </li>`;
-            }
-
-            if (currentPage < totalPages - 1) {
-                if (currentPage < totalPages - 2) {
-                    paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-                }
-                paginationHtml += `<li class="page-item"><a class="page-link" href="#" onclick="fetchLogs(${totalPages})">${totalPages}</a></li>`;
-            }
-
-            paginationHtml += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" onclick="fetchLogs(${totalPages})">&raquo;</a>
-            </li>`;
-        }
-
-        $("#logPagination").html(paginationHtml);
-    }
-
-    $("#updateFilter, #userFilterlog").on("change keyup", function () {
-        logPage = 1;
-        fetchLogs(logPage);
-    });
-
-    fetchLogs(logPage);
-
-
-      function navigateToDashboard() {
-        const url = `/Inventory/Index?page=${1}&pageSize=${10}&filter=${"all"}&search=${""}`;
-
-        window.location.href = url;
-    }
-    function navigateToAvailabe() {
-        const url = `/Inventory/Index?page=${1}&pageSize=${10}&filter=${"Available"}&search=${""}`;
-
-        window.location.href = url;
-    }
-    function navigateToLowStock(){
-        const url = `/Inventory/Index?page=${1}&pageSize=${10}&filter=${"red"}&search=${""}`;
-        window.location.href = url;
-    }
-    function navigateToPending(){
-            const url = `/Admin/Index?page=${1}&pageSize=${10}&search=${""}&orderDate=${""}&filter=${"Pending"}`;
-
-        window.location.href = url;
-    }
-    function redirectToApproveList(name) {
-           const url = `/Admin/Index?page=${1}&pageSize=${10}&search=${""}&orderDate=${"des"}&filter=${""}&orderId=${name}`;
-    window.location.href = url;
-    }
-</script>
-<style>
-    @@media (max-width: 576px) {
-        #monthFilter, #userFilter, #updateFilter, #userFilterlog
-
-    {
-        min-width: 100% !important;
-    }
-
-    }
-</style>

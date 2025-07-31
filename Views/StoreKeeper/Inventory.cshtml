@@ -6,7 +6,7 @@
     ViewData["Title"] = "Inventory Overview";
     int currentPage = ViewBag.CurrentPage;
     int totalPages = ViewBag.TotalPages;
-    int totalItem = ViewBag.TotalItems;
+    int totalItem = ViewBag.TotalItems; // This variable is declared but not used in the provided code snippet.
     int pageSize = ViewBag.PageSize;
     string currentFilter = ViewBag.CurrentFilter ?? "all";
     string currentSearch = ViewBag.CurrentSearch ?? "";
@@ -17,103 +17,381 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Overview</title>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <title>myaLphabet</title>
+    <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://kit.fontawesome.com/YOUR_KIT_ID.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script> @* Added jQuery for consistency with dashboard and potential future use *@
     <style>
+        :root {
+            --primary-bg: #f8f9fa; /* Light grey for overall background */
+            --card-bg: #ffffff; /* White for content cards */
+            --text-color: #212529; /* Dark grey for general text */
+            --text-muted: #6c757d; /* Lighter grey for secondary text */
+            /* Theme Colors (Blue and Yellow accents) */
+            --accent-blue-bg: #e7f1ff; /* Light blue background for soft elements */
+            --accent-blue-text: #0d6efd; /* Strong blue for text/icons */
+            --accent-yellow-bg: #fff8e1; /* Light yellow background for soft elements */
+            --accent-yellow-text: #ffc107; /* Strong yellow for text/icons */
+            /* Other standard colors */
+            --green: #198754;
+            --red: #dc3545;
+            --orange: #fd7e14; /* Using a more Bootstrap-standard orange for warning/medium stock */
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            padding-top: 0rem; /* Add some top padding to the body */
+        }
+
+        .container-fluid-custom {
+            max-width: 98%; /* Slightly less than 100% to give some margin */
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        h2 {
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #004085; /* Navy Blue */
+        }
+
+        /* Card-like styling for the filter/action bar */
+        .filter-action-bar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            /* Layout is now handled by Bootstrap utility classes */
+        }
+
+            /* Form controls within the filter bar */
+            .filter-action-bar .form-control,
+            .filter-action-bar .form-select {
+                border-radius: 8px;
+                border-color: #dee2e6;
+            }
+
+            .filter-action-bar .btn {
+                border-radius: 8px;
+                /* Padding is now controlled by .btn-sm */
+                font-weight: 500;
+            }
+
+        /* Specific button colors */
+        .btn-primary {
+            background-color: var(--accent-blue-text);
+            border-color: var(--accent-blue-text);
+        }
+
+            .btn-primary:hover {
+                background-color: #0b5ed7; /* Darker blue on hover */
+                border-color: #0b5ed7;
+            }
+
+        .btn-success {
+            background-color: var(--green);
+            border-color: var(--green);
+        }
+
+            .btn-success:hover {
+                background-color: #157347;
+                border-color: #157347;
+            }
+
+        .btn-secondary {
+            background-color: var(--text-muted);
+            border-color: var(--text-muted);
+        }
+
+            .btn-secondary:hover {
+                background-color: #5c636a;
+                border-color: #5c636a;
+            }
+
+        .btn-warning {
+            background-color: var(--accent-yellow-text);
+            border-color: var(--accent-yellow-text);
+            color: var(--text-color); /* Ensure text is readable on yellow */
+        }
+
+            .btn-warning:hover {
+                background-color: #e0a800;
+                border-color: #e0a800;
+            }
+
+        /* Table Styling */
+        .table {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden; /* Ensures rounded corners apply to table content */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            margin-bottom: 2rem;
+        }
+
+            .table thead {
+                background-color: var(--accent-blue-bg); /* Light blue for table header */
+                color: var(--accent-blue-text); /* Blue text for header */
+            }
+
+            .table th {
+                font-weight: 600;
+                padding: 1rem;
+                border-bottom: 1px solid #dee2e6; /* Add subtle bottom border */
+            }
+
+            .table tbody tr {
+                transition: background-color 0.2s ease-in-out;
+            }
+
+                .table tbody tr:hover {
+                    background-color: #f0f0f0; /* Light hover effect */
+                }
+
+            .table td {
+                padding: 1rem;
+                vertical-align: middle;
+                border-top: 1px solid #dee2e6;
+            }
+
+        /* Progress Bar Styling */
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+
         .progress-bar {
             transition: width 0.5s ease-in-out;
+            border-radius: 5px; /* Apply border-radius to the bar itself */
         }
-        .container
-        {
-            max-width:100%;
+
+            /* Custom progress bar colors matching the theme */
+            .progress-bar.bg-danger {
+                background-color: var(--red) !important;
+            }
+
+            .progress-bar.bg-warning {
+                background-color: var(--orange) !important; /* Using a more distinct orange */
+            }
+
+            .progress-bar.bg-success {
+                background-color: var(--green) !important;
+            }
+
+        /* Action Buttons in table */
+        .table .btn-sm {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+        }
+
+        /* Pagination Styling */
+        .pagination .page-item .page-link {
+            border-radius: 8px;
+            margin: 0 0.25rem;
+            color: var(--accent-blue-text);
+            border-color: var(--accent-blue-text);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--accent-blue-text);
+            border-color: var(--accent-blue-text);
+            color: white;
+        }
+
+        .pagination .page-item .page-link:hover {
+            background-color: var(--accent-blue-bg);
+            border-color: var(--accent-blue-text);
+            color: var(--accent-blue-text);
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: var(--text-muted);
+            border-color: #dee2e6;
+            background-color: #e9ecef;
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            /* Responsive layout for the filter bar is now handled by Bootstrap classes */
+
+            .table-responsive {
+                border-radius: 12px; /* Apply border radius directly to responsive wrapper */
+                overflow-x: auto;
+            }
+
+            .table thead, .table tbody, .table tr, .table td, .table th {
+                display: block; /* Stack table elements for better responsiveness */
+            }
+
+                .table thead tr {
+                    position: absolute;
+                    top: -9999px;
+                    left: -9999px;
+                }
+
+            .table tr {
+                border: 1px solid #dee2e6;
+                margin-bottom: 1rem;
+                border-radius: 8px;
+            }
+
+            .table td {
+                border: none;
+                position: relative;
+                padding-left: 50%; /* Space for the label */
+                text-align: right; /* Align content to the right */
+            }
+
+                .table td::before {
+                    content: attr(data-label); /* Use data-label for content */
+                    position: absolute;
+                    left: 6px;
+                    width: 45%;
+                    padding-right: 10px;
+                    white-space: nowrap;
+                    text-align: left;
+                    font-weight: bold;
+                    color: var(--text-muted);
+                }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2 class="mb-3">📦 Inventory Overview</h2>
-        
-        <!-- Filters -->
-        <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-            <input type="text" id="searchInput" class="form-control" placeholder="Search stocks..." value="@currentSearch" style="max-width: 250px;">
-            <select id="filterDropdown" class="form-select" style="max-width: 200px;">
-                <option value="all" @@(currentFilter == "all" ? "selected" : "")>All</option>
-                <option value="red" @@(currentFilter == "red" ? "selected" : "")>🔴 Low Stock</option>
-                <option value="orange" @@(currentFilter == "orange" ? "selected" : "")>🟠 Medium Stock</option>
-                <option value="green" @@(currentFilter == "green" ? "selected" : "")>🟢 High Stock</option>
-            </select>
-            <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
-            <button class="btn btn-success" onclick="window.location.href='@Url.Action("Create", "StoreKeeper")'">Add New</button>
-            <button class="btn btn-secondary" @* onclick="window.location.href='@Url.Action("DownloadPdf", "Inventory")'" *@>
-                📄 Download Barcode PDF
-            </button>
+    <div class="container-fluid-custom">
+        <h2 class="mb-4">📦 Inventory Overview</h2>
+
+        <div class="filter-action-bar p-3 mb-4">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-6">
+                    <div class="row g-2">
+                        <div class="col-md-5">
+                            <input type="text" id="searchInput" class="form-control form-control-sm" placeholder="Search stocks..." value="@currentSearch">
+                        </div>
+                        <div class="col-md-auto">
+                            <select id="filterDropdown" class="form-select form-select-sm">
+                                <option value="all" @@(currentFilter= ="all" ? "selected" : "" )>All Stocks</option>
+                                <option value="red" @@(currentFilter= ="red" ? "selected" : "" )>🔴 Low Stock</option>
+                                <option value="orange" @@(currentFilter= ="orange" ? "selected" : "" )>🟠 Medium Stock</option>
+                                <option value="green" @@(currentFilter= ="green" ? "selected" : "" )>🟢 High Stock</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-auto ms-lg-auto">
+                    <div class="d-grid d-md-flex flex-wrap gap-2 justify-content-md-end">
+                        <button class="btn btn-primary btn-sm" onclick="applyFilters()">Apply Filters</button>
+                        <button class="btn btn-success btn-sm" onclick="window.location.href='@Url.Action("Create", "StoreKeeper")'">
+                            <i class="fas fa-plus-circle"></i> Add New Stock
+                        </button>
+                        @* <button class="btn btn-secondary btn-sm" onclick="downloadBarcodePdf()">
+                            📄 Download Barcode PDF
+                        </button> *@
+                        @* <button class="btn btn-warning btn-sm" onclick="document.getElementById('csvUploadInput').click()">
+                            <i class="fas fa-upload"></i> Upload CSV
+                        </button> *@
+                        @*   <form id="csvUploadForm" method="post" enctype="multipart/form-data" action="@Url.Action("UploadCsv", "Inventory")" class="d-none">
+                            <input type="file" id="csvUploadInput" name="file" accept=".csv" onchange="document.getElementById('csvUploadForm').submit();">
+                        </form> *@
+                        @if (TempData["Message"] != null)
+                        {
+                            <script>
+                                alert('@TempData["Message"]');
+                            </script>
+                        }
+                        <form method="post" action="@Url.Action("TriggerExport", "Inventory")">
+                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-file-export"></i> Export Current Data
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <table class="table table-bordered">
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Product Name</th>
-                    <th>Serial Number</th>
-                    <th>Unit Quantity</th>
-                    <th>QTY</th>
-                    <th>Stock Level</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>             
-                @foreach (var item in Model)
-                {
-                    var percentage = (item.Quantity / (float)item.MaxQuantity) * 100;
-                    var colorClass = percentage < 30 ? "bg-danger" : (percentage < 70 ? "bg-warning" : "bg-success");
-
+        <div class="table-responsive">
+            <table class="table table-hover">
+                @* Using table-hover for visual feedback *@
+                <thead class="table-light">
                     <tr>
-                        <td>@item.Id</td>
-                        <td>@item.Name</td>
-                        <td>@item.SerialNumber</td>
-                        <td>@item.Quantity (@item.UnitType)</td>
-                        <td>
-                            @((item.Quantity ?? 0)) / @(item.MaxQuantity ?? 0)
-                        </td>
-                        <td>
-                            <div class="progress" style="height: 10px; min-width: 100px;">
-                                <div class="progress-bar @colorClass" role="progressbar" data-percentage="@percentage"></div>
-                            </div>
-                        </td>
-                        <td>
-                            <button class="btn btn-primary btn-sm" onclick="window.location.href='@Url.Action("GetStockById", "StoreKeeper", new { id = item.Id })'">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteStock(@item.Id)">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </td>
+                        <th>ID</th>
+                        <th>Product Name</th>
+                        <th>Serial Number</th>
+                        <th>Unit Quantity</th>
+                        <th>QTY</th>
+                        <th>Stock Level</th>
+                        <th>Action</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No stocks found matching the criteria.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model)
+                        {
+                            var percentage = (item.Quantity / (float)item.MaxQuantity) * 100;
+                            var colorClass = percentage < 30 ? "bg-danger" : (percentage < 70 ? "bg-warning" : "bg-success");
 
-        <!-- Pagination -->
-        <nav aria-label="Page navigation example">
+                            <tr>
+                                <td data-label="ID">@item.Id</td>
+                                <td data-label="Product Name">@item.Name</td>
+                                <td data-label="Serial Number">@item.SerialNumber</td>
+                                <td data-label="Unit Quantity">@item.Quantity @(string.IsNullOrEmpty(item.UnitType) ? "" : $"({item.UnitType})")</td>
+                                <td data-label="QTY">
+                                    @(item.Quantity ?? 0) / @(item.MaxQuantity ?? 0)
+                                </td>
+                                <td data-label="Stock Level">
+                                    <div class="progress">
+                                        <div class="progress-bar @colorClass" role="progressbar" data-percentage="@percentage"></div>
+                                    </div>
+                                </td>
+                                <td data-label="Action">
+                                    <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
+                                        @* Centered actions on small screens *@
+                                        <button class="btn btn-primary btn-sm" onclick="window.location.href='@Url.Action("GetStockById", "StoreKeeper", new { id = item.Id })'" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteStock(@item.Id)" title="Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center mt-3">
                 @if (currentPage > 1)
                 {
                     <li class="page-item">
-                        <a class="page-link" href="@Url.Action("Inventory", new { page = currentPage - 1, pageSize = pageSize, filter = currentFilter, search = currentSearch })">&laquo;</a>
+                        <a class="page-link" href="@Url.Action("Inventory", new { page = currentPage - 1, pageSize = pageSize, filter = currentFilter, search = currentSearch })" aria-label="Previous">&laquo;</a>
                     </li>
                 }
                 @for (int i = 1; i <= totalPages; i++)
                 {
-                    if (i == 1 || i == totalPages || (i >= currentPage - 1 && i <= currentPage + 1))
+                    if (i == 1 || i == totalPages || (i >= currentPage - 1 && i <= currentPage + 1) || (totalPages > 5 && (i == 2 && currentPage > 3 || i == totalPages - 1 && currentPage < totalPages - 2)))
                     {
                         <li class="page-item @(i == currentPage ? "active" : "")">
                             <a class="page-link" href="@Url.Action("Inventory", new { page = i, pageSize = pageSize, filter = currentFilter, search = currentSearch })">@i</a>
                         </li>
                     }
-                    else if (i == currentPage - 2 || i == currentPage + 2)
+                    else if ((i == currentPage - 2 && currentPage > 3) || (i == currentPage + 2 && currentPage < totalPages - 2))
                     {
                         <li class="page-item disabled"><span class="page-link">...</span></li>
                     }
@@ -121,7 +399,7 @@
                 @if (currentPage < totalPages)
                 {
                     <li class="page-item">
-                        <a class="page-link" href="@Url.Action("Inventory", new { page = currentPage + 1, pageSize = pageSize, filter = currentFilter, search = currentSearch })">&raquo;</a>
+                        <a class="page-link" href="@Url.Action("Inventory", new { page = currentPage + 1, pageSize = pageSize, filter = currentFilter, search = currentSearch })" aria-label="Next">&raquo;</a>
                     </li>
                 }
             </ul>
@@ -130,37 +408,61 @@
 
     <script>
         function deleteStock(id) {
-            if (confirm("Are you sure you want to delete this stock?")) {
+            if (confirm("Are you sure you want to delete this stock? This action cannot be undone.")) {
                 fetch(`/Inventory/Delete/${id}`, {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" }
                 }).then(response => {
                     if (response.ok) {
-                        location.reload();
+                        alert("Stock deleted successfully!");
+                        location.reload(); // Reload the page to reflect changes
                     } else {
-                        alert("Failed to delete stock.");
+                        response.json().then(data => {
+                            alert(`Failed to delete stock: ${data.message || 'Unknown error.'}`);
+                        }).catch(() => {
+                            alert("Failed to delete stock. Please try again.");
+                        });
                     }
                 }).catch(error => console.error("Error:", error));
             }
         }
 
         function applyFilters() {
-            let searchValue = document.getElementById("searchInput").value;
+            let searchValue = document.getElementById("searchInput").value.trim();
             let filterValue = document.getElementById("filterDropdown").value;
-            window.location.href = `@Url.Action("Inventory")?page=1&pageSize=@pageSize&filter=${filterValue}&search=${searchValue}`;
+            window.location.href = `@Url.Action("Inventory")?page=1&pageSize=@pageSize&filter=${filterValue}&search=${encodeURIComponent(searchValue)}`;
         }
 
-        function updateProgressBars() {
+        function downloadBarcodePdf() {
+            // This needs to be an actual action on your server that generates the PDF.
+            // For now, it's a placeholder. You might want to make an AJAX call or
+            // redirect depending on how your PDF generation is handled.
+            alert("Generating Barcode PDF. This feature needs server-side implementation.");
+            // Example of a direct redirect (assuming your action handles the download):
+            // window.location.href = `@Url.Action("DownloadPdf", "Inventory")`;
+        }
+
+
+        // Animates the progress bars on page load
+        function animateProgressBars() {
             document.querySelectorAll(".progress-bar").forEach(bar => {
                 let finalWidth = bar.getAttribute("data-percentage");
-                bar.style.width = "0%";
+                bar.style.width = "0%"; // Start from 0
                 setTimeout(() => {
-                    bar.style.width = finalWidth + "%";
-                }, 200);
+                    bar.style.width = finalWidth + "%"; // Animate to final percentage
+                }, 100); // Small delay to ensure initial 0% render
             });
         }
-        document.addEventListener("DOMContentLoaded", updateProgressBars);
+
+        // Event listener for DOM content loaded
+        document.addEventListener("DOMContentLoaded", animateProgressBars);
+
+        // Optional: Trigger applyFilters on Enter key in search input
+        document.getElementById("searchInput").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                applyFilters();
+            }
+        });
     </script>
 </body>
 </html>
-

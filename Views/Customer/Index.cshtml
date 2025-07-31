@@ -1,4 +1,4 @@
-﻿@model List<Inventree_App.Models.Customer>
+﻿@* @model List<Inventree_App.Models.Customer>
 
 @{
     ViewData["Title"] = "Customer List";
@@ -117,3 +117,236 @@
         max-width:100%;
     }
 </style>
+ *@
+
+@model List<Inventree_App.Models.Customer>
+
+@{
+    ViewData["Title"] = "Customer List";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>myaLphabet</title>
+    <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .table thead {
+            background-color: #e9ecef; /* Lighter header for a softer look */
+            color: #495057;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        /* Responsive Card Layout for Mobile */
+        @@media (max-width: 767px) {
+            .table-responsive {
+                border: none;
+            }
+
+            .table thead {
+                display: none;
+            }
+
+            .table tbody, .table tr, .table td {
+                display: block;
+                width: 100%;
+            }
+
+            .table tr {
+                margin-bottom: 1rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.5rem;
+                padding: 1rem;
+            }
+
+            .table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border: none;
+                padding: 0.5rem 0;
+                text-align: right;
+            }
+
+                .table td::before {
+                    content: attr(data-label);
+                    font-weight: bold;
+                    text-align: left;
+                    margin-right: 1rem;
+                    flex-shrink: 0;
+                    color: #6c757d;
+                }
+
+                .table td.actions-cell {
+                    justify-content: center;
+                    padding-top: 1rem;
+                }
+
+                    .table td.actions-cell::before {
+                        display: none;
+                    }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold mb-0" style="color: #004085;">Customer Management</h2>
+            <a class="btn btn-primary" href="@Url.Action("Register", "Home")">
+                <i class="fas fa-plus me-2"></i>Add New Customer
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <input type="text" id="searchInput" class="form-control w-50" placeholder="Search customers by name, email, or role...">
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle mb-0" id="customerTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Created On</th>
+                            <th>Roles</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var customer in Model)
+                        {
+                            <tr data-id="@customer.Id">
+                                <td data-label="Name" class="editable fw-semibold" data-field="UserName">@customer.UserName</td>
+                                <td data-label="Email">@customer.Email</td>
+                                <td data-label="First Name" class="editable" data-field="FirstName">@customer.FirstName</td>
+                                <td data-label="Last Name" class="editable" data-field="LastName">@customer.LastName</td>
+                                <td data-label="Created On">@customer.CreatedOn.ToString()</td>
+                                <td data-label="Roles"><span class="badge bg-secondary">@customer.UserRoles</span></td>
+                                <td data-label="Actions" class="actions-cell">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <button class="edit-btn btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="save-btn btn btn-sm btn-success d-none" data-bs-toggle="tooltip" title="Save">
+                                            <i class="fas fa-save"></i>
+                                        </button>
+                                        <a href="@Url.Action("DeleteConfirmed", "Customer", new { id = customer.Id })"
+                                           class="btn btn-sm btn-outline-danger delete-btn"
+                                           onclick="return confirm('Are you sure you want to delete this customer?');" data-bs-toggle="tooltip" title="Delete">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Enable Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Client-side search functionality
+            const searchInput = document.getElementById('searchInput');
+            const table = document.getElementById('customerTable').getElementsByTagName('tbody')[0];
+            const rows = table.getElementsByTagName('tr');
+
+            searchInput.addEventListener('keyup', function() {
+                const filter = searchInput.value.toLowerCase();
+                for (let i = 0; i < rows.length; i++) {
+                    let cells = rows[i].getElementsByTagName('td');
+                    let found = false;
+                    for (let j = 0; j < cells.length; j++) {
+                        if (cells[j]) {
+                            if (cells[j].innerText.toLowerCase().indexOf(filter) > -1) {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (found) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
+            });
+
+            // In-line editing functionality
+            document.querySelectorAll(".edit-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    let row = this.closest("tr");
+                    row.querySelectorAll(".editable").forEach(cell => {
+                        let text = cell.innerText.trim();
+                        cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}" />`;
+                    });
+                    this.classList.add("d-none");
+                    row.querySelector(".save-btn").classList.remove("d-none");
+                });
+            });
+
+            document.querySelectorAll(".save-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    let row = this.closest("tr");
+                    let id = row.getAttribute("data-id");
+                    let updatedData = {};
+
+                    row.querySelectorAll(".editable").forEach(cell => {
+                        let input = cell.querySelector("input");
+                        if (input) {
+                            updatedData[cell.getAttribute("data-field")] = input.value;
+                            cell.innerText = input.value;
+                        }
+                    });
+
+                    this.classList.add("d-none");
+                    row.querySelector(".edit-btn").classList.remove("d-none");
+
+                    fetch(`/Customer/Update/${id}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(updatedData)
+                    })
+                    .then(response => {
+                        if(!response.ok) {
+                           console.error("Failed to update customer.");
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+                });
+            });
+        });
+    </script>
+</body>
+</html>

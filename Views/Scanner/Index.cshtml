@@ -1,4 +1,7 @@
 ﻿@{
+    Layout = "_Layout";
+}
+@{
     ViewBag.Title = "Barcode Scanner";
 }
 
@@ -7,23 +10,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>aLphabet-Connect</title>
+    <title>myaLphabet</title>
     <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <style>
+        /* This wrapper ensures the content is centered within the layout's main area */
+        .scanner-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            /* Adjust height to fill the content area, subtracting approx. navbar height */
+            min-height: calc(90vh - 60px);
+            padding: 1rem;
+        }
+
+        .scanner-card {
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: none;
+            width: 100%;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        #barcodeInput {
+            height: 3.2rem;
+            padding-left: 2.8rem; /* Make space for icon */
+        }
+
+        /* Styles for smooth appearance of result messages */
+        .result-box {
+            display: none; /* Hidden by default, controlled by jQuery */
+        }
+    </style>
 </head>
-<body class="d-flex flex-column justify-content-center align-items-center vh-100 bg-light">
-    <div class="container text-center">
-        <h2 class="mb-4 text-primary">Barcode Scanner</h2>
+<body>
+    <div class="scanner-wrapper">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold" style="color: #004085;">Barcode Scanner</h2>
+                        <p class="text-muted">Scan a product to view its details and update stock.</p>
+                    </div>
 
-        <div class="card shadow p-4" style="max-width: 400px;">
-            <input type="text" id="barcodeInput" class="form-control text-center mb-3" placeholder="Scan barcode here..." autofocus />
+                    <div class="card scanner-card p-4">
+                        <div class="input-wrapper">
+                            <i class="fas fa-barcode input-icon"></i>
+                            <input type="text" id="barcodeInput" class="form-control" placeholder="Scan barcode here..." autofocus />
+                        </div>
 
-            <div id="productDetails" class="alert alert-info mt-3 d-none">
-                <h5>Product Details</h5>
-                <p><strong>Name:</strong> <span id="productName"></span></p>
-                <p><strong>Serial No:</strong> <span id="productBarcode"></span></p>
-                <p><strong>Stock Quantity:</strong> <span id="productStock"></span></p>
+                        <div id="productDetails" class="alert alert-success mt-3 result-box">
+                            <h5 class="alert-heading">Success!</h5>
+                            <hr>
+                            <p class="mb-1"><strong>Name:</strong> <span id="productName"></span></p>
+                            <p class="mb-1"><strong>Serial No:</strong> <span id="productBarcode"></span></p>
+                            <p class="mb-0"><strong>Updated Stock:</strong> <span id="productStock"></span></p>
+                        </div>
+
+                        <div id="scanError" class="alert alert-danger mt-3 result-box">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -32,6 +93,11 @@
         $(document).ready(function () {
             let scanTimeout;
             $("#barcodeInput").focus();
+
+            // Always keep focus on the input for the scanner
+            $(document).on('click', function() {
+                $("#barcodeInput").focus();
+            });
 
             $("#barcodeInput").on("input", function () {
                 clearTimeout(scanTimeout);
@@ -46,6 +112,10 @@
             });
 
             function scanBarcode(barcode) {
+                // Hide previous messages before new scan
+                $('#productDetails').stop(true, true).fadeOut();
+                $('#scanError').stop(true, true).fadeOut();
+
                 $.ajax({
                     url: '@Url.Action("ScanAndReduceStock", "Scanner")',
                     type: 'POST',
@@ -56,19 +126,19 @@
                             $("#productName").text(response.product.name);
                             $("#productBarcode").text(response.product.serialNumber);
                             $("#productStock").text(response.product.stockQuantity);
-                            $("#productDetails").removeClass('d-none').fadeIn();
+                            // Show success message smoothly
+                            $("#productDetails").fadeIn();
                         } else {
-                            alert(response.message);
+                            // Show error message smoothly
+                            $("#scanError").text(response.message).fadeIn();
                         }
                     },
                     error: function () {
-                        alert("Error scanning barcode.");
+                        $("#scanError").text("Error connecting to the server.").fadeIn();
                     }
                 });
             }
         });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html>     
