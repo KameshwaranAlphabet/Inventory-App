@@ -108,7 +108,9 @@
                                 <td>@order.OrderedDate.ToString("dd-MMM-yyyy")</td>
                                 <td>@order.ItemsCount</td>
                                 <td class="text-center">
-                                    <span class="badge rounded-pill fs-6 text-bg-warning">@order.Status</span>
+                                    <span class="badge rounded-pill fs-6 @(order.Status == "Approved" ? "text-bg-success" : "text-bg-warning")">
+                                        @order.Status
+                                    </span>
                                 </td>
                             </tr>
                             <tr class="order-details d-none" id="details-@order.OrderId">
@@ -131,8 +133,16 @@
                                                     <td><input type="checkbox" class="form-check-input item-checkbox" data-itemid="@item.Id" data-orderid="@order.OrderId" /></td>
                                                     <td>@item.StockName</td>
                                                     <td>@item.Quantity</td>
-                                                    <td><span class="badge bg-info">@item.Status</span></td>
-                                                    <td><span class="badge bg-secondary">@item.State</span></td>
+                                                    <td>
+                                                        <span class="badge @(item.Status == "Rejected" ? "bg-danger" : "bg-info")">
+                                                            @item.Status
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge @(item.State == "Approved" ? "bg-success" : "bg-secondary")">
+                                                            @item.State
+                                                        </span>
+                                                    </td>
                                                 </tr>
                                             }
                                         </tbody>

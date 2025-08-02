@@ -54,7 +54,9 @@
                         <td>@order.OrderedDate.ToShortDateString()</td>
                         <td>@order.ItemsCount</td>
                         <td>
-                            <span class="badge bg-warning">@order.Status</span>
+                            <span class="badge @(order.Status == "Rejected" ? "bg-danger" : "bg-warning")">
+                                @order.Status
+                            </span>
                         </td>
                     </tr>
 
@@ -80,7 +82,15 @@
                                             <td>@item.StockName</td>
                                             <td>@item.OrderId</td>
                                             <td>@item.Quantity</td>
-                                            <td><span class="badge bg-info">@item.Status</span></td>
+                                            @{
+                                                string statusClass = item.Status == "Rejected" ? "bg-danger" :
+                                                item.Status == "Approved" ? "bg-success" :
+                                                item.Status == "Pending" ? "bg-warning" :
+                                                "bg-info";
+                                            }
+                                            <td>
+                                                <span class="badge @statusClass">@item.Status</span>
+                                            </td>
                                             <td><span class="badge bg-secondary">@item.State</span></td>
                                         </tr>
                                     }

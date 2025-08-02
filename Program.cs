@@ -23,6 +23,7 @@ namespace Inventree_App
                 options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
             ;
             builder.Services.AddScoped<ICustomerService, CustomerService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<BackupService>(); // Background service
             builder.Services.AddScoped<DatabaseHelper>();
             // Configure JWT Authentication

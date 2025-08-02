@@ -187,6 +187,9 @@ namespace Inventree_App.Controllers
             ViewData["UnitTypes"] = new SelectList(_context.UnitTypes, "Id", "UnitName");
 
             ViewData["SubUnitTypes"] = new SelectList(_context.SubUnitTypes, "Id", "SubUnitName");
+            var userName = GetCurrentUser();
+            //var test = (((stock.UnitCapacity ?? 0) * stock.UnitQuantity) + stock.Quantity);
+            ViewBag.UserName = userName.UserName;
 
 
             return View("AddStock"); // Matches @model List<Stocks>           
@@ -255,6 +258,7 @@ namespace Inventree_App.Controllers
         {
             var userName = GetCurrentUser();
             //var test = (((stock.UnitCapacity ?? 0) * stock.UnitQuantity) + stock.Quantity);
+            ViewBag.UserName = userName.UserName;
 
             if (ModelState.IsValid)
             {

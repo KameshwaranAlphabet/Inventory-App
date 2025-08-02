@@ -24,13 +24,15 @@ namespace Inventree_App.Controllers
         private readonly ApplicationContext _context;
         private readonly ICustomerService _customerService;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
-        public OrderController(DatabaseHelper dbHelper, ApplicationContext context, ICustomerService customerService , IMapper mapper)
+        public OrderController(DatabaseHelper dbHelper, ApplicationContext context, ICustomerService customerService , IMapper mapper, IEmailService emailService)
         {
             _dbHelper = dbHelper;
             _context = context;
             _customerService = customerService;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         public List<StockViewModel> GetFilteredProducts(string search, int? locationId, int page, int pageSize)
@@ -418,7 +420,7 @@ namespace Inventree_App.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public IActionResult UpdateOrderAndItems([FromBody] OrderAndItemsUpdateRequest request)
+        public async Task<IActionResult> UpdateOrderAndItems([FromBody] OrderAndItemsUpdateRequest request)
         {
             var user = GetCurrentUser();
             if (user == null)
@@ -440,10 +442,23 @@ namespace Inventree_App.Controllers
                 foreach (var order in ordersToUpdate)
                 {
                     order.Status = request.Status;
+
+                    var customer = _context.Customer.FirstOrDefault(c => c.Id == order.UserId);
+                    if (customer != null && !string.IsNullOrEmpty(customer.Email))
+                    {
+                        string subject = $"Your Order #{order.Id} has been {request.Status}";
+                        string body = $"<p>Hello {customer.FirstName},</p>" +
+                                      $"<p>Your order <strong>#{order.Id}</strong> has been <b>{request.Status}</b> by admin.</p>" +
+                                      $"<p>Thank you,<br/>Inventory Team</p>";
+
+                        await _emailService.SendEmailAsync(customer.Email, subject, body);
+                    }
                 }
+
                 _context.Order.UpdateRange(ordersToUpdate);
             }
-            var logs = new List<Logs>(); // List to store log entries
+
+            var logs = new List<Logs>();
 
             // Update Order Items
             if (request.OrderItemIds != null && request.OrderItemIds.Count > 0)
@@ -452,9 +467,10 @@ namespace Inventree_App.Controllers
                 foreach (var item in itemsToUpdate)
                 {
                     item.Status = request.Status;
+
                     var order = _context.Order.FirstOrDefault(x => x.Id == item.OrderId);
                     var userName = _context.Customer.FirstOrDefault(x => x.Id == order.UserId);
-                    // If status is "Completed", log it
+
                     if (request.Status == OrderStatus.Approved.ToString())
                     {
                         logs.Add(new Logs
@@ -467,8 +483,10 @@ namespace Inventree_App.Controllers
                         });
                     }
                 }
+
                 _context.OrderItem.UpdateRange(itemsToUpdate);
             }
+
             _context.Logs.AddRange(logs);
             _context.SaveChanges();
 

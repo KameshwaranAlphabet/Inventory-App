@@ -65,7 +65,19 @@
             border-left: none;
             padding-left: 20px;
         }
+        /* Hide logo when sidebar is collapsed */
+        body.sidebar-collapsed .sidebar-logo {
+            display: none;
+        }
 
+        /* Disable hover effect when sidebar is collapsed */
+        body.sidebar-collapsed .sidebar-nav .nav-link:hover {
+            background-color: transparent !important;
+            color: inherit !important;
+            border-left: none !important;
+            padding-left: 20px !important;
+            cursor: default;
+        }
         /* General nav link styles */
         .sidebar-nav .nav-link {
             display: flex;

@@ -642,5 +642,25 @@ namespace Inventree_App.Controllers
             }
             return RedirectToAction("SubUnitTypes");
         }
+
+        [HttpPost]
+        public async Task<IActionResult> SendApprovalEmail(string email, string indentNumber)
+        {
+            var emailService = new EmailService();
+            string subject = "Your Indent has been Approved";
+            string body = $"<p>Your indent <strong>#{indentNumber}</strong> has been approved by the admin.</p>";
+
+            try
+            {
+                await emailService.SendEmailAsync(email, subject, body);
+                TempData["Message"] = "Approval email sent successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Failed to send email: {ex.Message}";
+            }
+
+            return RedirectToAction("Index"); // or any page you want to return to
+        }
     }
 }
