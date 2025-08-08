@@ -74,6 +74,13 @@ namespace Inventree_App
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=31536000");
+                }
+            });
 
             // Apply migrations automatically
             using (var scope = app.Services.CreateScope())
