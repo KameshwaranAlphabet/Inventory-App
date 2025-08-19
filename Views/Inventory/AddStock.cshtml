@@ -9,14 +9,9 @@
     <link rel="icon" type="image/x-icon" href="/Images/favicon.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-        /* Custom styles for the new theme */
         .text-navy {
-            color: #000080; /* Navy Blue color */
+            color: #000080; /* Navy Blue */
         }
-
-   /*      .card-custom-border {
-            border-top: 5px solid #ffc107; /* Bootstrap's warning yellow for a theme accent */
-        } */
     </style>
 </head>
 <body>
@@ -24,7 +19,11 @@
         <div class="card p-4 shadow-sm card-custom-border">
             <h2 class="text-center text-navy fw-bold">@(Model?.Id > 0 ? "Edit Stock" : "Add New Stock")</h2>
 
-            <form method="post" asp-action="@(Model?.Id > 0 ? "Edit" : "Create")" asp-controller="Inventory">
+            <form method="post"
+                  asp-action="@(Model?.Id > 0 ? "Edit" : "Create")"
+                  asp-controller="Inventory"
+                  enctype="multipart/form-data">
+
                 @if (Model?.Id > 0)
                 {
                     <input type="hidden" asp-for="Id" />
@@ -60,12 +59,12 @@
                     @* <div class="mb-3 col-md-6">
                             <label asp-for="UnitQuantity" class="form-label">Unit Quantity</label>
                             <input type="number" class="form-control" asp-for="UnitQuantity" placeholder="Enter quantity" required>
-                        </div>
+                    </div>
                     *@
                     @* <div class="mb-3 col-md-6">
                             <label asp-for="UnitCapacity" class="form-label">Unit Capacity</label>
                             <input type="number" class="form-control" asp-for="UnitCapacity" placeholder="Enter capacity" required>
-                        </div>
+                    </div>
                     *@
                     @* <div class="mb-3 col-md-6">
                             <label asp-for="SubUnitType" class="form-label">Sub Unit Type</label>
@@ -77,18 +76,50 @@
                     <div class="mb-3 col-md-6">
                         <label asp-for="Quantity" class="form-label">Quantity</label>
                         <input type="number" class="form-control" asp-for="Quantity" placeholder="Enter quantity" required>
+                        </div>
+
+                    <div class="mb-3 col-md-6">
+                        <label asp-for="ImageUrl" class="form-label">Upload Image</label>
+                        <input type="file" class="form-control" asp-for="ImageUrl" name="ImageUrl">
                     </div>
+
+                    @if (Model != null && !string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <div class="mb-3 col-12">
+                            <label class="form-label">Present Image</label>
+                            <div>
+                                <img src="@Model.ImageUrl" class="img-thumbnail" style="max-width: 200px;" alt="Current Stock Image" />
+                            </div>
+                        </div>
+                    }
                 </div>
 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-3">
                     <button type="submit" class="btn btn-primary px-4">@(Model?.Id > 0 ? "Update" : "Save")</button>
                     <a asp-action="Index" class="btn btn-warning text-dark px-4">Back to List</a>
                 </div>
-
             </form>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelector('input[type="file"]').addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const allowedTypes = ['image/jpeg', 'image/png'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert("Only JPG and PNG files are allowed.");
+                    this.value = "";
+                    return;
+                }
+                if (file.size > 50 * 1024) { // 200 KB
+                    alert("File size must be less than 50 KB.");
+                    this.value = "";
+                    return;
+                }
+            }
+        });
+    </script>
 </body>
 </html>

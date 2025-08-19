@@ -324,6 +324,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>ID</th>
+                        <th>Image</th>
                         <th>Product Name</th>
                         <th>Serial Number</th>
                         <th>Unit Quantity</th>
@@ -343,11 +344,20 @@
                     {
                         foreach (var item in Model)
                         {
-                            var percentage = (item.Quantity / (float)item.MaxQuantity) * 100;
-                            var colorClass = percentage < 30 ? "bg-danger" : (percentage < 70 ? "bg-warning" : "bg-success");
+                            var percentage = (item.MaxQuantity ?? 0) > 0 && item.Quantity.HasValue
+                            ? (item.Quantity.Value / (float)item.MaxQuantity.Value) * 100
+                            : 0f; 
+                                var colorClass = percentage < 30 ? "bg-danger" : (percentage < 70 ? "bg-warning" : "bg-success");
+                            var imageUrl = string.IsNullOrEmpty(item.ImageUrl)
+                            ? Url.Content("~/Images/favicon.png")  // Default image path
+                            : Url.Content(item.ImageUrl);           // Product image path
 
                             <tr>
                                 <td data-label="ID">@item.Id</td>
+                                <!-- Product Image -->
+                                <td data-label="Image">
+                                    <img src="@imageUrl" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+                                </td>
                                 <td data-label="Product Name">@item.Name</td>
                                 <td data-label="Serial Number">@item.SerialNumber</td>
                                 <td data-label="Unit Quantity">@item.Quantity @(string.IsNullOrEmpty(item.UnitType) ? "" : $"({item.UnitType})")</td>

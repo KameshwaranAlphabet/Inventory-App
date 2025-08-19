@@ -77,7 +77,12 @@ public class DashboardController : Controller
 
         foreach (var s in allstocks)
         {
-            float? percentage = (s.Quantity / (float)s.MaxQuantity) * 100;
+            float? percentage = null;
+
+            if (s.Quantity.HasValue && s.MaxQuantity.HasValue && s.MaxQuantity.Value != 0)
+            {
+                percentage = (s.Quantity.Value / (float)s.MaxQuantity.Value) * 100;
+            }
 
             if (percentage < 30)
             {

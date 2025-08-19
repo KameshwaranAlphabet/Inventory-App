@@ -23,5 +23,6 @@ namespace Inventree_App.Models
         public int? UnitQuantity { get; set; }
         public int? UnitCapacity { get; set; }
         public string? SubUnitType { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }

@@ -21,6 +21,7 @@ using Image = iTextSharp.text.Image;
 using Document = iTextSharp.text.Document;
 using OfficeOpenXml;
 using static iTextSharp.text.pdf.AcroFields;
+using Inventree_App.Migrations;
 
 
 namespace Inventree_App.Controllers
@@ -110,7 +111,8 @@ namespace Inventree_App.Controllers
                     a.UnitQuantity,
                     a.SerialNumber,
                     UnitType = _context.UnitTypes.Where(x => x.Id.ToString() == a.UnitType).Select(x => x.UnitName).FirstOrDefault(),
-                    SubUnitType = _context.SubUnitTypes.Where(x => x.Id.ToString() == a.SubUnitType).Select(x => x.SubUnitName).FirstOrDefault()
+                    SubUnitType = _context.SubUnitTypes.Where(x => x.Id.ToString() == a.SubUnitType).Select(x => x.SubUnitName).FirstOrDefault(),
+                    a.ImageUrl
                 })
                 .ToList();
 
@@ -125,7 +127,8 @@ namespace Inventree_App.Controllers
                 UnitQuantity = a.UnitQuantity,
                 SerialNumber = a.SerialNumber,
                 UnitType = a.UnitType ?? "",  // Default value if null
-                SubUnitType = a.SubUnitType ?? ""
+                SubUnitType = a.SubUnitType ?? "",
+                ImageUrl = a.ImageUrl
             }).ToList();
 
             ViewBag.TotalItems = totalItems;
@@ -254,29 +257,59 @@ namespace Inventree_App.Controllers
         //    return RedirectToAction("Index");
         //}
         [HttpPost]
-        public IActionResult Create(Stocks stock)
+        public IActionResult Create(Stocks stock, IFormFile ImageUrl)
         {
             var userName = GetCurrentUser();
-            //var test = (((stock.UnitCapacity ?? 0) * stock.UnitQuantity) + stock.Quantity);
             ViewBag.UserName = userName.UserName;
+
+            // ===== Image Validation =====
+            if (ImageUrl != null && ImageUrl.Length > 0)
+            {
+                var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+
+                if (!allowedTypes.Contains(ImageUrl.ContentType))
+                {
+                    ModelState.AddModelError("ImageUrl", "Only JPG, PNG, GIF, and WEBP images are allowed.");
+                }
+
+                if (ImageUrl.Length > 200 * 1024) // 200 KB
+                {
+                    ModelState.AddModelError("ImageUrl", "Image size must be less than 200 KB.");
+                }
+            }
 
             if (ModelState.IsValid)
             {
                 stock.CreatedOn = DateTime.Now;
                 stock.Email = userName.Email;
-                //stock.UnitType = _context.UnitTypes.Where(x => x.Id == int.Parse(stock.UnitType)).Select(x => x.UnitName).First();
-                //stock.SubUnitType = _context.SubUnitTypes.Where(x => x.Id == int.Parse(stock.SubUnitType)).Select(x => x.SubUnitName).First();
-                stock.MaxQuantity =  stock.Quantity;
-            
+                stock.MaxQuantity = stock.Quantity;
+
+                // ===== Save Image if Valid =====
+                if (ImageUrl != null && ImageUrl.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Images", "Stocks");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageUrl.FileName);
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        ImageUrl.CopyTo(fileStream);
+                    }
+
+                    stock.ImageUrl = "/Images/Stocks/" + fileName; // Save relative path
+                }
+
                 // Add stock to database
                 _context.Stocks.Add(stock);
                 _context.SaveChanges();
 
-                // Generate Barcode based on ID
-                stock.SerialNumber = $"STK{stock.Id:D6}";  // Example: STK000123
-                //stock.Barcode = GenerateBarcodeImage(stock.SerialNumber);
-
-                // Update stock with barcode details
+                // Generate Serial Number
+                stock.SerialNumber = $"STK{stock.Id:D6}";
                 _context.Stocks.Update(stock);
                 _context.SaveChanges();
 
@@ -386,10 +419,11 @@ namespace Inventree_App.Controllers
         //}
 
         [HttpPost]
-        public IActionResult Edit(int id, Stocks updatedStock)
+        public IActionResult Edit(int id, Stocks updatedStock, IFormFile ImageUrl)
         {
-            if (ModelState.IsValid)
+            if (id>0)
             {
+                
                 var stock = _context.Stocks.Find(id);
                 if (stock == null)
                 {
@@ -398,6 +432,29 @@ namespace Inventree_App.Controllers
 
                 var user = GetCurrentUser(); // Get current user details
 
+                if (ImageUrl != null && ImageUrl.Length > 0)
+                {
+                    // Example: Save image in wwwroot/images/stocks
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(ImageUrl.FileName);
+                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/stocks");
+
+                    if (!Directory.Exists(uploadPath))
+                        Directory.CreateDirectory(uploadPath);
+
+                    var filePath = Path.Combine(uploadPath, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        ImageUrl.CopyTo(stream);
+                    }
+
+                    // If you store only path in DB
+                  var imageUrl =   updatedStock.ImageUrl = "/images/stocks/" + fileName;
+                    //changesMade = true;
+                    //logDetails += $"Image updated, ";
+                    stock.ImageUrl = imageUrl;
+                    _context.Stocks.Update(stock);
+                    _context.SaveChanges();
+                }
                 // Capture old values before updating
                 var oldStockData = new
                 {
@@ -507,9 +564,9 @@ namespace Inventree_App.Controllers
                     _context.Logs.Add(log);
                     _context.SaveChanges();
                 }
-
+           
                 return RedirectToAction("Index");
-            }
+        }
 
             return View(updatedStock);
         }
