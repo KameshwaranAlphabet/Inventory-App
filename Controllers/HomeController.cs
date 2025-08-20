@@ -96,24 +96,82 @@ namespace Inventree_App.Controllers
         //    ViewBag.SuccessMessage = "Account created successfully! Please log in.";
         //    return RedirectToAction("Index");
         //}
+        //[HttpPost]
+        //public IActionResult Register(string firstName, string lastName, string username, string password, string confirmPassword, string email,string userroles)
+        //{
+        //    int customerCount = _context.Customer.Count();
+
+        //    if (password != confirmPassword)
+        //    {
+        //        ModelState.AddModelError("ConfirmPassword", "Passwords do not match!");
+        //        if(customerCount == 0)
+        //            return View("Register");
+
+        //        return View("SignUp");
+        //    }
+
+        //    if (_context.Customer.Any(u => u.Email == email))
+        //    {
+        //        ModelState.AddModelError("Email", "Email already in use!");
+        //        return View("SignUp");
+        //    }
+
+        //    string hashedPassword = HashPassword(password);
+
+        //    var user = new Customer
+        //    {
+        //        FirstName = firstName,
+        //        LastName = lastName,
+        //        UserName = username,
+        //        Email = email,
+        //        Password = hashedPassword,
+        //        CreatedOn = DateTime.Now,
+        //        UserRoles = userroles
+        //    };
+
+        //    _context.Customer.Add(user);
+        //    _context.SaveChanges();
+
+        //    int customer = _context.Customer.Count();
+
+        //    if (customer == 1)
+        //        return View("Index");
+
+        //    return RedirectToAction("Index", "Customer");
+        //}
         [HttpPost]
-        public IActionResult Register(string firstName, string lastName, string username, string password, string confirmPassword, string email,string userroles)
+        public IActionResult Register( string firstName,string lastName,string username,string password,string confirmPassword,string email,string userroles,IFormFile image)
         {
             int customerCount = _context.Customer.Count();
 
             if (password != confirmPassword)
             {
                 ModelState.AddModelError("ConfirmPassword", "Passwords do not match!");
-                if(customerCount == 0)
-                    return View("Register");
-
-                return View("SignUp");
+                return customerCount == 0 ? View("Register") : View("SignUp");
             }
 
             if (_context.Customer.Any(u => u.Email == email))
             {
                 ModelState.AddModelError("Email", "Email already in use!");
                 return View("SignUp");
+            }
+
+            string imagePath = null;
+            if (image != null && image.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    image.CopyTo(stream);
+                }
+
+                imagePath = "/uploads/" + uniqueFileName; // Relative path for later use
             }
 
             string hashedPassword = HashPassword(password);
@@ -126,18 +184,14 @@ namespace Inventree_App.Controllers
                 Email = email,
                 Password = hashedPassword,
                 CreatedOn = DateTime.Now,
-                UserRoles = userroles
+                UserRoles = userroles,
+                Image = imagePath // Save image path (make sure your Customer model has this property)
             };
 
             _context.Customer.Add(user);
             _context.SaveChanges();
 
-            int customer = _context.Customer.Count();
-
-            if (customer == 1)
-                return View("Index");
-    
-            return RedirectToAction("Index", "Customer");
+            return _context.Customer.Count() == 1 ? View("Index") : RedirectToAction("Index", "Customer");
         }
 
         [HttpPost]
@@ -196,6 +250,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
 
             ViewBag.UserName = userName.UserName;
+            ViewBag.UserImage = userName.Image;
             return View("SignUp");
         }
         /// <summary>

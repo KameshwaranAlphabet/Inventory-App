@@ -55,6 +55,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
 
             var stocks = _context.Stocks.AsQueryable();
             var lowstocks = new List<Stocks>(); // Assuming Stock is your model class
@@ -120,7 +121,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
-
+            ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
             var query = _context.Order.AsQueryable();
 
             // Search Filter (By Customer Name or Order ID)
@@ -196,6 +197,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
 
             ViewBag.UserName = userName.UserName;
+            ViewBag.UserImage = userName.Image;
             ViewBag.CurrentFilter = filter;
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentPage = page;
@@ -309,6 +311,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
 
             ViewBag.UserName = userName.UserName;
+            ViewBag.UserImage = userName.Image;
             return View("Scanning");
         }
         private Customer GetCurrentUser()
@@ -335,7 +338,7 @@ namespace Inventree_App.Controllers
             ViewData["SubUnitTypes"] = new SelectList(_context.SubUnitTypes, "Id", "SubUnitName");
             var userName = GetCurrentUser();
             ViewBag.UserName = userName.UserName;
-
+            ViewBag.UserImage = userName.Image;
             return View("AddStock"); // Matches @model List<Stocks>           
         }
 
@@ -474,6 +477,7 @@ namespace Inventree_App.Controllers
         {
             var userName = GetCurrentUser();
             ViewBag.UserName = userName.UserName;
+            ViewBag.UserImage = userName.Image;
 
             using (var connection = new MySqlConnection(_connectionString))
             {
@@ -670,6 +674,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
 
             // Base query to fetch categories and count stocks
             var categoriesQuery = _context.Categories.Select(category => new CategoryViewModel
@@ -778,7 +783,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
-
+            ViewBag.UserImage = user.Image;
             // Base query to get categories and stock counts
             var categoriesQuery = _context.Location.Select(category => new LocationViewModel
             {
@@ -968,7 +973,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
-
+            ViewBag.UserImage = user.Image;
             // Start with base query
             var query = _context.UnitTypes.AsQueryable();
 
@@ -1031,6 +1036,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = user.Image;
 
             // Start with base query
             var query = _context.SubUnitTypes.AsQueryable();

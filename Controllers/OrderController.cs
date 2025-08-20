@@ -93,6 +93,8 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
             }
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
+
             ViewData["Locations"] = new SelectList(_context.Categories, "Id", "CategoryName");
 
             var productsQuery = GetFilteredProducts(search, locationId, page, pageSize);
@@ -125,6 +127,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
             }
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
             var stocks = _context.CartItem.Where(x=>x.UserId == user.Id && x.Quantity > 0).ToList();
 
             var test = _mapper.Map<List<CartItemDto>>(stocks);
@@ -170,6 +173,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
             }
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
             var cart = _context.CartItem.FirstOrDefault(x => x.UserId == user.Id && x.StockId == request.StockId && x.Quantity > 0);
             if (cart!=null)
             {
@@ -326,7 +330,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
             }
             ViewBag.UserName = user.UserName;
-
+            ViewBag.UserImage = user.Image;
             // Base query for filtering orders
             var ordersQuery = _context.Order
                 .Where(o => o.UserId == user.Id)
@@ -391,6 +395,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
 
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = user.Image;
             var orderItem =  _context.OrderItem.Where(x=>x.OrderId == orderId).ToList();
 
             if (orderItem == null)
@@ -428,6 +433,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
             }
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = user.Image;
 
             if ((request.OrderIds == null || request.OrderIds.Count == 0) &&
                 (request.OrderItemIds == null || request.OrderItemIds.Count == 0))
@@ -503,6 +509,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Login", "Account");
             }
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = user.Image;
             if ((request.OrderIds == null || request.OrderIds.Count == 0) &&
                 (request.OrderItemIds == null || request.OrderItemIds.Count == 0))
             {

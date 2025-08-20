@@ -47,6 +47,7 @@ public class DashboardController : Controller
     {
         var user = GetCurrentUser();
         ViewBag.UserName = user.UserName;
+        ViewBag.UserImage = user.Image;
 
         var stocks = _context.Stocks.AsQueryable();
         //foreach (var s in stocks)

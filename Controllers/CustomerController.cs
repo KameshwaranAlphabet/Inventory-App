@@ -35,6 +35,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = user.Image;
 
             var customers = _context.Customer.ToList();
             return View("Index",customers);
@@ -53,30 +54,49 @@ namespace Inventree_App.Controllers
 
         // POST: Edit Customer
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Customer customer)
+        public async Task<IActionResult> Edit(int id, Customer customer, IFormFile? imageFile)
         {
             if (id != customer.Id)
             {
                 return BadRequest();
             }
 
-            var existingCustomer = _context.Customer.Find(id);
+            var existingCustomer = await _context.Customer.FindAsync(id);
             if (existingCustomer == null)
             {
                 return NotFound();
             }
 
+            // Update text fields
             existingCustomer.UserName = customer.UserName;
-            existingCustomer.Email = customer.Email;
             existingCustomer.LastName = customer.LastName;
             existingCustomer.FirstName = customer.FirstName;
 
+            // Handle image upload
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(imageFile.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await imageFile.CopyToAsync(stream);
+                }
+
+                // Save the relative path
+                existingCustomer.Image = "/Uploads/" + fileName;
+            }
+
             _context.Update(existingCustomer);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
+
 
         // GET: Delete Customer Confirmation
         public IActionResult Delete(int id)

@@ -46,6 +46,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Lab");
 
             ViewBag.UserName = userName.UserName;
+            ViewBag.UserImage = userName.Image;
             ViewBag.CurrentFilter = filter;
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentPage = page;
@@ -96,7 +97,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Lab");
 
             ViewBag.UserName = userName.UserName;
-
+            ViewBag.UserImage = userName.Image;
             ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
 
             ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");
@@ -193,6 +194,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
 
             ViewBag.UserName = userName.UserName;
+            ViewBag.UserImage = userName.Image;
             ViewBag.CurrentFilter = filter;
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentPage = page;
@@ -245,7 +247,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
 
             ViewBag.UserName = userName.UserName;
-
+            ViewBag.UserImage = userName.Image;
             //ViewData["Locations"] = new SelectList(_context.Location, "Id", "LocationName");
 
             //ViewData["Categories"] = new SelectList(_context.Categories, "Id", "CategoryName");

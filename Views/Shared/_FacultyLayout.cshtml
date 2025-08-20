@@ -216,12 +216,19 @@
                     <span class="fw-bold">@ViewBag.UserName</span>
                 </div> *@
                 <div class="ms-auto d-flex align-items-center user-info">
-                    <div id="user-avatar"
-                         style="width:40px;height:40px;color:white;
-                         display:flex;align-items:center;justify-content:center;
-                         border-radius:50%;font-weight:bold;">
-                </div>
-                  <span id="user-name" class="fw-bold ms-2">@ViewBag.UserName</span>
+                    @if (!string.IsNullOrEmpty(ViewBag.UserImage as string))
+                    {
+                        <img src="@Url.Content(ViewBag.UserImage)" alt="User Image" class="user-image me-2" />
+                    }
+                    else
+                    {
+                        <div id="user-avatar"
+                             style="width:40px;height:40px;color:white;
+                                display:flex;align-items:center;justify-content:center;
+                                border-radius:50%;font-weight:bold;" class="me-2">
+                        </div>
+                    }
+                    <span id="user-name" class="fw-bold">@ViewBag.UserName</span>
                 </div>
             </header>
             <main role="main" class="container-fluid p-4">
@@ -239,17 +246,19 @@
         }
     </script>
     <script>
-        // Get initials from name
+        const desktopToggleButton = document.getElementById('desktop-toggle-btn');
+        if (desktopToggleButton) {
+            desktopToggleButton.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-collapsed');
+            });
+        }
+
         function getInitials(name) {
             if (!name) return "";
             let words = name.trim().split(/\s+/);
-            if (words.length === 1) {
-                return words[0].charAt(0).toUpperCase(); // Single name → first letter only
-            }
-            return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+            return words.length === 1 ? words[0][0].toUpperCase() : (words[0][0] + words[words.length - 1][0]).toUpperCase();
         }
 
-        // Generate consistent color from name
         function getColorFromName(name) {
             if (!name) return "#999";
             let hash = 0;
@@ -259,22 +268,17 @@
             let r = (hash & 0xFF0000) >> 16;
             let g = (hash & 0x00FF00) >> 8;
             let b = hash & 0x0000FF;
-
-            // Keep colors in mid-bright range
-            r = (r % 128) + 64;
-            g = (g % 128) + 64;
-            b = (b % 128) + 64;
-
-            return `rgb(${r},${g},${b})`;
+            return `rgb(${(r % 128) + 64}, ${(g % 128) + 64}, ${(b % 128) + 64})`;
         }
 
-        // Apply initials + background color
         document.addEventListener("DOMContentLoaded", function () {
-            let name = document.getElementById("user-name").textContent.trim();
-            let avatar = document.getElementById("user-avatar");
+            const name = document.getElementById("user-name").textContent.trim();
+            const avatarDiv = document.getElementById("user-avatar");
 
-            avatar.textContent = getInitials(name);
-            avatar.style.backgroundColor = getColorFromName(name);
+            if (avatarDiv) {
+                avatarDiv.textContent = getInitials(name);
+                avatarDiv.style.backgroundColor = getColorFromName(name);
+            }
         });
     </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

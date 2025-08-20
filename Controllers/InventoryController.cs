@@ -74,6 +74,7 @@ namespace Inventree_App.Controllers
                 return RedirectToAction("Index", "Home");
 
             ViewBag.UserName = userName.UserName;
+            ViewBag.UserImage = userName.Image;
             ViewBag.CurrentFilter = filter;
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentPage = page;
@@ -193,7 +194,7 @@ namespace Inventree_App.Controllers
             var userName = GetCurrentUser();
             //var test = (((stock.UnitCapacity ?? 0) * stock.UnitQuantity) + stock.Quantity);
             ViewBag.UserName = userName.UserName;
-
+            ViewBag.UserImage = userName.Image;
 
             return View("AddStock"); // Matches @model List<Stocks>           
         }
@@ -261,7 +262,7 @@ namespace Inventree_App.Controllers
         {
             var userName = GetCurrentUser();
             ViewBag.UserName = userName.UserName;
-
+            ViewBag.UserImage = userName.Image;
             // ===== Image Validation =====
             if (ImageUrl != null && ImageUrl.Length > 0)
             {
@@ -598,7 +599,7 @@ namespace Inventree_App.Controllers
         {
             var userName = GetCurrentUser();
             ViewBag.UserName = userName.UserName;
-
+            ViewBag.UserImage = userName.Image;
             using (var connection = new MySqlConnection(_connectionString))
             {
                 List<string> columnNames = connection.Query<string>("SHOW COLUMNS FROM stocks").ToList();

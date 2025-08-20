@@ -100,6 +100,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
 
             var query = _context.Order.AsQueryable();
 
@@ -158,6 +159,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
 
             var query = _context.Order.AsQueryable();
 
@@ -219,6 +221,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
 
             var categoriesQuery = _context.Categories
                 .Where(category => string.IsNullOrEmpty(search) || category.CategoryName.Contains(search))
@@ -320,6 +323,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = user.Image;
 
             // Base query to get categories and stock counts
             var categoriesQuery = _context.Location.Select(category => new LocationViewModel
@@ -519,6 +523,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
+            ViewBag.UserImage = user.Image;
 
             // Start with base query
             var query = _context.UnitTypes.AsQueryable();
@@ -582,7 +587,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
-
+            ViewBag.UserImage = user.Image;
             // Start with base query
             var query = _context.SubUnitTypes.AsQueryable();
 

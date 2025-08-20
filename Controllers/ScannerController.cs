@@ -43,7 +43,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
-
+            ViewBag.UserImage = user.Image;
             return View("Index");
         }
 
@@ -57,7 +57,7 @@ namespace Inventree_App.Controllers
         {
             var user = GetCurrentUser();
             ViewBag.UserName = user.UserName;
-
+            ViewBag.UserImage = user.Image;
             if (string.IsNullOrEmpty(request.Barcode))
             {
                 return BadRequest(new { success = false, error = "Invalid barcode." });
