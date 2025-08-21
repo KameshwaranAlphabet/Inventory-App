@@ -46,6 +46,8 @@ public class DashboardController : Controller
     public IActionResult Index(string filterType = "All", string statusFilter = "All", int page = 1, int pageSize = 10)
     {
         var user = GetCurrentUser();
+        if (user == null)
+            return RedirectToAction("Index", "Home");
         ViewBag.UserName = user.UserName;
         ViewBag.UserImage = user.Image;
 

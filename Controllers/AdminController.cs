@@ -99,7 +99,11 @@ namespace Inventree_App.Controllers
         public IActionResult Index(int orderId, int page = 1, int pageSize = 10, string search = "", string orderDate = "", string filter = "")
         {
             var user = GetCurrentUser();
-            ViewBag.UserName = user.UserName;
+            if (user == null)
+                return RedirectToAction("Index", "Home");
+
+            ViewBag.UserName = user.UserName;  
+
             ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
 
             var query = _context.Order.AsQueryable();
@@ -158,6 +162,8 @@ namespace Inventree_App.Controllers
         public IActionResult ApprovedList(int orderId, int page = 1, int pageSize = 10, string search = "", string orderDate = "", string filter = "Approved")
         {
             var user = GetCurrentUser();
+            if (user == null)
+                return RedirectToAction("Index", "Home");
             ViewBag.UserName = user.UserName;
             ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
 
@@ -220,6 +226,8 @@ namespace Inventree_App.Controllers
         public IActionResult StationeryCategories( int pageNumber = 1, int pageSize = 5,string search ="")
         {
             var user = GetCurrentUser();
+            if (user == null)
+                return RedirectToAction("Index", "Home");
             ViewBag.UserName = user.UserName;
             ViewBag.UserImage = $"{Request.Scheme}://{Request.Host}{user.Image}";
 
@@ -322,6 +330,8 @@ namespace Inventree_App.Controllers
         public IActionResult StationeryLocation(int pageNumber = 1, int pageSize = 5, string search = "")
         {
             var user = GetCurrentUser();
+            if (user == null)
+                return RedirectToAction("Index", "Home");
             ViewBag.UserName = user.UserName;
             ViewBag.UserImage = user.Image;
 
@@ -522,6 +532,8 @@ namespace Inventree_App.Controllers
         public IActionResult UnitTypes(int pageNumber = 1, int pageSize = 5, string search = "")
         {
             var user = GetCurrentUser();
+            if (user == null)
+                return RedirectToAction("Index", "Home");
             ViewBag.UserName = user.UserName;
             ViewBag.UserImage = user.Image;
 
@@ -586,6 +598,8 @@ namespace Inventree_App.Controllers
         public IActionResult SubUnitTypes(int pageNumber = 1, int pageSize = 5, string search = "")
         {
             var user = GetCurrentUser();
+            if (user == null)
+                return RedirectToAction("Index", "Home");
             ViewBag.UserName = user.UserName;
             ViewBag.UserImage = user.Image;
             // Start with base query

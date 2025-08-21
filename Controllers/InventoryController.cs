@@ -192,6 +192,8 @@ namespace Inventree_App.Controllers
 
             ViewData["SubUnitTypes"] = new SelectList(_context.SubUnitTypes, "Id", "SubUnitName");
             var userName = GetCurrentUser();
+            if (userName == null)
+                return RedirectToAction("Index", "Home");
             //var test = (((stock.UnitCapacity ?? 0) * stock.UnitQuantity) + stock.Quantity);
             ViewBag.UserName = userName.UserName;
             ViewBag.UserImage = userName.Image;
@@ -261,6 +263,8 @@ namespace Inventree_App.Controllers
         public IActionResult Create(Stocks stock, IFormFile ImageUrl)
         {
             var userName = GetCurrentUser();
+            if (userName == null)
+                return RedirectToAction("Index", "Home");
             ViewBag.UserName = userName.UserName;
             ViewBag.UserImage = userName.Image;
             // ===== Image Validation =====
@@ -598,6 +602,8 @@ namespace Inventree_App.Controllers
         public IActionResult GetStockById(int? id)
         {
             var userName = GetCurrentUser();
+            if (userName == null)
+                return RedirectToAction("Index", "Home");
             ViewBag.UserName = userName.UserName;
             ViewBag.UserImage = userName.Image;
             using (var connection = new MySqlConnection(_connectionString))
@@ -703,6 +709,8 @@ namespace Inventree_App.Controllers
         public async Task<IActionResult> UploadCsv(IFormFile file)
         {
             var userName = GetCurrentUser();
+            if (userName == null)
+                return RedirectToAction("Index", "Home");
 
             if (file == null || file.Length == 0)
             {

@@ -94,6 +94,8 @@ namespace Inventree_App.Controllers
         public IActionResult ScanAndReduceStock([FromBody] BarcodeScanRequest request)
         {
             var user = GetCurrentUser();
+            if (user == null)
+                return RedirectToAction("Index", "Home");
             ViewBag.UserName = user?.UserName;
 
             if (string.IsNullOrEmpty(request.Barcode))
