@@ -277,10 +277,10 @@
                         </div>
                         <div class="col-md-auto">
                             <select id="filterDropdown" class="form-select form-select-sm">
-                                <option value="all" @@(currentFilter= ="all" ? "selected" : "" )>All Stocks</option>
-                                <option value="red" @@(currentFilter= ="red" ? "selected" : "" )>🔴 Low Stock</option>
-                                <option value="orange" @@(currentFilter= ="orange" ? "selected" : "" )>🟠 Medium Stock</option>
-                                <option value="green" @@(currentFilter= ="green" ? "selected" : "" )>🟢 High Stock</option>
+                                <option value="all" selected="@(currentFilter == "all" ? "selected" : null)">All Stocks</option>
+                                <option value="red" selected="@(currentFilter == "red" ? "selected" : null)">🔴 Low Stock</option>
+                                <option value="orange" selected="@(currentFilter == "orange" ? "selected" : null)">🟠 Medium Stock</option>
+                                <option value="green" selected="@(currentFilter == "green" ? "selected" : null)">🟢 High Stock</option>
                             </select>
                         </div>
                     </div>
