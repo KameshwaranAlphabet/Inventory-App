@@ -115,6 +115,7 @@
                         <tr>
                             <th class="ps-3">ID</th>
                             <th>Stock Name</th>
+                            <th>Image</th>
                             <th>Availability</th>
                             <th>Category</th>
                             <th class="text-center">Action</th>
@@ -134,9 +135,17 @@
                         {
                             foreach (var product in Model)
                             {
+                                var imageUrl = string.IsNullOrEmpty(product.ImageUrl)
+                                ? Url.Content("~/Images/broken-Image.jpg")  // Default image path
+                                              : Url.Content(product.ImageUrl);           // Product image path
                                 <tr>
                                     <td class="ps-3">@product.ID</td>
                                     <td class="fw-semibold">@product.Name</td>
+@*                                     <td>@product.ImageUrl</td>
+ *@                                    <!-- Product Image -->
+                                    <td data-label="Image">
+                                        <img src="@imageUrl" style="width:50px; height:50px; object-fit:cover; border-radius:6px;">
+                                    </td>
                                     <td>
                                         @if (product.StockQuantity == 0)
                                         {

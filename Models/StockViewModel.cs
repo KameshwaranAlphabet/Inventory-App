@@ -10,6 +10,6 @@
         public int? CartQuantity { get; set; }
         public int? LocationId { get; set; }
         public string? StockLocation { get; set; }
-    
+        public string? ImageUrl { get; set; }
     }
 }

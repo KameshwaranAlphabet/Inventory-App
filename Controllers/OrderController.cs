@@ -43,6 +43,7 @@ namespace Inventree_App.Controllers
                         {
                             ID = stock.Id,
                             Name = stock.Name,
+                            ImageUrl = stock.ImageUrl,
                             // Null-safe Percentage calculation
                             StockQuantity = (((((stock.UnitCapacity ?? 0) * (stock.UnitQuantity ?? 0) + (stock.Quantity ?? 0)) <= 0)
                                 ? (stock.UnitQuantity ?? 0)
